@@ -12,7 +12,7 @@ export const availabilitySchema = z.object({
 });
 export const sauceRules = {
   sauceMin: z.number().int().nonnegative(),
-  sauceMax: z.number().int().positive().nullable(),
+  sauceMax: z.number().int().nonnegative().nullable(),
   sauceIncludedFree: z.number().int().nonnegative(),
 };
 export const variationSchema = z.object({

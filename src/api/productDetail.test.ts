@@ -105,7 +105,7 @@ it('strips authoring metadata without inventing choices from absent fields', () 
   ).not.toHaveProperty('translationMetadata');
 });
 it.each([
-  { sauceMax: 0 },
+  { sauceMax: -1 },
   { sauceMin: -1 },
   { basePrice: Infinity },
   { customerStepManifest: { schemaVersion: 1, revision: -1, steps: [] } },
@@ -153,4 +153,15 @@ it('validates identity and channel before dispatch and refuses a late restaurant
   await expect(readProduct(client, context, tenantA, 'en')).rejects.toMatchObject({
     reason: 'network',
   });
+});
+
+it('preserves a zero sauce cap as no sauces allowed, distinct from an unlimited null cap', () => {
+  const product = productDetailSchema.parse({
+    ...productDetailFixture(),
+    sauceMin: 0,
+    sauceMax: 0,
+    sauceIncludedFree: 0,
+  });
+  expect(product.sauceMax).toBe(0);
+  expect(productDetailSchema.parse(productDetailFixture()).sauceMax).toBeNull();
 });

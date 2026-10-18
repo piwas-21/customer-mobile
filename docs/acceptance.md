@@ -34,7 +34,8 @@ and bound to the repository. Local hooks also reject direct protected-branch upd
 Publisher/signing accounts and Expo/EAS ownership remain pending owner setup.
 
 Detailed product reads now validate the response bundle shape, stable association IDs, choice groups,
-nested ingredient/variation/side rules, recorded allergens and customer-step manifests. Product hooks
+nested ingredient/variation/side rules, recorded allergens and customer-step manifests. A zero sauce
+maximum means no sauces; a null maximum remains unlimited (backend SauceGroupRule is authoritative). Product hooks
 partition public detail by restaurant generation, locale and requested order type; unexpected product
 identities are rejected. This adapter is preparation for customization: quantity/choice screens and
 server basket writes remain required. Unknown enum values/manifest versions are preserved and must
