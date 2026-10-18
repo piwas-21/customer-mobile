@@ -1,0 +1,40 @@
+import { TenantBoundary, scopeKey } from './tenantContext';
+import { parseDirectory } from './directory';
+import { directoryInput, fixtureDirectory, tenantA, tenantB } from '../test/fixtures';
+it('aborts old work and partitions query keys on restaurant switch', () => {
+  const boundary = new TenantBoundary(fixtureDirectory());
+  expect(() => boundary.capture()).toThrow();
+  const a = boundary.select(tenantA);
+  const b = boundary.select(tenantB);
+  expect(a.signal.aborted).toBe(true);
+  expect(() => boundary.assertCurrent(a)).toThrow();
+  expect(boundary.capture()).toBe(b);
+  expect(scopeKey(a, 'guest-1', 'basket')).not.toEqual(scopeKey(b, 'guest-1', 'basket'));
+  expect(() => scopeKey(b, '', 'basket')).toThrow();
+  boundary.clear();
+  expect(() => boundary.capture()).toThrow();
+});
+it('invalidates removed tenants and prior contexts after directory replacement', () => {
+  const boundary = new TenantBoundary(fixtureDirectory());
+  const old = boundary.select(tenantA);
+  const update = directoryInput();
+  update.tenants = update.tenants.filter((item) => item.id === tenantB);
+  expect(() => boundary.updateDirectory(parseDirectory(update, 'staging'))).toThrow();
+  expect(old.signal.aborted).toBe(true);
+  expect(() => boundary.capture()).toThrow();
+});
+it('rejects cross-environment directory and refreshes valid selections', () => {
+  const boundary = new TenantBoundary(fixtureDirectory());
+  boundary.select(tenantA);
+  const input = directoryInput();
+  input.environment = 'production';
+  expect(() => boundary.updateDirectory(parseDirectory(input, 'production'))).toThrow();
+  const previous = boundary.capture();
+  boundary.updateDirectory(fixtureDirectory());
+  expect(boundary.capture()).toBe(previous);
+  const migration = directoryInput();
+  migration.tenants[0]!.apiOrigin = 'https://migrated.example';
+  boundary.updateDirectory(parseDirectory(migration, 'staging'));
+  expect(boundary.capture().generation).toBeGreaterThan(previous.generation);
+  expect(() => boundary.assertCurrent(previous)).toThrow();
+});

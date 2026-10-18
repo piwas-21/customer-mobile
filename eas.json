@@ -1,0 +1,53 @@
+{
+  "cli": {
+    "version": "25.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development",
+      "ios": {
+        "image": "macos-tahoe-26.4-xcode-26.4"
+      },
+      "android": {
+        "image": "ubuntu-26.04-jdk-17-ndk-r27b",
+        "buildType": "apk"
+      },
+      "extends": "base"
+    },
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "extends": "development",
+      "developmentClient": false
+    },
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true,
+      "ios": {
+        "image": "macos-tahoe-26.4-xcode-26.4"
+      },
+      "android": {
+        "image": "ubuntu-26.04-jdk-17-ndk-r27b",
+        "buildType": "app-bundle"
+      },
+      "extends": "base"
+    },
+    "direct-apk": {
+      "extends": "production",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "base": {
+      "node": "22.14.0",
+      "env": {
+        "NPM_CONFIG_IGNORE_SCRIPTS": "true"
+      }
+    }
+  }
+}
