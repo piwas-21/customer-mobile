@@ -43,7 +43,7 @@ export class SessionController {
   }
   private assertPrincipal(revision: number, userId: string): CustomerSession {
     this.assertCurrent(revision);
-    if (!this.session || this.session.userId !== userId) throw new ApiFailure(401, 'refused');
+    if (this.session?.userId !== userId) throw new ApiFailure(401, 'refused');
     return this.session;
   }
   dispose(): void {

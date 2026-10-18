@@ -67,3 +67,5 @@ export default function useAccount() {
   }
   return { session, email, setEmail, password, setPassword, login, logout, busy, failure, profile };
 }
+
+export type AccountState = ReturnType<typeof useAccount>;
