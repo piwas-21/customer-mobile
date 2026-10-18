@@ -110,7 +110,7 @@ it('filters duplicate/inactive dishes, searches, paginates and navigates within 
   expect(screen.getByText('Currently unavailable')).toBeTruthy();
   const count = request.mock.calls.length;
   fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
-  expect(request.mock.calls.length).toBe(count);
+  expect(request.mock.calls).toHaveLength(count);
   fireEvent(screen.UNSAFE_getByType(FlatList), 'refresh');
   await waitFor(() => expect(queryClient.isFetching()).toBe(0));
   fireEvent.press(screen.getByRole('button', { name: 'Switch restaurant' }));

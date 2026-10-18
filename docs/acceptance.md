@@ -5,8 +5,8 @@ A checked test is source evidence only. Record device/provider/store evidence se
 
 | Phase | Gate                                                                         | State                                  |
 | ----- | ---------------------------------------------------------------------------- | -------------------------------------- |
-| P0    | Company repo, pinned SDK, local/CI quality workflow                          | Local source; audit blocks publication |
-| P0    | Generated customer-only OpenAPI and baseline fixtures                        | Local source; audit blocks publication |
+| P0    | Company repo, pinned SDK, local/CI quality workflow                          | Source implemented; review/CI required |
+| P0    | Generated customer-only OpenAPI and baseline fixtures                        | Source implemented; review/CI required |
 | P0    | Two pilot tenant IDs, publisher identities, EAS project and signing          | Unverified                             |
 | P1    | Native menu/customization/basket/payment/QR/switching slice                  | In development                         |
 | P1    | Physical iPhone + Android, process death and provider redirects              | Unverified                             |
@@ -23,6 +23,7 @@ Source evidence: mobile unit/component tests and adversarial hook controls, back
 and iOS/Android JavaScript exports. This is an initial foundation/public-browsing slice; no signed
 native builds, native timing, full RTL/localization, safe checkout or installed-app journeys passed.
 
-GitHub rejected server branch-ruleset creation for this private repository (HTTP 403: upgrade plan
-or make public). Keep it private. Local pre-commit/pre-push guards reject protected branch updates;
-server enforcement and Sonar registration remain external setup gates, not verified protections.
+The repository is public by explicit owner authorization. Active no-bypass main/develop rules
+require PRs, up-to-date quality and Sonar checks, and resolved review threads. Sonar is registered
+and bound to the repository. Local hooks also reject direct protected-branch updates.
+Publisher/signing accounts and Expo/EAS ownership remain pending owner setup.
