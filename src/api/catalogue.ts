@@ -36,7 +36,7 @@ export function readProducts(
     { locale },
   );
 }
-export function customerName(product: Product, locale: string): string {
+export function customerName(product: Pick<Product, 'content' | 'name'>, locale: string): string {
   return product.content?.[locale]?.name || product.name || '';
 }
 export function approvedImage(

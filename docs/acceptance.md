@@ -40,3 +40,11 @@ partition public detail by restaurant generation, locale and requested order typ
 identities are rejected. This adapter is preparation for customization: quantity/choice screens and
 server basket writes remain required. Unknown enum values/manifest versions are preserved and must
 block unsupported ordering projections. Contract/API tests are source evidence; no device journey passed.
+
+Customization selection projections map explicit group memberships and bundle section rows to their
+exact server identities. Explicit group limits count distinct choices, with separate ingredient unit
+caps and one unit per product option. Repeatable bundle sections count portions; non-repeatable
+sections count rows. Optional bundle minima follow the server rule. Unavailable/future/ambiguous
+rules fail closed, defaults are bounded and deterministic, and projections perform no network writes.
+Legacy recipe/sauce interactions, manifest-driven step order, nested UI and full basket composition
+remain required before ordering acceptance.

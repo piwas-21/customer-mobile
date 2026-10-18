@@ -36,3 +36,8 @@ it('permits incomplete intermediate steps but blocks over-selection', () => {
   expect(quantityIsValid(99)).toBe(true);
   for (const value of [0, 100, -1, 1.5, Infinity]) expect(quantityIsValid(value)).toBe(false);
 });
+it('refuses ambiguous duplicate choice identities', () => {
+  expect(
+    validateSelection({ ...group, options: [...group.options, ...group.options] }, { chicken: 1 }),
+  ).toBe('invalid');
+});
