@@ -1,23 +1,7 @@
 import { z } from 'zod';
-import { apiUrl, CustomerTransport, fetchDirectory, type Fetch } from './transport';
-import { CredentialVault } from './credentials';
-import { TenantBoundary } from './tenantContext';
-import { fixtureDirectory, memorySecrets, tenantA, tenantB } from '../test/fixtures';
-function response(body: unknown, status = 200, contentType = 'application/json'): Response {
-  return {
-    ok: status < 400,
-    status,
-    headers: { get: () => contentType },
-    json: async () => body,
-  } as unknown as Response;
-}
-function setup() {
-  const boundary = new TenantBoundary(fixtureDirectory());
-  const vault = new CredentialVault(memorySecrets());
-  const fetcher = jest.fn<ReturnType<Fetch>, Parameters<Fetch>>();
-  const client = new CustomerTransport(boundary, vault, fetcher);
-  return { boundary, vault, fetcher, client, context: boundary.select(tenantA) };
-}
+import { apiUrl, fetchDirectory, type Fetch } from './transport';
+import { tenantB } from '../test/fixtures';
+import { setup, response } from '../test/transport';
 it('captures tenant credentials and refuses tokens for another tenant', async () => {
   const { boundary, vault, fetcher, client, context } = setup();
   await vault.saveSession(context, {
@@ -27,7 +11,10 @@ it('captures tenant credentials and refuses tokens for another tenant', async ()
   });
   fetcher.mockResolvedValue(response({ success: true, data: 'ok' }));
   await expect(
-    client.request(context, '/api/Basket', z.string(), { credentials: 'customer' }),
+    client.request(context, '/api/Basket', z.string(), {
+      credentials: 'customer',
+      principal: { kind: 'customer', id: 'a' },
+    }),
   ).resolves.toBe('ok');
   expect(fetcher.mock.calls[0]?.[1]?.headers).toEqual({
     Accept: 'application/json',
@@ -36,6 +23,7 @@ it('captures tenant credentials and refuses tokens for another tenant', async ()
   await expect(
     client.request(boundary.select(tenantB), '/api/Basket', z.string(), {
       credentials: 'customer',
+      principal: { kind: 'customer', id: 'a' },
     }),
   ).rejects.toMatchObject({ status: 401 });
   expect(fetcher).toHaveBeenCalledTimes(1);
@@ -72,15 +60,31 @@ it.each([
 });
 it('requires both table capabilities, and never substitutes customer JWT', async () => {
   const { vault, fetcher, client, context } = setup();
-  const options = { credentials: 'table', method: 'POST', body: {}, locale: 'fr' } as const;
+  const options = {
+    credentials: 'table',
+    principal: { kind: 'guest', id: 'installation-a' },
+    method: 'POST',
+    body: {},
+    locale: 'fr',
+  } as const;
   await expect(
     client.request(context, '/api/table-guest-visits/join', z.string(), options),
   ).rejects.toThrow();
-  await vault.saveCapability(context, 'guest-session', 'session-a');
+  await vault.saveCapability(
+    context,
+    'guest-session',
+    { kind: 'guest', id: 'installation-a' },
+    'session-a',
+  );
   await expect(
     client.request(context, '/api/table-guest-visits/join', z.string(), options),
   ).rejects.toThrow();
-  await vault.saveCapability(context, 'table-participant', 'participant-a');
+  await vault.saveCapability(
+    context,
+    'table-participant',
+    { kind: 'guest', id: 'installation-a' },
+    'participant-a',
+  );
   fetcher.mockResolvedValue(response({ success: true, data: 'table' }));
   await client.request(context, '/api/table-guest-visits/join', z.string(), options);
   expect(fetcher.mock.calls[0]?.[1]?.headers).toEqual({

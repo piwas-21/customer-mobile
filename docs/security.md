@@ -25,3 +25,9 @@ public upstream RSA vectors and signatures constructed with independent Node cry
 Before distribution: confirm publisher/signing identity, verify directory TLS and association files,
 backend cross-tenant rejection, server idempotency, account deletion, provider callback reconciliation,
 source-map privacy and Expo/Sentry processor inventory. Keep checkout/push/SSO disabled meanwhile.
+
+SecureStore keys include explicit customer or guest principal identity as well as environment and
+immutable tenant ID. Reads validate stored tokens/capabilities before headers are built, and session
+identity must match the selected customer. Transport refuses private modes without the correct
+principal kind. Auth UI, serialized refresh, account-switch cancellation and deletion are later journey
+integration gates; these storage primitives alone do not establish those acceptance results.

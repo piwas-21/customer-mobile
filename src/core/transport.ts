@@ -1,7 +1,7 @@
 import { fetch as expoFetch } from 'expo/fetch';
 import { z } from 'zod';
 import { originSchema } from './directory';
-import type { CredentialVault } from './credentials';
+import type { CredentialVault, Principal } from './credentials';
 import type { TenantBoundary, TenantContext } from './tenantContext';
 export type Fetch = (
   url: string,
@@ -32,6 +32,7 @@ export type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
   credentials?: 'none' | 'customer' | 'guest' | 'table';
+  principal?: Principal;
   locale?: string;
 };
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -63,18 +64,22 @@ export class CustomerTransport {
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     if (options.locale) headers['Accept-Language'] = options.locale;
     const mode = options.credentials ?? 'none';
+    const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
     if (mode === 'customer') {
-      const session = await this.vault.session(context);
+      if (principal?.kind !== 'customer') throw new ApiFailure(401, 'refused');
+      const session = await this.vault.session(context, principal.id);
       if (!session) throw new ApiFailure(401, 'refused');
       headers.Authorization = `Bearer ${session.accessToken}`;
     }
     if (mode === 'guest' || mode === 'table') {
-      const session = await this.vault.capability(context, 'guest-session');
+      if (principal?.kind !== 'guest') throw new ApiFailure(401, 'refused');
+      const session = await this.vault.capability(context, 'guest-session', principal);
       if (!session) throw new ApiFailure(401, 'refused');
       headers['X-Session-Id'] = session;
     }
     if (mode === 'table') {
-      const participant = await this.vault.capability(context, 'table-participant');
+      if (principal?.kind !== 'guest') throw new ApiFailure(401, 'refused');
+      const participant = await this.vault.capability(context, 'table-participant', principal);
       if (!participant) throw new ApiFailure(401, 'refused');
       headers['X-Table-Participant'] = participant;
     }
