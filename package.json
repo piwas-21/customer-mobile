@@ -20,13 +20,15 @@
     "test:coverage": "jest --runInBand --coverage",
     "check:source": "node scripts/check-source.mjs",
     "check:duplicates": "jscpd src --ignore \"**/generated.ts,**/*.test.*\" --threshold 0 --min-lines 8 --min-tokens 65",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run check:source && npm run check:workflow && npm run test:coverage && npm run check:duplicates",
+    "check": "npm run dependencies:verify && npm run format:check && npm run lint && npm run typecheck && npm run check:source && npm run check:workflow && npm run test:security && npm run test:coverage && npm run check:duplicates",
     "hooks:install": "node scripts/install-hooks.mjs",
     "contracts:generate": "openapi-typescript contracts/customer.openapi.json -o src/api/generated.ts",
     "build": "expo export --platform ios --platform android --output-dir dist && node scripts/check-bundle.mjs",
-    "check:workflow": "node --test scripts/check-source.test.mjs",
-    "eas-build-pre-install": "npm install --global npm@11.11.0 --ignore-scripts",
-    "eas-build-post-install": "npm run check && npm audit --audit-level=high"
+    "check:workflow": "node --test scripts/*.test.mjs",
+    "dependencies:prepare": "node scripts/prepare-dependencies.mjs",
+    "dependencies:verify": "node scripts/prepare-dependencies.mjs --verify",
+    "test:security": "node --test security/*.test.mjs",
+    "audit:security": "node scripts/audit-dependencies.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

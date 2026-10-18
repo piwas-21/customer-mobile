@@ -10,6 +10,7 @@ Read [development rules](docs/development.md), [acceptance gates](docs/acceptanc
 ```sh
 nvm use
 npm ci --ignore-scripts
+npm run dependencies:prepare
 npm run hooks:install
 npm run check
 npm run build

@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, sep } from 'node:path';
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
-if (['main', 'develop', 'HEAD'].includes(git('rev-parse', '--abbrev-ref', 'HEAD'))) {
+if (['main', 'develop', 'HEAD'].includes(git('symbolic-ref', '--short', 'HEAD'))) {
   throw new Error('Commit from a feature/fix/chore/docs branch. Protected branches are PR-only.');
 }
 execFileSync('git', ['diff', '--cached', '--check'], { stdio: 'inherit' });
@@ -30,7 +30,8 @@ for (const file of staged) {
 const snapshot = mkdtempSync(resolve(tmpdir(), 'sofra-index-'));
 try {
   execFileSync('git', ['checkout-index', '--all', `--prefix=${snapshot}${sep}`]);
-  symlinkSync(resolve('node_modules'), resolve(snapshot, 'node_modules'), 'dir');
+  execFileSync('npm', ['ci', '--ignore-scripts'], { cwd: snapshot, stdio: 'inherit' });
+  execFileSync('npm', ['run', 'dependencies:prepare'], { cwd: snapshot, stdio: 'inherit' });
   execFileSync('npm', ['run', 'check'], { cwd: snapshot, stdio: 'inherit' });
 } finally {
   rmSync(snapshot, { recursive: true, force: true });

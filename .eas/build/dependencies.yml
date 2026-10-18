@@ -1,0 +1,10 @@
+functions:
+  verified_dependencies:
+    name: Install and verify exact-source dependencies before native tooling
+    command: |
+      set -eu
+      npm install --global npm@11.11.0 --ignore-scripts
+      npm ci --ignore-scripts
+      npm run dependencies:prepare
+      npm run check
+      npm run audit:security

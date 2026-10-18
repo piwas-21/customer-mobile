@@ -1,6 +1,6 @@
 # Development workflow
 
-Use Node from .nvmrc and npm 11.11.0. Run npm ci --ignore-scripts then npm run hooks:install. Install Gitleaks 8.30.1 for local staged secret scans.
+Use Node from .nvmrc and npm 11.11.0. Run npm ci --ignore-scripts, npm run dependencies:prepare, then npm run hooks:install. Install Gitleaks 8.30.1 for local staged secret scans.
 Pinned direct versions and package-lock.json define the dependency graph. Expo SDK 56 is the
 initial compatibility baseline (React Native 0.85.3 / React 19.2.3); upgrades are explicit PRs.
 SDK reference: https://docs.expo.dev/versions/v56.0.0/.
@@ -21,8 +21,10 @@ Pre-commit rejects protected branches, conflicts, secret-file extensions and ove
 files; runs quality checks against an isolated copy of the index. npm run check covers formatting,
 strict types, ESLint (hooks/a11y), source boundaries, unit/component coverage, security regression
 fixtures and duplicate source blocks. Pre-push refuses direct protected-branch updates, then runs dependency audit and both native bundle exports.
-CI repeats these in a clean checkout and uploads coverage/bundle manifests. No lifecycle scripts
-run during dependency installation. Native plugins are exercised by development builds.
+CI repeats these in a clean checkout. No lifecycle scripts
+run during dependency installation. EAS custom builds run the explicit install, source repair, verification and audit steps before
+prebuild, CocoaPods or Gradle. Native plugins are exercised by development builds.
+Build ordering follows https://docs.expo.dev/custom-builds/schema/.
 
 ## Design and performance
 
@@ -41,3 +43,15 @@ logout races, unknown settlement and replayed submit. Negative tests must demons
 Do not trust a tenant ID in a token or link as authorization. Validate on server too.
 No analytics, Sentry or Expo Push activation until processors, consent and scrubbing are approved.
 No secrets in EAS public variables. Store/publisher credentials are external configuration.
+
+## Exact-source dependency repairs
+
+Registry metadata has no patched release for two high advisory roots. Reviewed source repairs are
+specified in security/remediations.json without changing dependency names or versions. Preparation
+checks exact original hashes before applying patches; ordinary checks require exact repaired hashes.
+The security suite proves the original defects, patched rejection and independent valid controls.
+The audit gate always runs npm audit over the full dependency graph, retains the raw report and
+resolves wrapper findings to advisory roots. Only roots repaired in every installed copy with matching
+lockfile/version/source/behavior evidence can be marked source-remediated. New findings, unknown
+sources, missing copies, audit process/report errors and stale patches block. Registry-clean and
+source-remediated are separate evidence states; neither can be claimed from a filtered audit count.

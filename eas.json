@@ -47,6 +47,12 @@
       "node": "22.14.0",
       "env": {
         "NPM_CONFIG_IGNORE_SCRIPTS": "true"
+      },
+      "android": {
+        "config": "android.yml"
+      },
+      "ios": {
+        "config": "ios.yml"
       }
     }
   }

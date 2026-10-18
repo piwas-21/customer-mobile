@@ -2,7 +2,9 @@ import { defineConfig } from 'eslint/config';
 import expo from 'eslint-config-expo/flat.js';
 export default defineConfig([
   expo,
-  { ignores: ['dist/**', 'coverage/**', 'src/api/generated.ts'] },
+  {
+    ignores: ['.local/**', 'dist/**', 'coverage/**', 'src/api/generated.ts', 'security/patches/**'],
+  },
   {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {

@@ -11,7 +11,7 @@ for (const line of refUpdates) {
 }
 for (const args of [
   ['run', 'check'],
-  ['audit', '--audit-level=high'],
+  ['run', 'audit:security'],
   ['run', 'build'],
 ]) {
   execFileSync('npm', args, { stdio: 'inherit' });
