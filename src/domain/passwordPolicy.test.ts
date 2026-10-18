@@ -13,7 +13,12 @@ it.each([
   'Missing1Symbol',
   'Ab1!aaaa',
   'password123',
-  'Aa1!' + 'x'.repeat(1021),
+  'Aa1!'.repeat(257),
 ])('rejects a password violating the active server or bounded client policy', (value) => {
   expect(isSupportedPassword(value)).toBe(false);
+});
+
+it('accepts the bounded maximum and rejects one additional otherwise-valid character', () => {
+  expect(isSupportedPassword('Aa1!'.repeat(256))).toBe(true);
+  expect(isSupportedPassword('Aa1!'.repeat(256) + 'a')).toBe(false);
 });

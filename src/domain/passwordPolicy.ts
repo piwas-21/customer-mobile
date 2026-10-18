@@ -9,7 +9,7 @@ export function isSupportedPassword(value: string): boolean {
     value.length <= PASSWORD_MAX_LENGTH &&
     /[a-z]/.test(value) &&
     /[A-Z]/.test(value) &&
-    /[0-9]/.test(value) &&
+    /\d/.test(value) &&
     /[^a-zA-Z0-9]/.test(value) &&
     !/(.)\1{2,}/.test(value)
   );
