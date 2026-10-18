@@ -4,7 +4,7 @@
   "frontendCommit": "ee3cf52e88ce1d2747fa1ec7c47e902ce90664d1",
   "source": "https://www.rumirestaurant.ch/api/swagger/v1/swagger.json",
   "sourceSha256": "57bb0689556576febeffebb344cfca8eb24c334cdcfe16ee5d2e2bc9c9eccf4b",
-  "paths": 45,
-  "schemas": 164,
+  "paths": 47,
+  "schemas": 168,
   "note": "Client subset is not an authorization boundary. Current deployed handlers remain authoritative."
 }

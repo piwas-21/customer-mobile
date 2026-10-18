@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RestaurantProvider from '../src/features/restaurant/RestaurantProvider';
+import SessionProvider from '../src/features/account/SessionProvider';
 import { useTheme } from '../src/ui/theme';
 export default function RootLayout() {
   const [queryClient] = useState(
@@ -20,15 +21,17 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <RestaurantProvider>
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: theme.background },
-              headerTintColor: theme.text,
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
-          </Stack>
+          <SessionProvider>
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: theme.background },
+                headerTintColor: theme.text,
+              }}
+            >
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
+            </Stack>
+          </SessionProvider>
         </RestaurantProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

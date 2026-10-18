@@ -2023,6 +2023,113 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/User/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfUserDto"];
+                        "application/json": components["schemas"]["ApiResponseOfUserDto"];
+                        "text/json": components["schemas"]["ApiResponseOfUserDto"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserProfileCommand"];
+                    "text/json": components["schemas"]["UpdateUserProfileCommand"];
+                    "application/*+json": components["schemas"]["UpdateUserProfileCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfUserDto"];
+                        "application/json": components["schemas"]["ApiResponseOfUserDto"];
+                        "text/json": components["schemas"]["ApiResponseOfUserDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/User/register/customer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["RegisterCustomerCommand"];
+                    "text/json": components["schemas"]["RegisterCustomerCommand"];
+                    "application/*+json": components["schemas"]["RegisterCustomerCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAuthResponse"];
+                        "application/json": components["schemas"]["ApiResponseOfAuthResponse"];
+                        "text/json": components["schemas"]["ApiResponseOfAuthResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3852,6 +3959,56 @@ export interface components {
         VerifyEmailCommand: {
             email?: string | null;
             token?: string | null;
+        };
+        RegisterCustomerCommand: {
+            firstName?: string | null;
+            lastName?: string | null;
+            email?: string | null;
+            password?: string | null;
+            confirmPassword?: string | null;
+        };
+        ApiResponseOfUserDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["UserDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        UserDto: {
+            /** Format: uuid */
+            id?: string;
+            email?: string | null;
+            firstName?: string | null;
+            lastName?: string | null;
+            readonly fullName?: string | null;
+            phoneNumber?: string | null;
+            role?: string | null;
+            isEmailConfirmed?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string | null;
+            isDeleted?: boolean;
+            /** Format: date-time */
+            deletedAt?: string | null;
+            metadata?: {
+                [key: string]: string;
+            } | null;
+            /** Format: double */
+            orderLimitAmount?: number;
+            /** Format: double */
+            discountPercentage?: number;
+            isDiscountActive?: boolean;
+            preferredLanguage?: string | null;
+        };
+        UpdateUserProfileCommand: {
+            firstName?: string | null;
+            lastName?: string | null;
+            phoneNumber?: string | null;
+            metadata?: {
+                [key: string]: string;
+            } | null;
+            preferredLanguage?: string | null;
         };
     };
     responses: never;

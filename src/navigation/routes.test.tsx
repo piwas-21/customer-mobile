@@ -9,7 +9,21 @@ import { useRouter } from 'expo-router';
 jest.mock('../features/restaurant/RestaurantProvider', () => ({
   __esModule: true,
   default: ({ children }: PropsWithChildren) => children,
+  useRestaurant: () => ({ context: undefined }),
 }));
+jest.mock('../features/account/SessionProvider', () => ({
+  __esModule: true,
+  default: ({ children }: PropsWithChildren) => children,
+  useSession: () => ({ unavailable: true }),
+}));
+jest.mock('../features/account/AccountScreen', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: () => React.createElement(Text, null, 'Account destination'),
+  };
+});
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual<typeof import('react-native-safe-area-context')>(
     'react-native-safe-area-context',
@@ -35,7 +49,7 @@ it('composes the root and customer navigation destinations', () => {
   const tabs = render(<RestaurantLayout />);
   for (const name of ['menu', 'orders', 'account']) expect(tabs.getByText(name)).toBeTruthy();
 });
-it('offers the menu from empty orders and explains tenant-local account availability', () => {
+it('offers the menu from empty orders and connects the account destination', () => {
   const router = routerFixture();
   jest.mocked(useRouter).mockReturnValue(router);
   const orders = render(<OrdersRoute />);
@@ -43,5 +57,5 @@ it('offers the menu from empty orders and explains tenant-local account availabi
   expect(router.replace).toHaveBeenCalledWith('/menu');
   orders.unmount();
   const account = render(<AccountRoute />);
-  expect(account.getByText('Your account belongs to the selected restaurant.')).toBeTruthy();
+  expect(account.getByText('Account destination')).toBeTruthy();
 });

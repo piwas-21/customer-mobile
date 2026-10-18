@@ -3,21 +3,25 @@
 Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspace.
 A checked test is source evidence only. Record device/provider/store evidence separately.
 
-| Phase | Gate                                                                         | State                                  |
-| ----- | ---------------------------------------------------------------------------- | -------------------------------------- |
-| P0    | Company repo, pinned SDK, local/CI quality workflow                          | Source implemented; review/CI required |
-| P0    | Generated customer-only OpenAPI and baseline fixtures                        | Source implemented; review/CI required |
-| P0    | Two pilot tenant IDs, publisher identities, EAS project and signing          | Unverified                             |
-| P1    | Native menu/customization/basket/payment/QR/switching slice                  | In development                         |
-| P1    | Physical iPhone + Android, process death and provider redirects              | Unverified                             |
-| P2    | Trusted directory, bootstrap, isolated storage/requests, links               | In development                         |
-| P2    | Reproducible signed native builds and cross-tenant server rejection          | Unverified                             |
-| P3    | Accounts/deletion, ordering/history/reorder and payment recovery             | Pending                                |
-| P4    | Reservations, loyalty, table payments, durable transactional push            | Pending                                |
-| P5    | Website entry, APK/store installs and channel updates, two tenant acceptance | Pending                                |
-| P6    | Third tenant runtime onboarding, rollback and support                        | Pending                                |
+| Phase | Gate                                                                         | State                           |
+| ----- | ---------------------------------------------------------------------------- | ------------------------------- |
+| P0    | Company repo, pinned SDK, local/CI quality workflow                          | Merged to develop with CI/Sonar |
+| P0    | Generated customer-only OpenAPI and baseline fixtures                        | Merged to develop with CI/Sonar |
+| P0    | Two pilot tenant IDs, publisher identities, EAS project and signing          | Unverified                      |
+| P1    | Native menu/customization/basket/payment/QR/switching slice                  | In development                  |
+| P1    | Physical iPhone + Android, process death and provider redirects              | Unverified                      |
+| P2    | Trusted directory, bootstrap, isolated storage/requests, links               | In development                  |
+| P2    | Reproducible signed native builds and cross-tenant server rejection          | Unverified                      |
+| P3    | Accounts/deletion, ordering/history/reorder and payment recovery             | Pending                         |
+| P4    | Reservations, loyalty, table payments, durable transactional push            | Pending                         |
+| P5    | Website entry, APK/store installs and channel updates, two tenant acceptance | Pending                         |
+| P6    | Third tenant runtime onboarding, rollback and support                        | Pending                         |
 
 Never enable a tenant from fixture/demo data. No production channels are available in this repo.
+
+Account source adds restaurant-gated secure sign-in/restore, owned profile reads and durable local
+logout cleanup. Account review/CI is tracked separately from the accepted foundation; registration,
+social sign-in, recovery, profile editing, deletion and device-wide logout remain required.
 
 Source evidence: mobile unit/component tests and adversarial hook controls, backend policy/HTTP tests,
 and iOS/Android JavaScript exports. This is an initial foundation/public-browsing slice; no signed

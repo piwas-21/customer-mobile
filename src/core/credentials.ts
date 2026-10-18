@@ -6,7 +6,7 @@ export interface SecretStore {
   remove(key: string): Promise<void>;
 }
 const identitySchema = z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/);
-const headerSecretSchema = z
+export const credentialSecretSchema = z
   .string()
   .min(1)
   .max(16000)
@@ -18,8 +18,8 @@ export type Principal = Readonly<z.infer<typeof principalSchema>>;
 const sessionSchema = z
   .object({
     userId: identitySchema,
-    accessToken: headerSecretSchema,
-    refreshToken: headerSecretSchema,
+    accessToken: credentialSecretSchema,
+    refreshToken: credentialSecretSchema,
   })
   .strict();
 export type CustomerSession = z.infer<typeof sessionSchema>;
@@ -51,13 +51,16 @@ export class CredentialVault {
       JSON.stringify(session),
     );
   }
+  async removeSession(context: TenantContext, userId: string): Promise<void> {
+    await this.store.remove(secretKey(context, 'session', { kind: 'customer', id: userId }));
+  }
   async capability(
     context: TenantContext,
     kind: Exclude<CredentialKind, 'session'>,
     principal: Principal,
   ): Promise<string | null> {
     const value = await this.store.get(secretKey(context, kind, principal));
-    return value === null ? null : headerSecretSchema.parse(value);
+    return value === null ? null : credentialSecretSchema.parse(value);
   }
   async saveCapability(
     context: TenantContext,
@@ -65,7 +68,7 @@ export class CredentialVault {
     principal: Principal,
     value: string,
   ): Promise<void> {
-    await this.store.set(secretKey(context, kind, principal), headerSecretSchema.parse(value));
+    await this.store.set(secretKey(context, kind, principal), credentialSecretSchema.parse(value));
   }
   async clear(context: TenantContext, principal: Principal): Promise<void> {
     const scoped = principalSchema.parse(principal);
