@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { customerName } from '../../api/catalogue';
+import { visibleProducts } from './productList';
 import Screen from '../../ui/Screen';
 import Field from '../../ui/Field';
 import Button from '../../ui/Button';
@@ -20,18 +20,7 @@ export default function MenuScreen() {
   const { menu: query, bootstrap } = useMenu();
   const [search, setSearch] = useState('');
   const products = useMemo(
-    () =>
-      query.data?.pages
-        .flatMap((page) => page.items)
-        .filter(
-          (product, index, items) =>
-            product.isActive &&
-            !product.isComponent &&
-            items.findIndex((item) => item.id === product.id) === index &&
-            customerName(product, i18n.language)
-              .toLocaleLowerCase()
-              .includes(search.trim().toLocaleLowerCase()),
-        ) ?? [],
+    () => visibleProducts(query.data?.pages ?? [], search, i18n.language),
     [query.data, search, i18n.language],
   );
   if (!context)

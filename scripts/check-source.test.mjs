@@ -40,10 +40,17 @@ test('pre-push protected-ref guard blocks before running checks and permits feat
   const root = mkdtempSync(resolve(tmpdir(), 'sofra-push-control-'));
   try {
     const fakeNpm = resolve(root, 'npm');
-    writeFileSync(fakeNpm, '#!/bin/sh\nprintf QUALITY_CHECK_REACHED\nexit 7\n', { mode: 0o755 });
+    writeFileSync(fakeNpm, "process.stdout.write('QUALITY_CHECK_REACHED'); process.exit(7);", {
+      mode: 0o755,
+    });
     const pushScript = resolve('scripts/pre-push.mjs');
+    const launcher = resolve(root, 'run.mjs');
+    writeFileSync(
+      launcher,
+      `import { prePush } from ${JSON.stringify('file://' + pushScript)}; import { readFileSync } from 'node:fs'; prePush(readFileSync(0, 'utf8'), () => process.argv[2]);`,
+    );
     const run = (target) =>
-      spawnSync(process.execPath, [pushScript], {
+      spawnSync(process.execPath, [launcher, fakeNpm], {
         encoding: 'utf8',
         input: `refs/heads/feature/control aaaa refs/heads/${target} bbbb\n`,
         env: { ...process.env, PATH: root },

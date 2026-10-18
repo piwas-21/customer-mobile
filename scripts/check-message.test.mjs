@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { GIT } from './tool-paths.mjs';
 const checker = resolve('scripts/check-message.mjs');
 test('commit-message checks reject arbitrary CLI paths and symlinks; support real worktree pointers', () => {
-  const root = mkdtempSync(resolve(tmpdir(), 'sofra-message-control-'));
+  const root = realpathSync(mkdtempSync(resolve(tmpdir(), 'sofra-message-control-')));
   try {
     const metadata = resolve(root, '.git');
     mkdirSync(metadata);

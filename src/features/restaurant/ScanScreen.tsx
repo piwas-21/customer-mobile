@@ -43,7 +43,7 @@ export default function ScanScreen() {
                   const link = resolveLink(data, runtimeConfig.linkOrigin, directory);
                   // Only menu admission is enabled in the first browsing slice. Other destinations require their own authorization flow.
                   if (link.destination !== 'menu') throw new Error('Destination unavailable');
-                  select(link.tenantId);
+                  if (!select(link.tenantId)) throw new Error('Restaurant unavailable');
                   router.replace('/menu');
                 } catch {
                   setError(true);

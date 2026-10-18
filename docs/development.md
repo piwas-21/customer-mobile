@@ -1,7 +1,10 @@
 # Development workflow
 
 Development/build hooks run on macOS or Linux; Windows developers use WSL.
-System Git and Bash use fixed OS paths, independent of caller PATH.
+System Git and Bash use fixed OS paths. npm and Gitleaks resolve only from Homebrew,
+the active Node installation, /usr/local/bin or /usr/bin; caller PATH is ignored.
+The npm CLI must identify as npm 11.11.0 and runs with the current Node binary.
+Installed Git hooks also pin that Node binary; reinstall them after changing runtimes.
 
 Use Node from .nvmrc and npm 11.11.0. Run npm ci --ignore-scripts, npm run dependencies:prepare, then npm run hooks:install. Install Gitleaks 8.30.1 for local staged secret scans.
 Pinned direct versions and package-lock.json define the dependency graph. Expo SDK 56 is the
@@ -23,7 +26,10 @@ SDK reference: https://docs.expo.dev/versions/v56.0.0/.
 Pre-commit rejects protected branches, conflicts, secret-file extensions and oversized staged
 files; runs quality checks against an isolated copy of the index. npm run check covers formatting,
 strict types, ESLint (hooks/a11y), source boundaries, unit/component coverage, security regression
-fixtures and duplicate source blocks. Pre-push refuses direct protected-branch updates, then runs dependency audit and both native bundle exports.
+fixtures and duplicate source blocks. Native coverage includes the runtime screens, APIs and storage;
+separate V8 coverage includes workflow/security scripts and their subprocesses. Both reports
+feed Sonar. Native and tooling gates require at least 85% lines/statements/functions and 80% branches.
+The tooling suite runs the full dependency audit, so network access is required. Pre-push refuses direct protected-branch updates, then runs dependency audit and both native bundle exports.
 CI repeats these in a clean checkout. No lifecycle scripts
 run during dependency installation. EAS custom builds run the explicit install, source repair, verification and audit steps before
 prebuild, CocoaPods or Gradle. Native plugins are exercised by development builds.

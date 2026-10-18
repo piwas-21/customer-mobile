@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 const checker = resolve('scripts/check-staged.mjs');
@@ -18,21 +18,31 @@ test('staged validation installs the staged lock and stops before checks when in
     mkdirSync(resolve(root, 'bin'));
     writeFileSync(resolve(root, 'bin/gitleaks'), '#!/bin/sh\ncat >/dev/null\n', { mode: 0o755 });
     const capture = resolve(root, 'commands');
+    const hostileMarker = resolve(root, 'hostile-node-executed');
     writeFileSync(
-      resolve(root, 'bin/npm'),
-      `#!/bin/sh
-set -eu
-printf '%s\\n' "$*" >> "$CONTROL_CAPTURE"
-[ "$(cat package-lock.json)" = 'staged-lock' ]
-[ "$(cat package.json)" = 'staged-package' ]
-case "$*" in
-  'ci --ignore-scripts') [ "$CONTROL_FAIL" != install ] ;;
-  'run dependencies:prepare') [ "$CONTROL_FAIL" != prepare ] ;;
-  'run check') printf CHECK_REACHED ;;
-  *) exit 8 ;;
-esac
+      resolve(root, 'bin/node'),
+      '#!/bin/sh\nprintf hostile > "$CONTROL_HOSTILE_NODE"\nexit 81\n',
+      { mode: 0o755 },
+    );
+    writeFileSync(
+      resolve(root, 'bin/npm.mjs'),
+      `import { appendFileSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+const node = spawnSync('node', ['-p', 'process.execPath'], { encoding: 'utf8' });
+if (node.status !== 0 || node.stdout.trim() !== process.execPath) process.exit(9);
+const args = process.argv.slice(2).join(' ');
+appendFileSync(process.env.CONTROL_CAPTURE, args + '\\n');
+if (readFileSync('package-lock.json', 'utf8') !== 'staged-lock' || readFileSync('package.json', 'utf8') !== 'staged-package') process.exit(8);
+if (args === 'ci --ignore-scripts' && process.env.CONTROL_FAIL === 'install') process.exit(1);
+if (args === 'run dependencies:prepare' && process.env.CONTROL_FAIL === 'prepare') process.exit(1);
+if (args === 'run check') process.stdout.write('CHECK_REACHED');
 `,
       { mode: 0o755 },
+    );
+    const launcher = resolve(root, 'run.mjs');
+    writeFileSync(
+      launcher,
+      `import { checkStaged } from ${JSON.stringify('file://' + checker)}; checkStaged(process.argv[2], process.argv[3]);`,
     );
     for (const [name, content] of [
       ['package-lock.json', 'staged-lock'],
@@ -44,16 +54,22 @@ esac
     }
     for (const fail of ['', 'install', 'prepare']) {
       writeFileSync(capture, '');
-      const result = spawnSync(process.execPath, [checker], {
-        cwd: root,
-        encoding: 'utf8',
-        env: {
-          ...fixtureEnv,
-          PATH: `${resolve(root, 'bin')}:${process.env.PATH}`,
-          CONTROL_CAPTURE: capture,
-          CONTROL_FAIL: fail,
+      const result = spawnSync(
+        process.execPath,
+        [launcher, resolve(root, 'bin/npm.mjs'), resolve(root, 'bin/gitleaks')],
+        {
+          cwd: root,
+          encoding: 'utf8',
+          env: {
+            ...fixtureEnv,
+            PATH: `${resolve(root, 'bin')}:${process.env.PATH}`,
+            CONTROL_CAPTURE: capture,
+            CONTROL_HOSTILE_NODE: hostileMarker,
+            CONTROL_FAIL: fail,
+          },
         },
-      });
+      );
+      assert.equal(existsSync(hostileMarker), false, 'Caller PATH node must never execute');
       if (!fail) {
         assert.equal(result.status, 0, result.stderr);
         assert.match(result.stdout, /CHECK_REACHED/);

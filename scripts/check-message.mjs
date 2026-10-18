@@ -4,11 +4,10 @@ import { gitDirectory } from './git-directory.mjs';
 const MAX_MESSAGE_BYTES = 64 * 1024;
 const directory = realpathSync(gitDirectory());
 const supplied = process.argv[2];
-if (!supplied || !lstatSync(supplied).isFile())
-  throw new Error('Only this repository Git commit message may be checked.');
-const expected = realpathSync(supplied);
-if (!['COMMIT_EDITMSG', 'MERGE_MSG'].some((name) => expected === resolve(directory, name)))
-  throw new Error('Only this repository Git commit message may be checked.');
+const expected = ['COMMIT_EDITMSG', 'MERGE_MSG']
+  .map((name) => resolve(directory, name))
+  .find((path) => supplied && path === resolve(supplied));
+if (!expected) throw new Error('Only this repository Git commit message may be checked.');
 const metadata = lstatSync(expected);
 if (!metadata.isFile() || metadata.size > MAX_MESSAGE_BYTES)
   throw new Error('Commit message must be a bounded regular file.');

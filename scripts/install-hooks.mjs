@@ -12,7 +12,8 @@ for (const [name, script] of Object.entries({
   'commit-msg': 'check-message.mjs',
 })) {
   const path = resolve(hookDir, name);
-  writeFileSync(path, `#!/bin/sh\nset -eu\nnode scripts/${script} "$@"\n`);
+  const node = process.execPath.replaceAll("'", "'\\''");
+  writeFileSync(path, `#!/bin/sh\nset -eu\nexec '${node}' scripts/${script} "$@"\n`);
   chmodSync(path, 0o755);
 }
 process.stdout.write('Installed pre-commit and fail-closed pre-push hooks.\n');

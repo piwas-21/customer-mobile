@@ -2,21 +2,18 @@ import { z } from 'zod';
 
 export const environmentSchema = z.enum(['staging', 'production']);
 export type Environment = z.infer<typeof environmentSchema>;
-export const originSchema = z
-  .string()
-  .url()
-  .refine((value) => {
-    const url = new URL(value);
-    return (
-      url.protocol === 'https:' &&
-      !url.username &&
-      !url.password &&
-      url.pathname === '/' &&
-      !url.search &&
-      !url.hash &&
-      value === url.origin
-    );
-  }, 'Expected a canonical HTTPS origin');
+export const originSchema = z.url().refine((value) => {
+  const url = new URL(value);
+  return (
+    url.protocol === 'https:' &&
+    !url.username &&
+    !url.password &&
+    url.pathname === '/' &&
+    !url.search &&
+    !url.hash &&
+    value === url.origin
+  );
+}, 'Expected a canonical HTTPS origin');
 const tenantSchema = z
   .object({
     id: z.uuid(),

@@ -19,13 +19,17 @@ test('a staged uncommitted generated correction cannot validate stale pushed HEA
     mkdirSync(resolve(root, 'src/api'), { recursive: true });
     mkdirSync(resolve(root, 'bin'));
     writeFileSync(
-      resolve(root, 'bin/npm'),
-      `#!/bin/sh
-if [ "$*" = 'run contracts:generate' ]; then printf 'correct\\n' > src/api/generated.ts; exit 0; fi
-printf QUALITY_CHECK_REACHED
-exit 7
+      resolve(root, 'bin/npm.mjs'),
+      `import { writeFileSync } from 'node:fs';
+if (process.argv.slice(2).join(' ') === 'run contracts:generate') { writeFileSync('src/api/generated.ts', 'correct\\n'); process.exit(0); }
+process.stdout.write('QUALITY_CHECK_REACHED'); process.exit(7);
 `,
       { mode: 0o755 },
+    );
+    const launcher = resolve(root, 'run.mjs');
+    writeFileSync(
+      launcher,
+      `import { prePush } from ${JSON.stringify('file://' + push)}; import { readFileSync } from 'node:fs'; prePush(readFileSync(0, 'utf8'), () => process.argv[2]);`,
     );
     const file = 'src/api/generated.ts';
     writeFileSync(resolve(root, file), 'stale\n');
@@ -34,7 +38,7 @@ exit 7
     writeFileSync(resolve(root, file), 'correct\n');
     git('add', '--', file);
     const run = () =>
-      spawnSync(process.execPath, [push], {
+      spawnSync(process.execPath, [launcher, resolve(root, 'bin/npm.mjs')], {
         cwd: root,
         encoding: 'utf8',
         env: { ...fixtureEnv, PATH: `${resolve(root, 'bin')}:${fixtureEnv.PATH}` },
