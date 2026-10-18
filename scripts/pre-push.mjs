@@ -9,6 +9,10 @@ for (const line of refUpdates) {
     throw new Error('Protected branches are updated only by reviewed GitHub PRs.');
   }
 }
+execFileSync('npm', ['run', 'contracts:generate'], { stdio: 'inherit' });
+execFileSync('git', ['diff', '--exit-code', 'HEAD', '--', 'src/api/generated.ts'], {
+  stdio: 'inherit',
+});
 for (const args of [
   ['run', 'check'],
   ['run', 'audit:security'],
