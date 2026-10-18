@@ -13,9 +13,8 @@ import { AppState } from 'react-native';
 import { runtimeConfig } from '../../config';
 import { parseDirectory, type Directory } from '../../core/directory';
 import { fetchDirectory, CustomerTransport } from '../../core/transport';
-import { CredentialVault } from '../../core/credentials';
+import { deviceSessions } from '../../storage/sessions';
 import { TenantBoundary, type TenantContext } from '../../core/tenantContext';
-import { deviceSecrets } from '../../storage/secrets';
 import { readPreferences, savePreferences } from '../../storage/publicPreferences';
 type RestaurantState = {
   directory: Directory | undefined;
@@ -87,7 +86,7 @@ export default function RestaurantProvider({ children }: Readonly<PropsWithChild
       }
     } else {
       boundary.current = new TenantBoundary(directory.data);
-      setClient(new CustomerTransport(boundary.current, new CredentialVault(deviceSecrets)));
+      setClient(new CustomerTransport(boundary.current, deviceSessions.vault));
       if (runtimeConfig) {
         void readPreferences(runtimeConfig.environment)
           .then((preferences) => {

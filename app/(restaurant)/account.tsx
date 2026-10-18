@@ -1,12 +1,10 @@
-import { useTranslation } from 'react-i18next';
-import Screen from '../../src/ui/Screen';
-import Feedback from '../../src/ui/Feedback';
+import AccountScreen from '../../src/features/account/AccountScreen';
+import { useRestaurant } from '../../src/features/restaurant/RestaurantProvider';
+import { useSession } from '../../src/features/account/SessionProvider';
 export default function AccountRoute() {
-  const { t } = useTranslation();
+  const { context } = useRestaurant();
+  const session = useSession();
   return (
-    <Screen>
-      <Feedback message={t('accountIntro')} />
-      <Feedback message={t('accountUnavailable')} />
-    </Screen>
+    <AccountScreen key={`${context?.tenant.id}.${context?.generation}.${session.unavailable}`} />
   );
 }

@@ -30,6 +30,20 @@ const en = {
   cameraPermission: 'Allow the camera to scan the restaurant’s QR code.',
   allowCamera: 'Allow camera',
   invalidQr: 'This QR code could not be opened. Use the restaurant’s app link or try another code.',
+  email: 'Email',
+  password: 'Password',
+  signIn: 'Sign in',
+  signOut: 'Sign out',
+  signingOut: 'Signing out…',
+  sessionUnavailable: 'Your saved session could not be opened. Please try again.',
+  profileUnavailable: 'Your profile could not be loaded. Please try again.',
+  verificationRequired: 'Check your email to verify your account before placing an order.',
+  accountFailure: {
+    input: 'Enter a valid email address and your password.',
+    login:
+      'We could not sign you in. Check your details and email verification, or try again shortly.',
+    logout: 'Sign-out could not be completed on this device. Please try again before leaving it.',
+  },
   accountIntro: 'Your account belongs to the selected restaurant.',
   accountUnavailable:
     'Account access is being prepared for this restaurant. You can continue browsing the menu.',
