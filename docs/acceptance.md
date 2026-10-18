@@ -12,19 +12,20 @@ A checked test is source evidence only. Record device/provider/store evidence se
 | P1    | Physical iPhone + Android, process death and provider redirects              | Unverified                      |
 | P2    | Trusted directory, bootstrap, isolated storage/requests, links               | In development                  |
 | P2    | Reproducible signed native builds and cross-tenant server rejection          | Unverified                      |
-| P3    | Accounts/deletion, ordering/history/reorder and payment recovery             | Pending                         |
+| P3    | Accounts/deletion, ordering/history/reorder and payment recovery             | In development                  |
 | P4    | Reservations, loyalty, table payments, durable transactional push            | Pending                         |
 | P5    | Website entry, APK/store installs and channel updates, two tenant acceptance | Pending                         |
 | P6    | Third tenant runtime onboarding, rollback and support                        | Pending                         |
 
 Never enable a tenant from fixture/demo data. No production channels are available in this repo.
 
-Account source adds restaurant-gated secure sign-in/restore, owned profile reads and durable local
-logout cleanup. Account review/CI is tracked separately from the accepted foundation; registration,
-social sign-in, recovery, profile editing, deletion and device-wide logout remain required.
+Restaurant-gated sign-in/restore, owned profile reads and durable local logout merged through PR #2.
+Registration and recovery request forms add validation and generic email instructions; their own
+review/CI acceptance is required. Verification/reset-link integration, social sign-in, profile editing,
+saved addresses, server revocation, deletion and device-wide logout remain required.
 
-Source evidence: mobile unit/component tests and adversarial hook controls, backend policy/HTTP tests,
-and iOS/Android JavaScript exports. This is an initial foundation/public-browsing slice; no signed
+Source evidence includes mobile unit/component tests, adversarial hook controls, backend policy/HTTP
+tests and iOS/Android JavaScript exports. Public browsing and account sources are tested; no signed
 native builds, native timing, full RTL/localization, safe checkout or installed-app journeys passed.
 
 The repository is public by explicit owner authorization. Active no-bypass main/develop rules

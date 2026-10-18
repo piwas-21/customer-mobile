@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import Feedback from '../../ui/Feedback';
-import SignInForm from './SignInForm';
+import AccountAccess from './AccountAccess';
 import ProfileCard from './ProfileCard';
 import type { AccountState } from './useAccount';
 export default function AccountContent({ account }: Readonly<{ account: AccountState }>) {
@@ -25,5 +25,5 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
   }
   if (session.userId)
     return <ProfileCard profile={account.profile} logout={account.logout} busy={account.busy} />;
-  return <SignInForm account={account} />;
+  return <AccountAccess account={account} />;
 }
