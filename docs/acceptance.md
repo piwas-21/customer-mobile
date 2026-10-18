@@ -20,8 +20,8 @@ A checked test is source evidence only. Record device/provider/store evidence se
 Never enable a tenant from fixture/demo data. No production channels are available in this repo.
 
 Restaurant-gated sign-in/restore, owned profile reads and durable local logout merged through PR #2.
-Registration and recovery request forms add validation and generic email instructions; their own
-review/CI acceptance is required. Verification/reset-link integration, social sign-in, profile editing,
+Registration and recovery request forms merged through PR #3 with validation and generic email
+instructions. Verification/reset-link integration, social sign-in, profile editing,
 saved addresses, server revocation, deletion and device-wide logout remain required.
 
 Source evidence includes mobile unit/component tests, adversarial hook controls, backend policy/HTTP
@@ -32,3 +32,10 @@ The repository is public by explicit owner authorization. Active no-bypass main/
 require PRs, up-to-date quality and Sonar checks, and resolved review threads. Sonar is registered
 and bound to the repository. Local hooks also reject direct protected-branch updates.
 Publisher/signing accounts and Expo/EAS ownership remain pending owner setup.
+
+Detailed product reads now validate the response bundle shape, stable association IDs, choice groups,
+nested ingredient/variation/side rules, recorded allergens and customer-step manifests. Product hooks
+partition public detail by restaurant generation, locale and requested order type; unexpected product
+identities are rejected. This adapter is preparation for customization: quantity/choice screens and
+server basket writes remain required. Unknown enum values/manifest versions are preserved and must
+block unsupported ordering projections. Contract/API tests are source evidence; no device journey passed.

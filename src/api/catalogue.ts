@@ -2,10 +2,7 @@ import { z } from 'zod';
 import type { components } from './generated';
 import type { CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
-const contentSchema = z.record(
-  z.string(),
-  z.object({ name: z.string().nullish(), description: z.string().nullish() }),
-);
+import { translatedContentSchema } from './catalogueParts';
 export const productSchema = z.object({
   id: z.uuid(),
   name: z.string().nullable(),
@@ -16,7 +13,7 @@ export const productSchema = z.object({
   isAvailable: z.boolean(),
   isComponent: z.boolean().optional(),
   allergens: z.array(z.string()).nullish(),
-  content: contentSchema.nullish(),
+  content: translatedContentSchema.nullish(),
   availability: z.object({ canOrder: z.boolean() }).nullish(),
   variationCount: z.number().int().nonnegative().optional(),
 });
