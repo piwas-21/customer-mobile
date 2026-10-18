@@ -1,0 +1,24 @@
+import:
+  - dependencies.yml
+build:
+  name: Verified iOS build
+  steps:
+    - eas/checkout
+    - verified_dependencies
+    - eas/resolve_build_config
+    - eas/resolve_apple_team_id_from_credentials:
+        id: apple_team
+    - eas/prebuild:
+        inputs:
+          apple_team_id: ${ steps.apple_team.apple_team_id }
+    - run:
+        name: Install pods
+        working_directory: ./ios
+        command: pod install
+    - eas/configure_ios_credentials
+    - eas/configure_ios_version
+    - eas/generate_gymfile_from_template:
+        inputs:
+          credentials: ${ eas.job.secrets.buildCredentials }
+    - eas/run_fastlane
+    - eas/find_and_upload_build_artifacts

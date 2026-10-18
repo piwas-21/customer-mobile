@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "remediations": [
+    {
+      "package": "braces",
+      "version": "3.0.3",
+      "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "provenance": "Sofra reviewed hardening, based on upstream issue 70; not an upstream release or PR75 adoption.",
+      "upstream": "https://github.com/micromatch/braces/issues/70",
+      "files": [
+        {
+          "path": "lib/compile.js",
+          "originalSha256": "dc98f22eee3d511785d92a00758d5f0d48efed5f5813bdecc2de430c529b5c9f",
+          "patchedSha256": "9abe15c85d3202dc326599cc292c8d088414ef1b6810e9d9cee92ee69ee95d07",
+          "replacements": [
+            {
+              "before": "const utils = require('./utils');",
+              "after": "const utils = require('./utils');\nconst { validateAst } = require('./security-validate-ast');",
+              "count": 1
+            },
+            {
+              "before": "const compile = (ast, options = {}) => {",
+              "after": "const compile = (ast, options = {}) => {\n  validateAst(ast);",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "path": "lib/expand.js",
+          "originalSha256": "41ccc196ebfa7b7781a634e721eb744e4e7bcb54cba427a7e3d6806a1b9e58f7",
+          "patchedSha256": "6517b273fd4b1b00ba7b019cb67971a0d7670b71fa41a8f5eac0393da0e1062e",
+          "replacements": [
+            {
+              "before": "const utils = require('./utils');",
+              "after": "const utils = require('./utils');\nconst { validateAst, assertDepth } = require('./security-validate-ast');",
+              "count": 1
+            },
+            {
+              "before": "const expand = (ast, options = {}) => {",
+              "after": "const expand = (ast, options = {}) => {\n  validateAst(ast);",
+              "count": 1
+            },
+            {
+              "before": "while (p.type !== 'brace' && p.type !== 'root' && p.parent) {",
+              "after": "let pDepth = 0;\n    while (p.type !== 'brace' && p.type !== 'root' && p.parent) {\n      assertDepth(++pDepth);",
+              "count": 1
+            },
+            {
+              "before": "while (block.type !== 'brace' && block.type !== 'root' && block.parent) {",
+              "after": "let blockDepth = 0;\n    while (block.type !== 'brace' && block.type !== 'root' && block.parent) {\n      assertDepth(++blockDepth);",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "path": "lib/stringify.js",
+          "originalSha256": "379f22d77bfa1478341ccd49c5e4267464aabcbba03558bab332aac23fc6f23a",
+          "patchedSha256": "b36531bb95e76297a9517fc967591a1f738e4efa2700cc6ecb53062325b2df40",
+          "replacements": [
+            {
+              "before": "const utils = require('./utils');",
+              "after": "const utils = require('./utils');\nconst { validateAst } = require('./security-validate-ast');",
+              "count": 1
+            },
+            {
+              "before": "module.exports = (ast, options = {}) => {",
+              "after": "module.exports = (ast, options = {}) => {\n  validateAst(ast);",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "path": "lib/parse.js",
+          "originalSha256": "e572166565f15fa6ad9865ae49d678218e32aabfd1b3720f6d0d43d39800d310",
+          "patchedSha256": "61cbd5ec361af2a7fc3a4b54a681b5f73a005259ba5ed1a027aae83315277367",
+          "replacements": [
+            {
+              "before": "const stringify = require('./stringify');",
+              "after": "const stringify = require('./stringify');\nconst { assertDepth } = require('./security-validate-ast');",
+              "count": 1
+            },
+            {
+              "before": "      stack.push(block);",
+              "after": "      assertDepth(stack.length);\n      stack.push(block);",
+              "count": 2
+            }
+          ]
+        }
+      ],
+      "addedFiles": [
+        {
+          "path": "lib/security-validate-ast.js",
+          "source": "security/patches/braces-ast-guard.cjs",
+          "sha256": "7405f617ec4b9b0d2207e987c39481906a14478ce24c74221fd9a04fc4760187"
+        }
+      ]
+    },
+    {
+      "package": "node-forge",
+      "version": "1.4.0",
+      "advisory": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+      "provenance": "Exact rsa.js backport of upstream open PR1152 head ceba34402e329f0365134f23fe19898756527d65; not an upstream release.",
+      "upstream": "https://github.com/digitalbazaar/forge/pull/1152",
+      "files": [
+        {
+          "path": "lib/rsa.js",
+          "originalSha256": "fd4740238145ec26470eb3f06a627c72039538ce1307dbdce40521f94dfd0a50",
+          "patchedSha256": "acc22e5d36e27832c34e02dd3933aad7977d45b047eead5016520735efedc9c5",
+          "replacements": [
+            {
+              "before": "          // validate DigestInfo structure and element count\n          var capture = {};\n          var errors = [];\n          if(!asn1.validate(obj, digestInfoValidator, capture, errors) ||\n            obj.value.length !== 2) {",
+              "after": "          // validate DigestInfo structure and element counts (outer DigestInfo\n          // and nested DigestAlgorithm). asn1.validate ignores extra children,\n          // so length must be checked explicitly at each nesting level to\n          // prevent low-exponent PKCS#1 v1.5 signature forgery (CVE-2026-85393).\n          var capture = {};\n          var errors = [];\n          if(!asn1.validate(obj, digestInfoValidator, capture, errors) ||\n            obj.value.length !== 2 ||\n            obj.value[0].value.length !==\n              (('parameters' in capture) ? 2 : 1)) {",
+              "count": 1
+            }
+          ]
+        }
+      ],
+      "addedFiles": []
+    }
+  ]
+}
