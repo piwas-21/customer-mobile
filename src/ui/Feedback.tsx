@@ -6,11 +6,11 @@ export default function Feedback({
   message,
   loading = false,
   retry,
-}: {
+}: Readonly<{
   message: string;
   loading?: boolean;
   retry?: (() => void) | undefined;
-}) {
+}>) {
   const theme = useTheme();
   const { t } = useTranslation();
   return (

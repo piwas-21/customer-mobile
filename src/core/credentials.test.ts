@@ -117,3 +117,26 @@ it('targeted logout captures its principal across asynchronous removals', async 
     'participant-b',
   );
 });
+
+it('awaits all targeted removals and reports incomplete logout when storage refuses one', async () => {
+  const context = new TenantBoundary(fixtureDirectory()).select(tenantA);
+  const memory = memorySecrets();
+  const vault = new CredentialVault({
+    ...memory,
+    remove: (key) =>
+      key.endsWith('.session')
+        ? Promise.reject(new Error('Storage unavailable'))
+        : memory.remove(key),
+  });
+  await vault.saveSession(context, { userId: 'a', accessToken: 'access', refreshToken: 'refresh' });
+  await vault.saveCapability(
+    context,
+    'payment',
+    { kind: 'customer', id: 'a' },
+    'pending-reference',
+  );
+  await expect(vault.clear(context, { kind: 'customer', id: 'a' })).rejects.toThrow(
+    'Credential removal incomplete',
+  );
+  expect(await vault.capability(context, 'payment', { kind: 'customer', id: 'a' })).toBeNull();
+});

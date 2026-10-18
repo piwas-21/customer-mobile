@@ -2,7 +2,7 @@ import { z } from 'zod';
 export const capabilityStateSchema = z.enum(['enabled', 'disabled', 'unavailable', 'unknown']);
 export const bootstrapSchema = z.object({
   schemaVersion: z.literal(1),
-  tenantId: z.string().uuid(),
+  tenantId: z.uuid(),
   currency: z
     .string()
     .regex(/^[A-Z]{3}$/)

@@ -1,7 +1,8 @@
+import { GIT } from './tool-paths.mjs';
 import { execFileSync } from 'node:child_process';
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-const hookDir = execFileSync('git', ['rev-parse', '--git-path', 'hooks'], {
+const hookDir = execFileSync(GIT, ['rev-parse', '--git-path', 'hooks'], {
   encoding: 'utf8',
 }).trim();
 mkdirSync(hookDir, { recursive: true });

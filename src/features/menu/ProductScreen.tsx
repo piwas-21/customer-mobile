@@ -16,7 +16,7 @@ export default function ProductScreen() {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const bootstrap = useBootstrap();
-  const validId = z.string().uuid().safeParse(id);
+  const validId = z.uuid().safeParse(id);
   const query = useQuery({
     queryKey: [
       context?.environment,

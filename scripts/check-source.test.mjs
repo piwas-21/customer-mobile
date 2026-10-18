@@ -5,12 +5,12 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 const checker = resolve('scripts/check-source.mjs');
-function check(source) {
+function check(source, name = 'control.ts') {
   const root = mkdtempSync(resolve(tmpdir(), 'sofra-source-control-'));
   try {
     mkdirSync(resolve(root, 'src'));
     mkdirSync(resolve(root, 'app'));
-    if (source !== undefined) writeFileSync(resolve(root, 'src/control.ts'), source);
+    if (source !== undefined) writeFileSync(resolve(root, 'src', name), source);
     return spawnSync(process.execPath, [checker], { cwd: root, encoding: 'utf8' });
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -28,6 +28,13 @@ for (const [label, source] of Object.entries({
   'hardcoded colors': 'export const color = "#ffffff";',
 }))
   test(`negative control rejects ${label}`, () => assert.notEqual(check(source).status, 0));
+
+test('handwritten files ending in generated.ts cannot bypass source checks', () => {
+  assert.notEqual(
+    check('export const x = fetch("/api/Orders");', 'maliciousgenerated.ts').status,
+    0,
+  );
+});
 
 test('pre-push protected-ref guard blocks before running checks and permits feature refs to reach them', () => {
   const root = mkdtempSync(resolve(tmpdir(), 'sofra-push-control-'));

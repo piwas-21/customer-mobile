@@ -7,7 +7,7 @@ export function response(body: unknown, status = 200, contentType = 'application
     ok: status < 400,
     status,
     headers: { get: () => contentType },
-    json: async () => body,
+    json: () => Promise.resolve(body),
   } as unknown as Response;
 }
 export function setup() {

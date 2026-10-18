@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -27,7 +28,7 @@ type RestaurantState = {
 };
 const RestaurantContext = createContext<RestaurantState | undefined>(undefined);
 const REFRESH_INTERVAL_MS = 30_000;
-export default function RestaurantProvider({ children }: PropsWithChildren) {
+export default function RestaurantProvider({ children }: Readonly<PropsWithChildren>) {
   const queryClient = useQueryClient();
   const boundary = useRef<TenantBoundary | undefined>(undefined);
   const [expiredDirectory, setExpiredDirectory] = useState<Directory>();
@@ -118,23 +119,31 @@ export default function RestaurantProvider({ children }: PropsWithChildren) {
     });
     return () => subscription.remove();
   }, [refetchDirectory]);
-  return (
-    <RestaurantContext.Provider
-      value={{
-        directory: directory.data !== expiredDirectory ? directory.data : undefined,
-        context,
-        client,
-        loading: directory.isFetching && !directory.data,
-        select,
-        clear,
-        refresh: () => {
-          void directory.refetch();
-        },
-      }}
-    >
-      {children}
-    </RestaurantContext.Provider>
+  const refresh = useCallback(() => {
+    void refetchDirectory();
+  }, [refetchDirectory]);
+  const value = useMemo<RestaurantState>(
+    () => ({
+      directory: directory.data !== expiredDirectory ? directory.data : undefined,
+      context,
+      client,
+      loading: directory.isFetching && !directory.data,
+      select,
+      clear,
+      refresh,
+    }),
+    [
+      directory.data,
+      expiredDirectory,
+      context,
+      client,
+      directory.isFetching,
+      select,
+      clear,
+      refresh,
+    ],
   );
+  return <RestaurantContext.Provider value={value}>{children}</RestaurantContext.Provider>;
 }
 export function useRestaurant(): RestaurantState {
   const state = useContext(RestaurantContext);

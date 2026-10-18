@@ -33,15 +33,24 @@ it('rejects a late response and does not retry a write', async () => {
   let finish: (value: Response) => void = () => {
     throw new Error('Request not started');
   };
-  fetcher.mockReturnValue(
-    new Promise((resolve) => {
-      finish = resolve;
-    }),
-  );
+  let markStarted: () => void = () => {
+    throw new Error('Start signal unavailable');
+  };
+  const started = new Promise<void>((resolve) => {
+    markStarted = resolve;
+  });
+  const pending = new Promise<Response>((resolve) => {
+    finish = resolve;
+  });
+  fetcher.mockImplementation(() => {
+    markStarted();
+    return pending;
+  });
   const request = client.request(context, '/api/Basket/items', z.string(), {
     method: 'POST',
     body: { quantity: 1 },
   });
+  await started;
   boundary.select(tenantB);
   finish(response({ success: true, data: 'late-a' }));
   await expect(request).rejects.toThrow();

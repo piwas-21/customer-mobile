@@ -69,14 +69,17 @@ export class CredentialVault {
   }
   async clear(context: TenantContext, principal: Principal): Promise<void> {
     const scoped = principalSchema.parse(principal);
-    for (const kind of [
+    const kinds = [
       'session',
       'guest-session',
       'table-participant',
       'guest-order',
       'payment',
-    ] as const) {
-      await this.store.remove(secretKey(context, kind, scoped));
-    }
+    ] as const;
+    const removals = await Promise.allSettled(
+      kinds.map((kind) => this.store.remove(secretKey(context, kind, scoped))),
+    );
+    if (removals.some((result) => result.status === 'rejected'))
+      throw new Error('Credential removal incomplete');
   }
 }

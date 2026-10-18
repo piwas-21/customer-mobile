@@ -16,7 +16,7 @@ function fixture() {
     auditReportVersion: 2,
     metadata: {
       dependencies: { total: 3 },
-      vulnerabilities: { info: 0, low: 0, moderate: 0, high: 3, critical: 0 },
+      vulnerabilities: { info: 0, low: 0, moderate: 0, high: 3, critical: 0, total: 3 },
     },
     vulnerabilities: {
       braces: { severity: 'high', via: [leaf], nodes: ['node_modules/braces'] },
@@ -71,5 +71,16 @@ test('malformed low/unknown leaves cannot hide beside a repaired high leaf', () 
     const report = fixture();
     report.vulnerabilities.braces.via.push(change);
     assert.throws(() => assessAudit(report, 1, repaired));
+  }
+});
+
+test('dependency and total finding counts must be real, consistent integers', () => {
+  const total = fixture();
+  total.metadata.vulnerabilities.total = 4;
+  assert.throws(() => assessAudit(total, 1, repaired), /total count mismatch/);
+  for (const count of [Infinity, 0.5, '3']) {
+    const report = fixture();
+    report.metadata.dependencies.total = count;
+    assert.throws(() => assessAudit(report, 1, repaired), /positive control/);
   }
 });

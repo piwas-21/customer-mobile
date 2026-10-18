@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { approvedImage, customerName, type Product } from '../../api/catalogue';
 import type { TenantContext } from '../../core/tenantContext';
 import { spacing, typography, useTheme } from '../../ui/theme';
-type Props = {
+type Props = Readonly<{
   product: Product;
   context: TenantContext;
   currency: string | null;
   onPress: () => void;
-};
+}>;
 function ProductRow({ product, context, currency, onPress }: Props) {
   const theme = useTheme();
   const { t, i18n } = useTranslation();

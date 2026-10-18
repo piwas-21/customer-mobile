@@ -3,8 +3,8 @@ import { z } from 'zod';
 import type { Environment } from '../core/directory';
 const preferencesSchema = z
   .object({
-    lastTenantId: z.string().uuid().optional(),
-    savedIds: z.array(z.string().uuid()).max(100),
+    lastTenantId: z.uuid().optional(),
+    savedIds: z.array(z.uuid()).max(100),
   })
   .strict();
 export type Preferences = z.infer<typeof preferencesSchema>;

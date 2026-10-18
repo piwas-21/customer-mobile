@@ -1,3 +1,4 @@
+import { GIT, SHELL } from './tool-paths.mjs';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -10,7 +11,7 @@ for (const line of refUpdates) {
   }
 }
 execFileSync('npm', ['run', 'contracts:generate'], { stdio: 'inherit' });
-execFileSync('git', ['diff', '--exit-code', 'HEAD', '--', 'src/api/generated.ts'], {
+execFileSync(GIT, ['diff', '--exit-code', 'HEAD', '--', 'src/api/generated.ts'], {
   stdio: 'inherit',
 });
 for (const args of [
@@ -25,7 +26,7 @@ const reviewer = resolve(workspace, 'scripts/review-gate/run-review.sh');
 if (!existsSync(reviewer))
   throw new Error('Workspace reviewer missing; push blocked. Configure RUMI_WORKSPACE_ROOT.');
 execFileSync(
-  'bash',
+  SHELL,
   [
     reviewer,
     '--mode=pre-push',

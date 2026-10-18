@@ -1,5 +1,8 @@
 # Development workflow
 
+Development/build hooks run on macOS or Linux; Windows developers use WSL.
+System Git and Bash use fixed OS paths, independent of caller PATH.
+
 Use Node from .nvmrc and npm 11.11.0. Run npm ci --ignore-scripts, npm run dependencies:prepare, then npm run hooks:install. Install Gitleaks 8.30.1 for local staged secret scans.
 Pinned direct versions and package-lock.json define the dependency graph. Expo SDK 56 is the
 initial compatibility baseline (React Native 0.85.3 / React 19.2.3); upgrades are explicit PRs.

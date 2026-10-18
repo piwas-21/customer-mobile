@@ -19,7 +19,7 @@ export const originSchema = z
   }, 'Expected a canonical HTTPS origin');
 const tenantSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     name: z.string().min(1).max(120),
     apiOrigin: originSchema,
@@ -37,8 +37,8 @@ const directorySchema = z
     schemaVersion: z.literal(1),
     revision: z.string().min(1),
     environment: environmentSchema,
-    publishedAt: z.string().datetime(),
-    expiresAt: z.string().datetime(),
+    publishedAt: z.iso.datetime(),
+    expiresAt: z.iso.datetime(),
     tenants: z.array(tenantSchema).max(1000),
   })
   .strict();

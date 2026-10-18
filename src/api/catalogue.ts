@@ -7,10 +7,10 @@ const contentSchema = z.record(
   z.object({ name: z.string().nullish(), description: z.string().nullish() }),
 );
 export const productSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string().nullable(),
   description: z.string().nullish(),
-  basePrice: z.number().finite().nonnegative(),
+  basePrice: z.number().nonnegative(),
   imageUrl: z.string().nullish(),
   isActive: z.boolean(),
   isAvailable: z.boolean(),

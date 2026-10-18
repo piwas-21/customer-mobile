@@ -39,12 +39,14 @@ export function memorySecrets() {
   const values = new Map<string, string>();
   return {
     values,
-    get: async (key: string) => values.get(key) ?? null,
-    set: async (key: string, value: string) => {
+    get: (key: string) => Promise.resolve(values.get(key) ?? null),
+    set: (key: string, value: string) => {
       values.set(key, value);
+      return Promise.resolve();
     },
-    remove: async (key: string) => {
+    remove: (key: string) => {
       values.delete(key);
+      return Promise.resolve();
     },
   };
 }

@@ -53,6 +53,9 @@ export default function MenuScreen() {
         />
       </Screen>
     );
+  let emptyMessage = t('emptyMenu');
+  if (query.isPending) emptyMessage = t('loading');
+  if (query.isError) emptyMessage = t('menuUnavailable');
   return (
     <Screen>
       <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>
@@ -91,9 +94,7 @@ export default function MenuScreen() {
         ListEmptyComponent={
           <Feedback
             loading={query.isPending}
-            message={
-              query.isError ? t('menuUnavailable') : query.isPending ? t('loading') : t('emptyMenu')
-            }
+            message={emptyMessage}
             retry={
               query.isError
                 ? () => {

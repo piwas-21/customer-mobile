@@ -24,6 +24,8 @@ export default function RestaurantScreen() {
       ) ?? [],
     [directory, search],
   );
+  let emptyMessage = directory ? t('noRestaurants') : t('unavailable');
+  if (loading) emptyMessage = t('loading');
   return (
     <Screen>
       <View style={styles.header}>
@@ -59,7 +61,7 @@ export default function RestaurantScreen() {
         ListEmptyComponent={
           <Feedback
             loading={loading}
-            message={loading ? t('loading') : directory ? t('noRestaurants') : t('unavailable')}
+            message={emptyMessage}
             retry={directory ? undefined : refresh}
           />
         }

@@ -2,7 +2,7 @@ import { type PropsWithChildren } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { spacing, useTheme } from './theme';
-export default function Screen({ children }: PropsWithChildren) {
+export default function Screen({ children }: Readonly<PropsWithChildren>) {
   const theme = useTheme();
   return (
     <SafeAreaView

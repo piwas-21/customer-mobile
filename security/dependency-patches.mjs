@@ -58,39 +58,45 @@ export function verifyRemediations(root = process.cwd()) {
     }
     verified.set(spec.advisory, {
       package: spec.package,
-      paths: copies.map((copy) => copy.path).sort(),
+      paths: copies.map((copy) => copy.path).sort((a, b) => a.localeCompare(b, 'en')),
     });
   }
   return verified;
+}
+function repairedSource(folder, spec, writes) {
+  for (const file of spec.files) {
+    const path = within(folder, file.path);
+    let source = readRegular(path);
+    if (sha256(source) === file.patchedSha256) continue;
+    assert.equal(
+      sha256(source),
+      file.originalSha256,
+      `Unexpected ${spec.package} source; refusing patch`,
+    );
+    for (const change of file.replacements) {
+      assert(change.before && change.before !== change.after);
+      assert.equal(source.split(change.before).length - 1, change.count);
+      source = source.split(change.before).join(change.after);
+    }
+    assert.equal(sha256(source), file.patchedSha256);
+    writes.push({ path, source });
+  }
+}
+function addedSource(root, folder, spec, writes) {
+  for (const file of spec.addedFiles) {
+    const source = readRegular(within(root, file.source));
+    assert.equal(sha256(source), file.sha256);
+    const path = within(folder, file.path);
+    if (existsSync(path)) assert.equal(sha256(readRegular(path)), file.sha256);
+    else writes.push({ path, source });
+  }
 }
 export function applyRemediations(root = process.cwd()) {
   const writes = [];
   for (const spec of loadRemediations(root)) {
     for (const { folder } of installedCopies(root, spec)) {
-      for (const file of spec.files) {
-        const path = within(folder, file.path);
-        let source = readRegular(path);
-        if (sha256(source) === file.patchedSha256) continue;
-        assert.equal(
-          sha256(source),
-          file.originalSha256,
-          `Unexpected ${spec.package} source; refusing patch`,
-        );
-        for (const change of file.replacements) {
-          assert(change.before && change.before !== change.after);
-          assert.equal(source.split(change.before).length - 1, change.count);
-          source = source.split(change.before).join(change.after);
-        }
-        assert.equal(sha256(source), file.patchedSha256);
-        writes.push({ path, source });
-      }
-      for (const file of spec.addedFiles) {
-        const source = readRegular(within(root, file.source));
-        assert.equal(sha256(source), file.sha256);
-        const path = within(folder, file.path);
-        if (existsSync(path)) assert.equal(sha256(readRegular(path)), file.sha256);
-        else writes.push({ path, source });
-      }
+      repairedSource(folder, spec, writes);
+      addedSource(root, folder, spec, writes);
     }
   }
   for (const { path, source } of writes) writeFileSync(path, source);

@@ -1,12 +1,12 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { spacing, typography, useTheme } from './theme';
-type Props = {
+type Props = Readonly<{
   label: string;
   onPress: () => void;
   disabled?: boolean;
   busy?: boolean;
   secondary?: boolean;
-};
+}>;
 export default function Button({
   label,
   onPress,
