@@ -5,6 +5,9 @@ System Git and Bash use fixed OS paths. npm and Gitleaks resolve only from Homeb
 the active Node installation, /usr/local/bin or /usr/bin; caller PATH is ignored.
 The npm CLI must identify as npm 11.11.0 and runs with the current Node binary.
 Installed Git hooks also pin that Node binary; reinstall them after changing runtimes.
+The installer stages hook files and atomically replaces this repository's own entries. Existing
+symlinks/hard links are replaced locally so shared workspace hook targets stay unchanged. Shared
+hook directories and external core.hooksPath configurations are refused before installation.
 
 Use Node from .nvmrc and npm 11.11.0. Run npm ci --ignore-scripts, npm run dependencies:prepare, then npm run hooks:install. Install Gitleaks 8.30.1 for local staged secret scans.
 Pinned direct versions and package-lock.json define the dependency graph. Expo SDK 56 is the
