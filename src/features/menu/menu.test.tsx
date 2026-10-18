@@ -1,3 +1,4 @@
+import { productDetailFixture } from '../../test/products';
 import { routerFixture } from '../../test/router';
 import '../../i18n';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
@@ -56,7 +57,11 @@ function setup(mode = 'ready') {
           totalPages: 2,
           page: path.includes('Page=2') ? 2 : 1,
         });
-      return schema.parse(mode === 'unknown-allergens' ? { ...product, allergens: [] } : product);
+      return schema.parse({
+        ...productDetailFixture(),
+        ...product,
+        ...(mode === 'unknown-allergens' ? { allergens: [] } : {}),
+      });
     });
   const state = {
     directory,
