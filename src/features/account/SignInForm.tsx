@@ -4,7 +4,11 @@ import Field from '../../ui/Field';
 import Button from '../../ui/Button';
 import { spacing } from '../../ui/theme';
 import type { AccountState } from './useAccount';
-export default function SignInForm({ account }: Readonly<{ account: AccountState }>) {
+export default function SignInForm({
+  account,
+  onRegister,
+  onRecovery,
+}: Readonly<{ account: AccountState; onRegister: () => void; onRecovery: () => void }>) {
   const { t } = useTranslation();
   return (
     <View style={styles.form}>
@@ -41,6 +45,8 @@ export default function SignInForm({ account }: Readonly<{ account: AccountState
         }}
         busy={account.busy}
       />
+      <Button label={t('createAccount')} secondary onPress={onRegister} disabled={account.busy} />
+      <Button label={t('forgotPassword')} secondary onPress={onRecovery} disabled={account.busy} />
     </View>
   );
 }

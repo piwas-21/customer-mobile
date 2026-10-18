@@ -2,11 +2,9 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import AccountRoute from '../../../app/(restaurant)/account';
 import { readProfile } from '../../api/profile';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
-import useBootstrap from '../restaurant/useBootstrap';
 import {
-  accountFixture,
+  prepareAccountFixture,
   accountStore,
-  accountBootstrap,
   customerProfile,
   accountRepository,
 } from '../../test/accounts';
@@ -22,18 +20,12 @@ jest.mock('../../storage/sessions', () => ({
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('../../api/profile', () => ({ readProfile: jest.fn() }));
-function prepare() {
-  const fixture = accountFixture();
-  jest.mocked(useRestaurant).mockReturnValue(fixture.state);
-  jest.mocked(useBootstrap).mockReturnValue(accountBootstrap as ReturnType<typeof useBootstrap>);
-  return fixture;
-}
 beforeEach(() => {
   accountStore.values.clear();
   jest.restoreAllMocks();
 });
 it('signs in to this restaurant, shows the owned profile and clears private cache on logout', async () => {
-  const fixture = prepare();
+  const fixture = prepareAccountFixture();
   fixture.fetcher.mockResolvedValue(authResponse());
   jest.mocked(readProfile).mockResolvedValue(customerProfile);
   fixture.queryClient.setQueryData(['staging', tenantA, 'public', 'menu'], 'public menu');
@@ -70,7 +62,7 @@ it('signs in to this restaurant, shows the owned profile and clears private cach
   }
 });
 it('validates input without dispatch and clears a rejected password', async () => {
-  const fixture = prepare();
+  const fixture = prepareAccountFixture();
   const screen = render(<AccountRoute />, { wrapper: fixture.Wrapper });
   try {
     await waitFor(() => expect(screen.getByLabelText('Email')).toBeTruthy());
@@ -89,7 +81,7 @@ it('validates input without dispatch and clears a rejected password', async () =
   }
 });
 it('restores a session and offers a profile retry while sign-out stays available', async () => {
-  const fixture = prepare();
+  const fixture = prepareAccountFixture();
   await accountRepository.activate(fixture.context, session, () => true);
   jest
     .mocked(readProfile)
@@ -112,7 +104,7 @@ it('restores a session and offers a profile retry while sign-out stays available
   }
 });
 it('retains cleanup across Account remount after the pointer was removed and retries the actual credential deletion', async () => {
-  const fixture = prepare();
+  const fixture = prepareAccountFixture();
   await accountRepository.activate(fixture.context, session, () => true);
   const key = secretKey(fixture.context, 'session', { kind: 'customer', id: tenantA });
   await accountRepository.vault.saveCapability(
@@ -149,7 +141,7 @@ it('retains cleanup across Account remount after the pointer was removed and ret
   }
 });
 it('discards typed credentials on restaurant-generation change', async () => {
-  const fixture = prepare();
+  const fixture = prepareAccountFixture();
   const screen = render(<AccountRoute />, { wrapper: fixture.Wrapper });
   try {
     await waitFor(() => expect(screen.getByLabelText('Email')).toBeTruthy());

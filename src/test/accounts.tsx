@@ -6,6 +6,8 @@ import { SessionRepository } from '../core/sessionRepository';
 import { CustomerTransport, type Fetch } from '../core/transport';
 import { TenantBoundary } from '../core/tenantContext';
 import { fixtureDirectory, memorySecrets, tenantA } from './fixtures';
+import { useRestaurant } from '../features/restaurant/RestaurantProvider';
+import useBootstrap from '../features/restaurant/useBootstrap';
 import SessionProvider from '../features/account/SessionProvider';
 export const accountStore = memorySecrets();
 export const accountRepository = new SessionRepository(accountStore);
@@ -66,3 +68,10 @@ export const customerProfile = {
   isDeleted: false as const,
   isEmailConfirmed: true,
 };
+
+export function prepareAccountFixture() {
+  const fixture = accountFixture();
+  jest.mocked(useRestaurant).mockReturnValue(fixture.state);
+  jest.mocked(useBootstrap).mockReturnValue(accountBootstrap as ReturnType<typeof useBootstrap>);
+  return fixture;
+}
