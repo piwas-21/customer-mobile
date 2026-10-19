@@ -40,6 +40,7 @@ const en = {
   ingredients: 'Ingredients',
   sauces: 'Sauces',
   requiredSide: 'Included with this dish',
+  includedChoice: 'Included',
   dishSize: 'Choose a size',
   reviewDish: 'Review your dish',
   orderNotes: 'Instructions for the kitchen (optional)',
