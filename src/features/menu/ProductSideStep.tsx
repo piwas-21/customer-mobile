@@ -1,4 +1,5 @@
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
+import StepHeading from './StepHeading';
 import { useTranslation } from 'react-i18next';
 import type { SideChoice, SideSelection } from '../../domain/sideChoices';
 import type { ProductSelections } from '../../domain/productComposition';
@@ -12,10 +13,12 @@ import QuantityStepper from '../../ui/QuantityStepper';
 import { spacing, typography, useTheme } from '../../ui/theme';
 export default function ProductSideStep({
   choices,
+  heading,
   selection,
   disabled,
   onChange,
 }: Readonly<{
+  heading?: string | undefined;
   choices: readonly SideChoice[];
   selection: ProductSelections['sides'];
   disabled: boolean;
@@ -34,6 +37,7 @@ export default function ProductSideStep({
   });
   return (
     <SectionList
+      ListHeaderComponent={heading ? <StepHeading text={heading} /> : null}
       sections={sections}
       keyExtractor={({ id }) => id}
       stickySectionHeadersEnabled={false}

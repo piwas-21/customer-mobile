@@ -42,6 +42,11 @@ const en = {
   requiredSide: 'Included with this dish',
   includedChoice: 'Included',
   dishSize: 'Choose a size',
+  reviewBundle: 'Review your bundle',
+  bundlePortions: '{{quantity}} × {{name}} per bundle',
+  componentNotes: 'Instructions for {{name}} (optional)',
+  bundleParentRequired:
+    'Go back to the dish selection and choose the dish needed for this required choice.',
   reviewDish: 'Review your dish',
   orderNotes: 'Instructions for the kitchen (optional)',
   orderPriceHint: 'The restaurant confirms price and availability when you add this dish.',

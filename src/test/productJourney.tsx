@@ -1,4 +1,5 @@
 import '../i18n';
+import type { ProductDetail } from '../api/productDetail';
 import type { PropsWithChildren } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
@@ -12,9 +13,8 @@ import { compositionProduct } from './compositions';
 import { response } from './transport';
 import { routerFixture } from './router';
 import { basketState } from './basketState';
-export async function productJourneyFixture() {
+export async function productJourneyFixture(product: ProductDetail = compositionProduct()) {
   const f = await basketControllerFixture();
-  const product = compositionProduct();
   const bootstrap = { ...f.bootstrap, capabilities: { menu: 'enabled', ordering: 'enabled' } };
   f.fetcher.mockImplementation(async (url) =>
     response({ success: true, data: url.includes('bootstrap') ? bootstrap : product }),

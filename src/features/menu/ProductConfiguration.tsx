@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { ProductDetail, OrderType } from '../../api/productDetail';
 import useSideDetails from './useSideDetails';
 import GuidedProduct from './GuidedProduct';
+import GuidedBundle from './GuidedBundle';
 import Feedback from '../../ui/Feedback';
 export default function ProductConfiguration({
   product,
@@ -45,5 +46,6 @@ export default function ProductConfiguration({
         }
       />
     );
-  return <GuidedProduct key={owner.key} product={product} details={details.data} />;
+  const Guided = product.type === 'menu' ? GuidedBundle : GuidedProduct;
+  return <Guided key={owner.key} product={product} details={details.data} />;
 }
