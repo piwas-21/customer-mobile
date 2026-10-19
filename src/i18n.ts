@@ -90,6 +90,22 @@ const en = {
   basketCancelled: 'The earlier change was stopped. Review your current basket before continuing.',
   basketResolutionFailed:
     'The result is still unconfirmed. Your basket stays protected. Try this check again.',
+  reviewBasket: 'Review current basket',
+  chooseOrderType: 'How would you like to order?',
+  changeOrderType: '{{type}} · Change',
+  orderTypeDineIn: 'Dine in',
+  orderTypeTakeaway: 'Takeaway',
+  orderTypeDelivery: 'Delivery',
+  orderTypesUnavailable: 'Ordering options are unavailable. Try again or ask the restaurant.',
+  channelKeepExplanation:
+    'Change to {{type}} and keep your items. The restaurant will update your total.',
+  channelRemoveExplanation:
+    'These items and their included choices are unavailable for {{type}}. Confirm to remove the listed items and update your order type and total.',
+  confirmChannel: 'Change to {{type}}',
+  confirmChannelRemovals: 'Remove listed items and change to {{type}}',
+  channelReviewChanged: 'Your basket changed. Go back and review the ordering option again.',
+  channelChangeFailed:
+    'We could not confirm this change. Close this screen and check your basket before trying again.',
   serverPricedBasket: 'Prices confirmed by the restaurant',
   subtotal: 'Subtotal',
   total: 'Total',

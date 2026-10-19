@@ -100,7 +100,7 @@ No error or GET permits silent discard.
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes
 explicit pending-change recovery or a confirmed cancellation check. Cancellation recovery never resumes the original execution. Applied and Cancelled outcomes have distinct announcements. Accepted writes withdraw every other locale quote and refetch the active language without changing the accepted write outcome. Failed reads hide stale totals; unsupported depth/row counts refuse
 presentation rather than silently truncating. Persistent menu access returns to the selected basket.
-Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Channel selection, checkout, order/payment idempotency and provider
+Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Checkout, order/payment idempotency and provider
 settlement are still required. No source helper authorizes automatic order/payment retries or an offline write queue.
 
 ## Reviewed channel operations
@@ -116,7 +116,15 @@ basket changes require their installed canonical session; first-install changes 
 session-installation barrier. Add/edit records restore unchanged. Explicit recovery and cancellation
 use the saved original channel payload and operation ID. Applied results for an existing basket must
 match its reviewed identity before acknowledgement. The backend channel contract is in PR #729;
-backend deployment, connected channel confirmation UI and installed acceptance remain required.
+backend deployment and installed acceptance remain required.
+
+Connected controls load the selected restaurant's currently enabled options only on opening. Selecting
+an option reads a preview; it never approves removal. A separate confirmation names every incompatible
+root and its quantity, and sends exactly that reviewed removal set. Stale revisions, withdrawn
+eligibility/options, competing taps and modal dismissal during a write are blocked. A failed outcome
+returns to explicit basket review/recovery. Owner teardown discards the private preview and late reads.
+The complete review, error feedback and actions live inside one virtualized list so large text can
+scroll the confirmation actions into view without nesting lists in a ScrollView.
 
 ## Native and device evidence
 

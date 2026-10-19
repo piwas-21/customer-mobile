@@ -1,9 +1,11 @@
 import '../../i18n';
 import { act, fireEvent, render } from '@testing-library/react-native';
+import type { BasketChannelPreview } from '../../api/basketChannelPreview';
 import { useRouter } from 'expo-router';
 import type { CustomerBasket } from '../../api/basketResponse';
 import BasketScreen from './BasketScreen';
 import BasketShortcut from './BasketShortcut';
+import useOrderTypes from './useOrderTypes';
 import { useBasket } from './BasketProvider';
 import useBootstrap from '../restaurant/useBootstrap';
 import { basketState } from '../../test/basketState';
@@ -18,10 +20,14 @@ jest.mock(
       'react-native-safe-area-context/jest/mock',
     ).default,
 );
+jest.mock('./useOrderTypes', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('./BasketProvider', () => ({ useBasket: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('expo-router', () => ({ useRouter: jest.fn(), Stack: { Screen: () => null } }));
 beforeEach(() => {
+  jest
+    .mocked(useOrderTypes)
+    .mockReturnValue({ data: ['Takeaway'], isPending: false } as ReturnType<typeof useOrderTypes>);
   jest.mocked(useBootstrap).mockReturnValue({
     data: bootstrapSchema.parse({
       schemaVersion: 1,
@@ -130,4 +136,55 @@ it('keeps the reviewed revision when the server basket changes and requires reop
   fireEvent.press(screen.getByRole('button', { name: 'Close' }));
   fireEvent.press(screen.getByRole('button', { name: 'Edit Meal' }));
   expect(screen.queryByText(/Your basket changed/)).toBeNull();
+});
+it('discards a private channel review and its late response when the basket owner changes', async () => {
+  const value = basketResponse();
+  let finish!: () => void;
+  const first = basketState({
+    basket: value,
+    previewChannel: jest.fn(
+      () =>
+        new Promise<BasketChannelPreview>((resolve) => {
+          finish = () =>
+            resolve({
+              basketId: value.id,
+              purchaseFingerprint: value.purchaseFingerprint,
+              orderType: 'Takeaway',
+              conflicts: [
+                {
+                  basketItemId: value.items[0]!.id,
+                  productName: 'Private earlier meal',
+                  quantity: 2,
+                  allowedOrderTypes: ['DineIn'],
+                },
+              ],
+            });
+        }),
+    ),
+  });
+  jest.mocked(useBasket).mockReturnValue(first);
+  const screen = render(<BasketScreen />);
+  fireEvent.press(screen.getByRole('button', { name: 'How would you like to order?' }));
+  fireEvent.press(screen.getByRole('button', { name: 'Takeaway' }));
+  const next = basketState({
+    basket: value,
+    revision: [
+      first.revision[0],
+      first.revision[1],
+      first.revision[2],
+      first.revision[3],
+      first.revision[4],
+      first.revision[5],
+      2,
+    ],
+  });
+  jest.mocked(useBasket).mockReturnValue(next);
+  screen.rerender(<BasketScreen />);
+  await act(async () => finish());
+  expect(screen.queryByText('Private earlier meal × 2')).toBeNull();
+  expect(screen.queryByText(/Remove listed items/)).toBeNull();
+  fireEvent.press(screen.getByRole('button', { name: 'How would you like to order?' }));
+  expect(screen.getByRole('button', { name: 'Takeaway' })).toBeTruthy();
+  expect(first.changeChannel).not.toHaveBeenCalled();
+  expect(next.changeChannel).not.toHaveBeenCalled();
 });

@@ -8,6 +8,7 @@ import useBootstrap from '../restaurant/useBootstrap';
 import BasketLine from './BasketLine';
 import BasketTotals from './BasketTotals';
 import BasketNotice from './BasketNotice';
+import BasketChannelControl from './BasketChannelControl';
 import BasketItemEditor from './BasketItemEditor';
 import useBasketSelection from './useBasketSelection';
 import Screen from '../../ui/Screen';
@@ -41,6 +42,7 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
     <Screen bottom top={false}>
       <Stack.Screen options={{ title: t('basket') }} />
       <BasketNotice basket={basket} />
+      <BasketChannelControl basket={basket} />
       {basket.failed || !rows ? (
         <Feedback
           message={t('basketUnavailable')}
