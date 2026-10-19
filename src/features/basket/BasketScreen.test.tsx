@@ -45,8 +45,8 @@ beforeEach(() => {
   } as ReturnType<typeof useBootstrap>);
   jest.mocked(useRouter).mockReturnValue(routerFixture());
 });
-it('shows server totals, instructions/removals and a persistent basket destination', () => {
-  const state = basketState({ basket: basketResponse() });
+it('shows server totals, instructions/removals and a persistent basket destination', async () => {
+  const state = basketState({ basket: { ...basketResponse(), orderType: 'Takeaway' } });
   jest.mocked(useBasket).mockReturnValue(state);
   const screen = render(<BasketScreen />);
   expect(screen.getByText('Meal × 2')).toBeTruthy();
@@ -54,6 +54,12 @@ it('shows server totals, instructions/removals and a persistent basket destinati
   expect(screen.getByText('Total: €17.20')).toBeTruthy();
   expect(screen.getByText('Subtotal: €14.00')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Checkout' })).toBeNull();
+  await act(async () =>
+    fireEvent.press(screen.getByRole('button', { name: 'Review order total' })),
+  );
+  expect(state.quote).toHaveBeenCalledWith({ pointsToRedeem: 0, tip: 0 });
+  expect(screen.getByText('Total: CHF 17.00')).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Close' }));
   screen.unmount();
   const shortcut = render(<BasketShortcut />);
   fireEvent.press(shortcut.getByRole('button', { name: 'Basket · 2' }));

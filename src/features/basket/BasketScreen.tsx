@@ -11,6 +11,8 @@ import BasketNotice from './BasketNotice';
 import BasketChannelControl from './BasketChannelControl';
 import BasketItemEditor from './BasketItemEditor';
 import useBasketSelection from './useBasketSelection';
+import useCheckoutReview from './useCheckoutReview';
+import CheckoutReviewModal from './CheckoutReviewModal';
 import Screen from '../../ui/Screen';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
@@ -21,6 +23,7 @@ export default function BasketScreen() {
 }
 function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBasket> }>) {
   const selection = useBasketSelection(basket);
+  const review = useCheckoutReview(basket);
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
@@ -87,6 +90,10 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
         />
       ) : null}
       {basket.unavailable ? <Text style={{ color: theme.secondary }}>{t('webHelp')}</Text> : null}
+      {review.allowed ? (
+        <Button label={t('checkoutReview')} busy={review.busy} onPress={() => void review.show()} />
+      ) : null}
+      {review.open ? <CheckoutReviewModal review={review} /> : null}
       <Button
         secondary
         label={t('backToMenu')}
