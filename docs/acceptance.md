@@ -159,3 +159,13 @@ never reads or deletes saved customer sessions and refuses login; enabling accou
 controller and restores only then. Capability transitions dispose old request owners. A transport
 fixture confirms the guest basket session is sent without a stored customer's Authorization header.
 Guided ordering UI and physical lifecycle acceptance remain required.
+
+The root basket provider restores only the current owner’s secure pending journal, reads the strict
+native basket endpoint, and exposes explicit add/recovery actions. An ordinary GET never clears a
+pending add. Unknown/rejected adds remain blocked, concurrent taps cannot create another operation,
+and a failed secure restore prevents writes. Empty installations create neither session IDs nor
+HTTP requests. Scope teardown removes private queries; late responses cannot affect the next owner,
+including same-user login attempts and StrictMode replay. Side-product metadata uses shared public
+product cache keys with a four-request concurrency limit and rejects mismatched or unsupported IDs.
+These are provider/helper source tests; product/basket screens, bundle interaction, checkout, deployed
+API readback and installed process-death/accessibility acceptance remain open.

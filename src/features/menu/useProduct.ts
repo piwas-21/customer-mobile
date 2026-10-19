@@ -5,27 +5,20 @@ import { readProduct, type OrderType } from '../../api/productDetail';
 import { canBrowse } from '../../core/capabilities';
 import useBootstrap from '../restaurant/useBootstrap';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
+import productQueryKey from './productQueryKey';
 
 export default function useProduct(id: string, orderType?: OrderType) {
   const { context, client } = useRestaurant();
   const { i18n } = useTranslation();
+  const locale = i18n.language;
   const bootstrap = useBootstrap();
   const validId = z.uuid().safeParse(id).success;
   const allowed = canBrowse(bootstrap.data);
   const query = useQuery({
-    queryKey: [
-      context?.environment,
-      context?.tenant.id,
-      'public',
-      'product',
-      id,
-      i18n.language,
-      context?.generation,
-      orderType ?? 'unspecified',
-    ],
+    queryKey: productQueryKey(context, id, locale, orderType),
     queryFn: () => {
       if (!client || !context || !validId) throw new Error('Invalid product');
-      return readProduct(client, context, id, i18n.language, orderType);
+      return readProduct(client, context, id, locale, orderType);
     },
     enabled: Boolean(context && client && validId && allowed),
     retry: 1,
