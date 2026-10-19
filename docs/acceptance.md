@@ -124,6 +124,6 @@ Owned profile editing is implemented in source: explicit name/phone changes, emp
 removal, server-result confirmation and a guarded PUT with no automatic refresh/retry. The editor
 uses the shared native sheet, keyboard-safe fields, labelled errors, busy Save/Cancel controls and
 Android/VoiceOver dismissal callbacks. Drafts are scoped to the current principal; late completion
-cannot restore private cache data after unmount or logout during cache cancellation. All 333 tests
+cannot restore private cache data after unmount or logout during cache cancellation. All 364 tests
 pass locally with independent review. CI/publication, backend #723 deployment, native keyboard,
 modal focus and screen-reader/device acceptance remain open.
