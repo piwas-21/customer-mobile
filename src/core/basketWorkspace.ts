@@ -1,3 +1,4 @@
+import type { BasketChannelInput } from '../api/basketChannel';
 import { readBasket } from '../api/basket';
 import type { BasketItemMutation } from '../api/basketItemMutation';
 import type { BasketAddInput } from '../api/basketRequest';
@@ -45,7 +46,9 @@ export class BasketWorkspace {
     const pending = await this.operations.pending();
     this.assertCurrent();
     if (!pending) return null;
-    const kind = pending.schemaVersion === 1 ? 'add' : pending.request.action.toLowerCase();
+    let kind = 'add';
+    if (pending.schemaVersion === 2) kind = pending.request.action.toLowerCase();
+    if (pending.schemaVersion === 3) kind = 'channel';
     // Query state receives only a descriptor, never the journal's session capability or payload.
     return { kind, cancelling: pending.cancellationRequested === true };
   }
@@ -78,6 +81,10 @@ export class BasketWorkspace {
   mutate(input: BasketItemMutation, locale: string) {
     this.assertCurrent();
     return this.operations.mutate(input, locale);
+  }
+  changeChannel(input: BasketChannelInput, locale: string) {
+    this.assertCurrent();
+    return this.operations.changeChannel(input, locale);
   }
   cancel(locale: string) {
     this.assertCurrent();

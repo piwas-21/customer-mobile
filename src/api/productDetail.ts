@@ -1,3 +1,4 @@
+import { orderTypeSchema, type OrderType } from './orderType';
 import { z } from 'zod';
 import { productSchema } from './catalogue';
 import { bundleDefinitionSchema } from './bundleDetail';
@@ -61,8 +62,7 @@ export const productDetailSchema = productSchema.extend({
   ...sauceRules,
 });
 export type ProductDetail = z.infer<typeof productDetailSchema>;
-export const orderTypeSchema = z.enum(['DineIn', 'Takeaway', 'Delivery']);
-export type OrderType = z.infer<typeof orderTypeSchema>;
+export { orderTypeSchema, type OrderType } from './orderType';
 export async function readProduct(
   client: CustomerTransport,
   context: TenantContext,

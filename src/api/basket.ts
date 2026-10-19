@@ -5,6 +5,7 @@ import { ApiFailure, type CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
 import { canonicalUuidSchema } from '../core/identifiers';
 import { principalSchema, type Principal } from '../core/credentials';
+import { assertBasketOperationResult } from './basketOperationProof';
 import { assertOwnedBasket } from './basketOwnership';
 
 // No legacy-route fallback or automatic retry: this URL exists only with durable server operations.
@@ -28,9 +29,7 @@ export async function submitBasketOperation(
     locale,
   });
   assertCurrent();
-  assertOwnedBasket(basket, operation.principal, operation.sessionId);
-  if (operation.schemaVersion === 2 && basket.id !== operation.request.expectedBasketId)
-    throw new ApiFailure(200, 'contract');
+  assertBasketOperationResult(basket, operation);
   return basket;
 }
 

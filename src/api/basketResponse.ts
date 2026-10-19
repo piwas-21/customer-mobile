@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { orderTypeSchema } from './orderType';
 const money = z.number().nonnegative();
 const names = z.array(z.string()).nullish();
 const sideSchema = z.object({
@@ -49,7 +50,7 @@ export const basketResponseSchema = z.object({
   customerDiscountName: z.string().nullish(),
   total: money,
   totalItems: z.int32().nonnegative(),
-  orderType: z.enum(['DineIn', 'Takeaway', 'Delivery']).nullable(),
+  orderType: orderTypeSchema.nullable(),
   purchaseFingerprint: z.string().regex(/^(?:[a-fA-F0-9]{64})?$/),
   items: z.array(basketLineSchema),
 });

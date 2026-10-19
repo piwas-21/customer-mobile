@@ -1,5 +1,5 @@
 import { type BasketAddInput } from '../api/basketRequest';
-import { canonicalUuidSchema } from './identifiers';
+import { canonicalUuidSchema, emptyUuid } from './identifiers';
 import {
   principalSchema,
   secretKey,
@@ -77,7 +77,10 @@ export class BasketOperationRepository {
       }
       const existingSession = await this.vault.capability(context, 'guest-session', owner);
       this.storage.check(context, assertCurrent);
-      if (intent.schemaVersion === 2 && existingSession === null)
+      const reviewed =
+        intent.schemaVersion === 2 ||
+        (intent.schemaVersion === 3 && intent.request.expectedBasketId !== emptyUuid);
+      if (reviewed && existingSession === null)
         throw new Error('A reviewed basket session is required for an edit.');
       const record = basketOperationRecordSchema.parse({
         ...intent,
