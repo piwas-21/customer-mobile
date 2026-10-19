@@ -22,6 +22,7 @@ type Props = Readonly<{
   onSaved: () => void;
   onCancel: () => void;
 }>;
+const requiredFields: readonly string[] = requiredAddressFields;
 function initialContent(address?: CustomerAddress): AddressInput {
   return {
     label: address?.label ?? '',
@@ -78,9 +79,7 @@ export default function AddressEditor({ controller, userId, address, onSaved, on
             onChangeText={(value) =>
               setInput((current) => ({
                 ...current,
-                [field]:
-                  value ||
-                  (requiredAddressFields.some((required) => required === field) ? '' : null),
+                [field]: value || (requiredFields.includes(field) ? '' : null),
               }))
             }
           />
