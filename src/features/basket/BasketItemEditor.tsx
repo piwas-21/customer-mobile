@@ -24,32 +24,7 @@ export default function BasketItemEditor(props: BasketItemEditProps) {
           {t('removeBasketConfirmation', { name, quantity: props.selection.quantity })}
         </Text>
       ) : (
-        <>
-          {quantityIsValid(props.selection.quantity) ? (
-            <QuantityStepper
-              label={t('quantity')}
-              value={form.quantity}
-              minimum={1}
-              maximum={MAX_ITEM_QUANTITY}
-              disabled={!form.editable}
-              onChange={form.setQuantity}
-            />
-          ) : (
-            <Feedback
-              message={t('basketQuantityUnsupported', { quantity: props.selection.quantity })}
-            />
-          )}
-          <Field
-            label={t('orderNotes')}
-            value={form.notes}
-            onChangeText={form.setNotes}
-            multiline
-            maxLength={500}
-            editable={form.editable}
-            {...(form.notes.length > 500 ? { error: t('basketNotesTooLong') } : {})}
-          />
-          <Text style={[styles.body, { color: theme.secondary }]}>{t('basketEditPriceHint')}</Text>
-        </>
+        <ItemFields form={form} quantity={props.selection.quantity} />
       )}
       {form.failed ? <Feedback message={t('basketEditFailed')} /> : null}
       {form.removing ? (
@@ -90,6 +65,43 @@ export default function BasketItemEditor(props: BasketItemEditProps) {
       ) : null}
       <Button secondary label={t('close')} disabled={form.busy} onPress={form.close} />
     </BaseModal>
+  );
+}
+function ItemFields({
+  form,
+  quantity,
+}: Readonly<{
+  form: ReturnType<typeof useBasketItemEdit>;
+  quantity: number;
+}>) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const error = form.notes.length > 500 ? { error: t('basketNotesTooLong') } : {};
+  return (
+    <>
+      {quantityIsValid(quantity) ? (
+        <QuantityStepper
+          label={t('quantity')}
+          value={form.quantity}
+          minimum={1}
+          maximum={MAX_ITEM_QUANTITY}
+          disabled={!form.editable}
+          onChange={form.setQuantity}
+        />
+      ) : (
+        <Feedback message={t('basketQuantityUnsupported', { quantity: quantity })} />
+      )}
+      <Field
+        label={t('orderNotes')}
+        value={form.notes}
+        onChangeText={form.setNotes}
+        multiline
+        maxLength={500}
+        editable={form.editable}
+        {...error}
+      />
+      <Text style={[styles.body, { color: theme.secondary }]}>{t('basketEditPriceHint')}</Text>
+    </>
   );
 }
 const styles = StyleSheet.create({ body: { fontSize: typography.body } });

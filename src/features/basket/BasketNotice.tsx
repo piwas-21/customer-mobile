@@ -1,8 +1,7 @@
-import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { useBasket } from './BasketProvider';
-import useMounted from '../../core/useMounted';
+import useBasketResolution from './useBasketResolution';
 import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
@@ -12,31 +11,7 @@ export default function BasketNotice({
 }: Readonly<{ basket: ReturnType<typeof useBasket> }>) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const mounted = useMounted();
-  const active = useRef(false);
-  const [confirm, setConfirm] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const locked = basket.busy || busy;
-  async function resolve(cancel: boolean) {
-    if (active.current || locked) return;
-    active.current = true;
-    setBusy(true);
-    setFailed(false);
-    try {
-      if (cancel) await basket.cancel();
-      else await basket.recover();
-      if (mounted.current) setConfirm(false);
-    } catch {
-      if (mounted.current) setFailed(true);
-    } finally {
-      active.current = false;
-      if (mounted.current) setBusy(false);
-    }
-  }
-  const close = () => {
-    if (!active.current && !locked) setConfirm(false);
-  };
+  const { confirm, setConfirm, failed, locked, resolve, close } = useBasketResolution(basket);
   return (
     <View style={styles.notice}>
       {basket.resolution ? (
