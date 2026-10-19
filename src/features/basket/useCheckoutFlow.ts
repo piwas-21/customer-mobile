@@ -10,6 +10,8 @@ import type { useBasket } from './BasketProvider';
 import useCheckoutFields from './useCheckoutFields';
 import useCheckoutReview from './useCheckoutReview';
 import useMounted from '../../core/useMounted';
+import type { CustomerAddress } from '../../api/customerAddresses';
+import { applyCheckoutAddress } from '../../domain/checkoutSavedAddress';
 export default function useCheckoutFlow(basket: ReturnType<typeof useBasket>) {
   const review = useCheckoutReview(basket);
   const mounted = useMounted();
@@ -94,6 +96,14 @@ export default function useCheckoutFlow(basket: ReturnType<typeof useBasket>) {
     invalid: (key: keyof CheckoutDraft) => submitted && inspection?.errors.has(key),
     change: (key: keyof CheckoutDraft, value: string) => {
       if (!sending.current) setDraft((previous) => ({ ...previous, [key]: value }));
+    },
+    applyAddress: (address: CustomerAddress) => {
+      if (!sending.current && !basket.busy && fields.fields?.address.length) {
+        review.close();
+        setReviewed(undefined);
+        setSubmitted(true);
+        setDraft((previous) => applyCheckoutAddress(previous, address));
+      }
     },
     show: () => {
       if (review.allowed) {
