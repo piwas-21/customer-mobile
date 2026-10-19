@@ -22,7 +22,8 @@ export async function renewStoredSession(
     next = await refreshSession(client, context, captured, guard, proof);
   } catch (error) {
     guard();
-    if (error instanceof ApiFailure && error.status === 401) await rejected();
+    if (error instanceof ApiFailure && error.status === 401 && error.reason === 'http')
+      await rejected();
     throw error;
   }
   guard();
