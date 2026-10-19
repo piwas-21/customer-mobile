@@ -11,7 +11,7 @@ export const credentialSecretSchema = z
   .min(1)
   .max(16000)
   .regex(/^[\x21-\x7e]+$/);
-const principalSchema = z
+export const principalSchema = z
   .object({ kind: z.enum(['customer', 'guest']), id: identitySchema })
   .strict();
 export type Principal = Readonly<z.infer<typeof principalSchema>>;
@@ -24,7 +24,12 @@ const sessionSchema = z
   .strict();
 export type CustomerSession = z.infer<typeof sessionSchema>;
 export type CredentialKind =
-  'session' | 'guest-session' | 'table-participant' | 'guest-order' | 'payment';
+  | 'session'
+  | 'guest-session'
+  | 'table-participant'
+  | 'guest-order'
+  | 'payment'
+  | 'basket-operation';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,
@@ -56,7 +61,7 @@ export class CredentialVault {
   }
   async capability(
     context: TenantContext,
-    kind: Exclude<CredentialKind, 'session'>,
+    kind: Exclude<CredentialKind, 'session' | 'basket-operation'>,
     principal: Principal,
   ): Promise<string | null> {
     const value = await this.store.get(secretKey(context, kind, principal));
@@ -64,7 +69,7 @@ export class CredentialVault {
   }
   async saveCapability(
     context: TenantContext,
-    kind: Exclude<CredentialKind, 'session'>,
+    kind: Exclude<CredentialKind, 'session' | 'basket-operation'>,
     principal: Principal,
     value: string,
   ): Promise<void> {
@@ -78,6 +83,7 @@ export class CredentialVault {
       'table-participant',
       'guest-order',
       'payment',
+      'basket-operation',
     ] as const;
     const removals = await Promise.allSettled(
       kinds.map((kind) => this.store.remove(secretKey(context, kind, scoped))),

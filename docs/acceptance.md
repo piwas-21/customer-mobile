@@ -79,3 +79,13 @@ using the mismatched template embedded in the pinned Expo package. Local command
 the same SHA-512-verified artifact; both native projects generate without dependency mismatch warnings.
 The Android appearance plugin is installed; app configuration blocks microphone, media-storage and overlay permissions. Compilation, signing, Expo ownership and installed-device
 acceptance remain separate open gates; no publisher identities or production artifacts are supplied.
+
+The secure basket-operation repository persists an exact supported request and operation/session
+identity before submission can use it. Installation state is persisted before the session capability, and returned records are deeply
+immutable. Restarts and duplicate preparations retain that identity;
+conflicting drafts, corrupt records or failed readback block replacement. Its write queue is shared
+with account activation/logout, and logout removes the affected private basket journal. Wire-field
+validation excludes prices/totals and future enum values; authoring/availability rules still belong
+to the complete ordering projection. Server-proof acknowledgement, submission/principal lifecycle
+controller, native UI and process-death/device checks remain required. Backend PR #725 supplies
+the dependent server contract and must land before native submission is connected.
