@@ -126,6 +126,16 @@ returns to explicit basket review/recovery. Owner teardown discards the private 
 The complete review, error feedback and actions live inside one virtualized list so large text can
 scroll the confirmation actions into view without nesting lists in a ScrollView.
 
+## Checkout field contracts
+
+The public form adapter validates unique, bounded form/field identities and consistent visibility,
+required and locked flags. Contact rules preserve the name/email floor for every order type and phone
+for takeaway/delivery, even when configuration hides it. Delivery retains street/postal-code/city and
+honors configured country/additional-information rules. Missing known fields or visible unsupported
+fields block projection rather than silently reducing requirements; unrelated future forms and hidden
+optional fields remain compatible. This is a field-policy foundation. Connected checkout, native order
+receipts, payment recovery and installed form acceptance remain required.
+
 ## Native and device evidence
 
 Both iOS/Android JS exports pass a measured bundle budget. Verified native generation and an Android
