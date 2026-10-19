@@ -38,7 +38,7 @@ export async function updateProfile(
   locale: string,
 ): Promise<CustomerProfile> {
   const body = profileEditSchema.parse(input);
-  const profile = await controller.put(userId, '/api/User/profile', body, profileSchema, locale);
+  const profile = await controller.write(userId, '/api/User/profile', body, profileSchema, locale);
   if (
     profile.id !== userId ||
     profile.firstName !== body.firstName ||

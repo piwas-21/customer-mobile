@@ -225,3 +225,31 @@ continue as guests after pending order resolution; secure-cleanup failure keeps 
 Backend #737 and the operation migrations must be released before connected device acceptance.
 Installed status updates, font/RTL/screen-reader behavior, process death and receipt privacy remain
 required physical acceptance. Hosted payment, reorder and complete account history remain open.
+
+## Native account deletion
+
+The account screen offers a restaurant/account-specific confirmation with the existing 30-day
+schedule, explicit-login cancellation and retained financial-record disclosure. It reads current
+status before offering a request, never automatically retries that write, and checks status after
+an unknown response. Repeated server requests preserve the first date. A failed status check
+withdraws the displayed date; a foreground return rechecks status. Results are kept in the current
+screen only, with current-session and tenant transport guards; no deletion status is persisted in
+public storage. Sign-out reuses the existing secure cleanup flow.
+
+This consumes the additive backend deletion contract in backend PR #739. Backend acceptance and
+release precede dependent mobile publication. Scheduling is not immediate erasure or email-delivery
+proof. Existing web confirmation and cleanup remain authoritative. Apple/provider revocation, push
+subscription erasure, signed installed-device cleanup and the full deletion journey remain open.
+
+## Native saved-address reads
+
+The account screen can open a virtualized saved-address list using the new current-customer,
+versioned backend read contract. It loads one bounded page at a time and discards private query
+resources on dismissal. Previous/next navigation is explicit; a cursor never selects another
+customer. Unknown fields, contradictory continuation, duplicate/out-of-order IDs and regressing
+pages are refused. Character limits preserve valid Unicode database text.
+
+Failed refresh hides cached private rows; foreground return performs a new read. Owner/tenant
+switches and logout cannot publish a late result. This is a read-only source slice: create/edit/
+remove/default management, checkout selection, backend integration/readback and installed-device
+accessibility remain required plan work. It does not activate a tenant or claim a signed release.
