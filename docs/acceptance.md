@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                             | Remaining acceptance                                                                                     |
-| ----- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                                 |
-| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Checkout/payment return, notification tap and physical iPhone/Android journeys                           |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, channels, checkout, orders/reorder/payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                                      |
-| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                       |
-| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                                          |
+| Phase | Current source                                                                                             | Remaining acceptance                                                                        |
+| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                    |
+| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys                |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds   |
+| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, orders/reorder/hosted payment recovery |
+| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                         |
+| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance          |
+| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                             |
 
 ## Workflow and dependency gates
 
@@ -100,7 +100,7 @@ No error or GET permits silent discard.
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes
 explicit pending-change recovery or a confirmed cancellation check. Cancellation recovery never resumes the original execution. Applied and Cancelled outcomes have distinct announcements. Accepted writes withdraw every other locale quote and refetch the active language without changing the accepted write outcome. Failed reads hide stale totals; unsupported depth/row counts refuse
 presentation rather than silently truncating. Persistent menu access returns to the selected basket.
-Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Checkout, order/payment idempotency and provider
+Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Connected native checkout and order recovery are described below; hosted payment idempotency and provider
 settlement are still required. No source helper authorizes automatic order/payment retries or an offline write queue.
 
 ## Reviewed channel operations
@@ -133,8 +133,8 @@ required and locked flags. Contact rules preserve the name/email floor for every
 for takeaway/delivery, even when configuration hides it. Delivery retains street/postal-code/city and
 honors configured country/additional-information rules. Missing known fields or visible unsupported
 fields block projection rather than silently reducing requirements; unrelated future forms and hidden
-optional fields remain compatible. This is a field-policy foundation. Connected checkout, native order
-receipts, payment recovery and installed form acceptance remain required.
+optional fields remain compatible. Connected native fields follow these current requirements; private order
+receipts, hosted payment recovery and installed form acceptance remain required.
 
 ## Checkout quote contract
 
@@ -147,13 +147,37 @@ review choices before asynchronous credential reads without creating a session o
 Composition parsing checks depth and the complete row budget before recursive decoding; signed
 component modifiers and current fractional-cent discount rules remain representable. A quote creates
 no durable order/payment operation and transport failures are not automatically retried.
-The basket opens a read-only total review for a ready takeaway/delivery basket. It presents current
-server money and payment choices, withdraws changed/late/closed reviews and submits no order.
-The review currently requests zero tip and points; selecting these belongs to connected checkout.
+The basket opens a native contact/address form for ready takeaway/delivery orders. Contact floors and
+current tenant form rules are validated before server review. Optional tips accept decimal amounts;
+loyalty-point selection remains open. The customer explicitly selects a currently offered payment
+method and places the order after reviewing server totals. Changed requirements, basket revisions,
+withdrawn owners and competing taps block submission. Closing or changing owner discards private
+form drafts. Checkout actions remain in a scrollable modal with scalable labels and 48dp controls.
 
-This source contract depends on the additive backend native checkout endpoint. Connected checkout,
-contact/address entry, durable order acceptance, payment recovery and installed-device evidence remain
-required. Quote fingerprints are review preconditions, not payment or order authorization.
+## Durable native order acceptance
+
+Preparation obtains the server's digest of the captured typed intent without creating a durable
+operation. Before acceptance, the secure repository verifies contact and minimal proof readback.
+Only the new native submit endpoint is used. The journal retains the original tenant/principal,
+session, operation ID and payload hash; an unknown outcome blocks basket changes and new orders.
+Basket and order claims share the same serialized secure-storage queue, so concurrent controllers
+cannot each install an independent financial identity. Identical active requests coalesce.
+
+Explicit recovery reads the saved operation; an Unseen response never resends an order or releases
+the hold. A separate confirmed stop request persists cancellation before dispatch, purges contact
+and can only resume the cancellation check after restart. Applied proof means the restaurant received
+the order; cancellation cannot undo that order or refund a payment. Cancelled proof permits fresh
+basket review. A validated decision is securely retained before proof cleanup; failed cleanup can
+finish from memory without another POST. Minimal decision history is bounded and is cleared on
+logout; the pending proof survives separately until a server decision. Contact data is purged on
+logout. React Query stores only minimal pending state and validated outcome, never the contact/digest.
+
+The additive backend acceptance contract depends on the accepted operation-store migration and the
+native endpoints under backend review. Its final server money comparison and strict points debit
+remain authoritative. The native online-payment capability stays unavailable until hosted provider
+recovery is implemented. Current source does not claim payment settlement or expose private order
+receipts/history yet. Migration application, deployment/readback, installed secure recovery and
+physical checkout acceptance remain separate release gates.
 
 ## Native and device evidence
 

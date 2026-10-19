@@ -1,3 +1,4 @@
+import { SingleOperation } from './singleOperation';
 import { basketChannelInputSchema, type BasketChannelInput } from '../api/basketChannel';
 import { BasketCancellationController } from './basketCancellationController';
 import { basketItemMutationSchema, type BasketItemMutation } from '../api/basketItemMutation';
@@ -21,7 +22,7 @@ export class BasketOperationController {
   private readonly cancellation: BasketCancellationController;
   private readonly assertOwner: () => void;
   private disposed = false;
-  private active: { key: string; promise: Promise<CustomerBasket> } | null = null;
+  private readonly requests = new SingleOperation<CustomerBasket>();
   private accepted: { pending: PendingBasketOperation; basket: CustomerBasket } | null = null;
   constructor(
     private readonly context: TenantContext,
@@ -108,7 +109,7 @@ export class BasketOperationController {
 
   async cancel(locale: string) {
     this.assertCurrent();
-    if (this.active) throw new ApiFailure(409, 'refused');
+    if (this.requests.busy) throw new ApiFailure(409, 'refused');
     const applied = this.accepted;
     this.accepted = null;
     return this.cancellation.cancel(locale, applied);
@@ -145,15 +146,7 @@ export class BasketOperationController {
   private run(key: string, work: () => Promise<CustomerBasket>): Promise<CustomerBasket> {
     this.assertCurrent();
     if (this.cancellation.busy || this.cancellation.pending) throw new ApiFailure(409, 'refused');
-    if (this.active) {
-      if (this.active.key !== key) throw new ApiFailure(409, 'refused');
-      return this.active.promise;
-    }
-    const promise = work().finally(() => {
-      if (this.active?.promise === promise) this.active = null;
-    });
-    this.active = { key, promise };
-    return promise;
+    return this.requests.run(key, work);
   }
 
   private readonly assertCurrent = (): void => {

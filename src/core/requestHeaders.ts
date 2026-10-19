@@ -1,3 +1,4 @@
+import { captureOrderProof, orderRequestHeaders } from './orderRequestHeaders';
 import { canonicalUuidSchema } from './identifiers';
 import { ApiFailure } from './apiFailure';
 import type { CredentialVault, Principal } from './credentials';
@@ -57,9 +58,14 @@ export async function requestHeaders(
   if (options.locale) headers['Accept-Language'] = options.locale;
   const mode = options.credentials ?? 'none';
   const expectedSession = expectedBasketSession(options);
+  const orderProof = captureOrderProof(context, options);
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
-  if (mode === 'customer' || (mode === 'basket' && principal?.kind === 'customer'))
+  if (
+    mode === 'customer' ||
+    ((mode === 'basket' || mode === 'order') && principal?.kind === 'customer')
+  )
     Object.assign(headers, await customerHeaders(context, vault, principal));
+  if (orderProof) Object.assign(headers, await orderRequestHeaders(context, vault, orderProof));
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
     Object.assign(headers, await sessionHeaders(context, vault, principal, mode, expectedSession));
   return headers;

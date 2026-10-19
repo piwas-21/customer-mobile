@@ -23,7 +23,7 @@ export default function useCheckoutReview(basket: ReturnType<typeof useBasket>) 
     (basket.basket.orderType === 'Takeaway' || basket.basket.orderType === 'Delivery'),
   );
   const changed = open && (reviewed !== revision || !allowed);
-  async function show() {
+  async function show(selection = { pointsToRedeem: 0, tip: 0 }) {
     if (!allowed || active.current) return;
     active.current = true;
     const request = ++generation.current;
@@ -33,7 +33,7 @@ export default function useCheckoutReview(basket: ReturnType<typeof useBasket>) 
     setBusy(true);
     setOpen(true);
     try {
-      const result = await basket.quote({ pointsToRedeem: 0, tip: 0 });
+      const result = await basket.quote(selection);
       if (mounted.current && generation.current === request) setQuote(result);
     } catch {
       if (mounted.current && generation.current === request) setFailed(true);

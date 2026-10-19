@@ -51,7 +51,12 @@ export class CustomerTransport {
     const assertOwner = options.assertCurrent ?? (() => {});
     assertOwner();
     const method = options.method ?? 'GET';
-    if (method !== 'GET' && context.tenant.status !== 'active')
+    const orderRecovery =
+      method === 'POST' &&
+      options.credentials === 'order' &&
+      (path === '/api/customer-mobile/checkout/recover' ||
+        path === '/api/customer-mobile/checkout/cancel');
+    if (method !== 'GET' && context.tenant.status !== 'active' && !orderRecovery)
       throw new Error('Restaurant is read-only');
     // Snapshot the wire body before asynchronous credential reads can yield to UI changes.
     const body = options.body === undefined ? undefined : JSON.stringify(options.body);

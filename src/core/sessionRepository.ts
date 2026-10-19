@@ -1,3 +1,4 @@
+import { OrderOperationRepository } from './orderOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
 import { CredentialVault, type CustomerSession, type SecretStore } from './credentials';
@@ -14,10 +15,12 @@ const sameSession = (a: CustomerSession | null, b: CustomerSession) =>
 export class SessionRepository {
   readonly vault: CredentialVault;
   readonly baskets: BasketOperationRepository;
+  readonly orders: OrderOperationRepository;
   private readonly writes = new SerialTasks();
   constructor(private readonly store: SecretStore) {
     this.vault = new CredentialVault(store);
     this.baskets = new BasketOperationRepository(store, this.vault, this.writes);
+    this.orders = new OrderOperationRepository(store, this.vault, this.writes);
   }
   load(context: TenantContext): Promise<CustomerSession | null> {
     return this.writes.run(async () => {

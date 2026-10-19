@@ -1,3 +1,4 @@
+import { CustomerOrderController } from '../../core/customerOrderController';
 import { useEffect, useMemo, useState } from 'react';
 import { randomUUID } from 'expo-crypto';
 import { useQueryClient } from '@tanstack/react-query';
@@ -29,6 +30,7 @@ export default function useBasketScope() {
   const [resource, setResource] = useState<{
     scope: typeof scope;
     workspace: BasketWorkspace;
+    orders: CustomerOrderController;
     version: number;
   }>();
   useEffect(() => {
@@ -46,23 +48,31 @@ export default function useBasketScope() {
     } catch {
       return;
     }
+    const orders = new CustomerOrderController(
+      scope.context,
+      scope.client,
+      deviceSessions,
+      scope.controller,
+      scope.userId ? { kind: 'customer', id: scope.userId } : { kind: 'guest', id: 'basket' },
+      randomUUID,
+    );
     const version = ++nextWorkspaceVersion;
     let active = true;
     // Restore the secure journal before exposing this effect-owned workspace.
-    void workspace
-      .hasPending()
+    void Promise.all([workspace.hasPending(), orders.pending()])
       .catch(() => undefined)
       .then(() => {
-        if (active) setResource({ scope, workspace, version });
+        if (active) setResource({ scope, workspace, orders, version });
       });
     return () => {
       active = false;
       workspace.dispose();
+      orders.dispose();
       void cache.cancelQueries({ queryKey: key });
       cache.removeQueries({ queryKey: key });
     };
   }, [scope, key, cache]);
   const current = resource?.scope === scope ? resource : undefined;
   const revision = useMemo(() => [...key, current?.version] as const, [key, current?.version]);
-  return { workspace: current?.workspace, key, revision };
+  return { workspace: current?.workspace, orders: current?.orders, key, revision };
 }

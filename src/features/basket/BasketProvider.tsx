@@ -1,3 +1,5 @@
+import useCustomerOrder from './useCustomerOrder';
+import type { CheckoutIntent } from '../../api/checkoutIntent';
 import { createContext, type PropsWithChildren, useContext, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +15,7 @@ import useMounted from '../../core/useMounted';
 import useBootstrap from '../restaurant/useBootstrap';
 import useBasketScope from './useBasketScope';
 function useBasketState() {
-  const { workspace, key, revision } = useBasketScope();
+  const { workspace, orders, key, revision } = useBasketScope();
   const cache = useQueryClient();
   const mounted = useMounted();
   const { i18n } = useTranslation();
@@ -27,7 +29,8 @@ function useBasketState() {
     owner: BasketWorkspace;
     outcome: 'Applied' | 'Cancelled';
   }>();
-  const busy = Boolean(workspace && busyScope === workspace);
+  const order = useCustomerOrder(orders, workspace, key, revision.at(-1), active);
+  const busy = Boolean(workspace && busyScope === workspace) || order.busy;
   const failure = Boolean(workspace && failureScope === workspace);
   const pendingKey = [...key, 'pending'] as const;
   const pending = useQuery({
@@ -49,6 +52,7 @@ function useBasketState() {
     ordering &&
     pending.isSuccess &&
     pending.data === null &&
+    order.ready &&
     basket.isSuccess &&
     !busy,
   );
@@ -123,14 +127,32 @@ function useBasketState() {
   }
   return {
     basket: workspace && ordering ? basket.data : undefined,
-    loading: Boolean(workspace && (pending.isPending || (ordering && basket.isPending))),
+    loading: Boolean(
+      workspace && (pending.isPending || order.loading || (ordering && basket.isPending)),
+    ),
     unavailable: !workspace || !ordering,
     revision,
     hasPending: pending.isSuccess && pending.data !== null,
     cancelling: pending.data?.cancelling === true,
     resolution: resolution && resolution.owner === workspace ? resolution.outcome : null,
     canAdd: ready,
-    failed: failure || pending.isError || basket.isError,
+    failed: failure || pending.isError || basket.isError || order.failed,
+    pendingOrder: order.pending ?? null,
+    orderDecision: order.decision,
+    recoverOrder: () => order.recover(locale),
+    cancelOrder: () => order.cancel(locale),
+    placeOrder: async (intent: CheckoutIntent) => {
+      if (!workspace || !ready || !basket.data || !bootstrap.data)
+        throw new ApiFailure(409, 'refused');
+      return order.place({
+        reviewed: basket.data,
+        bootstrap: bootstrap.data,
+        intent,
+        locale,
+        tip: intent.review.tip,
+        pointsToRedeem: intent.review.pointsToRedeem,
+      });
+    },
     busy,
     add: (input: BasketAddInput) => submit({ kind: 'add', input }),
     mutate: (input: BasketItemMutation) => submit({ kind: 'mutate', input }),
@@ -151,7 +173,7 @@ function useBasketState() {
       const owner = workspace;
       if (!owner) return;
       try {
-        if ((await pending.refetch()).isError) return;
+        if ((await pending.refetch()).isError || (await order.refresh()).isError) return;
         if (ordering && (await basket.refetch()).isError) return;
         owner.assertCurrent();
         if (mounted.current)
