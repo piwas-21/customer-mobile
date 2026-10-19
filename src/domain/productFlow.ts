@@ -58,7 +58,7 @@ export function productFlow(
     groups: defaultGroupSelections(plan.groups),
     sides: defaultSides(plan.sides),
   };
-  return { steps, defaults, groups: plan.groups };
+  return { steps, defaults, groups: plan.groups, variations: plan.variations, sides: plan.sides };
 }
 function decisionGroups(
   decision: ProductDecision,

@@ -170,3 +170,22 @@ it('keeps no-answer options and exclusion groups mutually exclusive without chan
   expect(toggleChoice(sauces, { chicken: 1 }, 'beef')).toEqual({ chicken: 0, beef: 1 });
   expect(toggleChoice(sauces, { beef: 1 }, 'beef')).toEqual({ beef: 0 });
 });
+
+it('labels fixed ingredients as included without disabling their allowed quantity controls', () => {
+  const change = jest.fn();
+  const fixed: CatalogueChoiceGroup = {
+    ...group,
+    kind: 'recipe',
+    min: 1,
+    max: 3,
+    cardinality: 'units',
+    options: [{ ...group.options[0]!, label: 'Bread', minimumQuantity: 1 }],
+  };
+  const screen = render(<ChoiceGroup group={fixed} selection={{ chicken: 1 }} onChange={change} />);
+  expect(screen.getByRole('checkbox', { name: 'Bread' })).toBeDisabled();
+  expect(screen.getByText('Included')).toBeTruthy();
+  fireEvent.press(screen.getByRole('checkbox', { name: 'Bread' }));
+  expect(change).not.toHaveBeenCalled();
+  fireEvent.press(screen.getByRole('button', { name: 'Increase Bread quantity' }));
+  expect(change).toHaveBeenCalledWith({ chicken: 2 });
+});

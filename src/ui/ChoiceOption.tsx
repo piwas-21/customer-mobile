@@ -24,6 +24,7 @@ export default function ChoiceOption({
   const quantity = selection[option.id] ?? 0;
   const selected = quantity > 0;
   const unavailable = disabled || !option.available;
+  const included = selected && (option.minimumQuantity ?? 0) > 0;
   const more = changeChoice(group, selection, option.id, 1) !== selection;
   return (
     <View
@@ -39,14 +40,18 @@ export default function ChoiceOption({
       <Pressable
         accessibilityRole={radio ? 'radio' : 'checkbox'}
         accessibilityLabel={option.label}
-        accessibilityState={{ checked: selected, disabled: unavailable }}
-        disabled={unavailable}
+        accessibilityHint={included ? t('requiredSide') : undefined}
+        accessibilityState={{ checked: selected, disabled: unavailable || included }}
+        disabled={unavailable || included}
         onPress={() => onChange(toggleChoice(group, selection, option.id))}
         style={styles.option}
       >
-        <Text style={[styles.label, { color: unavailable ? theme.secondary : theme.text }]}>
-          {option.label}
-        </Text>
+        <View style={styles.copy}>
+          <Text style={[styles.label, { color: unavailable ? theme.secondary : theme.text }]}>
+            {option.label}
+          </Text>
+          {included ? <Text style={{ color: theme.secondary }}>{t('includedChoice')}</Text> : null}
+        </View>
         <Text accessible={false} style={[styles.mark, { color: theme.accent }]}>
           {selected ? '✓' : '○'}
         </Text>
@@ -78,7 +83,8 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
   },
-  label: { flex: 1, fontSize: typography.body },
+  copy: { flex: 1, gap: spacing.sm },
+  label: { fontSize: typography.body },
   mark: { fontSize: typography.heading },
   quantity: { paddingHorizontal: spacing.md, paddingBottom: spacing.md },
 });

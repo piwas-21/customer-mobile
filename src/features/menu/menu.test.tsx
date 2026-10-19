@@ -1,7 +1,7 @@
 import { productDetailFixture } from '../../test/products';
 import { routerFixture } from '../../test/router';
 import '../../i18n';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FlatList } from 'react-native';
 import { z } from 'zod';
@@ -13,7 +13,12 @@ import { TenantBoundary } from '../../core/tenantContext';
 import { CustomerTransport } from '../../core/transport';
 import { CredentialVault } from '../../core/credentials';
 import { fixtureDirectory, memorySecrets, tenantA, tenantB } from '../../test/fixtures';
-jest.mock('expo-router', () => ({ useRouter: jest.fn(), useLocalSearchParams: jest.fn() }));
+jest.mock('../basket/BasketProvider', () => ({ useBasket: () => ({ unavailable: true }) }));
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(),
+  useLocalSearchParams: jest.fn(),
+  Stack: { Screen: () => null },
+}));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 const router = routerFixture();
 const product = {
@@ -92,9 +97,14 @@ function setup(mode = 'ready') {
   );
   return { screen, request, queryClient };
 }
-afterEach(() => {
+beforeEach(() => jest.useFakeTimers());
+afterEach(async () => {
+  await act(async () => {
+    jest.runOnlyPendingTimers();
+  });
   clients.splice(0).forEach((client) => client.clear());
   jest.clearAllMocks();
+  jest.useRealTimers();
 });
 it('filters duplicate/inactive dishes, searches, paginates and navigates within the restaurant', async () => {
   const { screen, request, queryClient } = setup();
