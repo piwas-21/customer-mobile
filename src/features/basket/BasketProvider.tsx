@@ -135,6 +135,11 @@ function useBasketState() {
     add: (input: BasketAddInput) => submit({ kind: 'add', input }),
     mutate: (input: BasketItemMutation) => submit({ kind: 'mutate', input }),
     changeChannel: (input: BasketChannelInput) => submit({ kind: 'channel', input }),
+    quote: async (selection: Readonly<{ pointsToRedeem: number; tip: number }>) => {
+      if (!workspace || !ready || active.current === workspace || !basket.data || !bootstrap.data)
+        throw new ApiFailure(409, 'refused');
+      return workspace.quote(basket.data, bootstrap.data, selection, locale);
+    },
     previewChannel: async (orderType: OrderType) => {
       if (!workspace || !ready || active.current === workspace)
         throw new ApiFailure(409, 'refused');

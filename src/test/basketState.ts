@@ -1,3 +1,4 @@
+import { checkoutQuote } from './checkoutQuote';
 import { emptyUuid } from '../core/identifiers';
 import type { useBasket } from '../features/basket/BasketProvider';
 export function basketState(
@@ -17,6 +18,7 @@ export function basketState(
     add: jest.fn(async () => undefined),
     mutate: jest.fn(async () => undefined),
     changeChannel: jest.fn(async () => undefined),
+    quote: jest.fn(async () => checkoutQuote()),
     previewChannel: jest.fn(async (orderType) => ({
       basketId: emptyUuid,
       purchaseFingerprint: '',
