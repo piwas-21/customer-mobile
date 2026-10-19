@@ -136,6 +136,19 @@ fields block projection rather than silently reducing requirements; unrelated fu
 optional fields remain compatible. This is a field-policy foundation. Connected checkout, native order
 receipts, payment recovery and installed form acceptance remain required.
 
+## Checkout quote contract
+
+The native quote adapter submits only the six server review fields, with the installed owner-scoped
+basket session. It checks restaurant/bootstrap, basket revision, channel, currency, root identities,
+variation/quantity/notes, requested points/tip and available methods before publishing a response.
+Composition parsing checks depth and the complete row budget before recursive decoding; signed
+component modifiers and current fractional-cent discount rules remain representable. A quote creates
+no durable order/payment operation and transport failures are not automatically retried.
+
+This source contract depends on the additive backend native checkout endpoint. Connected checkout,
+contact/address entry, durable order acceptance, payment recovery and installed-device evidence remain
+required. Quote fingerprints are review preconditions, not payment or order authorization.
+
 ## Native and device evidence
 
 Both iOS/Android JS exports pass a measured bundle budget. Verified native generation and an Android
