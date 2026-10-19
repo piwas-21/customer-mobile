@@ -20,6 +20,7 @@ export class SessionController {
     private readonly context: TenantContext,
     private readonly client: CustomerTransport,
     private readonly repository: SessionRepository,
+    private readonly accountsEnabled = true,
   ) {}
   get userId(): string | null {
     return this.session?.userId ?? null;
@@ -70,7 +71,7 @@ export class SessionController {
     const revision = this.revision;
     return this.tasks.run(async () => {
       this.assertCurrent(revision);
-      const session = await this.repository.load(this.context);
+      const session = this.accountsEnabled ? await this.repository.load(this.context) : null;
       this.assertCurrent(revision);
       this.initialized = true;
       this.publish(session);
@@ -78,7 +79,8 @@ export class SessionController {
     });
   }
   login(input: LoginInput, locale: string): Promise<string> {
-    if (this.pendingCleanup) return Promise.reject(new ApiFailure(401, 'refused'));
+    if (!this.accountsEnabled || this.pendingCleanup)
+      return Promise.reject(new ApiFailure(401, 'refused'));
     const revision = ++this.revision;
     this.signingIn = true;
     const captured = { ...input };
@@ -104,6 +106,7 @@ export class SessionController {
     const captured = this.pendingCleanup ?? this.session;
     this.pendingCleanup = captured;
     this.publish(null);
+    if (!this.accountsEnabled) return;
     const session =
       captured ?? (this.context.signal.aborted ? null : await this.repository.load(this.context));
     if (!session) return;

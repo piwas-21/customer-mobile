@@ -28,11 +28,12 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   const { context, client } = useRestaurant();
   const bootstrap = useBootstrap();
   const queryClient = useQueryClient();
-  const available = canUse(bootstrap.data, 'accounts');
+  const accountsAvailable = canUse(bootstrap.data, 'accounts');
+  const available = accountsAvailable || canUse(bootstrap.data, 'ordering');
   const [attempt, setAttempt] = useState(0);
   const scope = useMemo(
-    () => ({ context, client, available, attempt }),
-    [context, client, available, attempt],
+    () => ({ context, client, available, accountsAvailable, attempt }),
+    [context, client, available, accountsAvailable, attempt],
   );
   const [restored, setRestored] = useState<{
     scope: typeof scope;
@@ -52,7 +53,12 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   useEffect(() => {
     if (!scope.available || !scope.context || !scope.client) return;
     // Each effect owns its controller, including React's development setup/cleanup replay.
-    const current = new SessionController(scope.context, scope.client, deviceSessions);
+    const current = new SessionController(
+      scope.context,
+      scope.client,
+      deviceSessions,
+      scope.accountsAvailable,
+    );
     let active = true;
     void current
       .initialize()
@@ -86,11 +92,20 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
       userId,
       needsCleanup,
       loading: bootstrap.isPending || Boolean(available && !controller && !error),
-      unavailable: !available,
+      unavailable: !accountsAvailable,
       failed: error,
       retry,
     }),
-    [controller, userId, needsCleanup, bootstrap.isPending, error, available, retry],
+    [
+      controller,
+      userId,
+      needsCleanup,
+      bootstrap.isPending,
+      error,
+      available,
+      accountsAvailable,
+      retry,
+    ],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
