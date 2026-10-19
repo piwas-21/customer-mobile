@@ -19,9 +19,15 @@ const scope = {
   principal: principalSchema,
   sessionId: canonicalUuidSchema,
   operationId: canonicalUuidSchema,
+  cancellationRequested: z.literal(true).optional(),
 };
 export const basketOperationRecordSchema = z.discriminatedUnion('schemaVersion', [
-  addIntent.extend({ ...scope, phase: z.enum(['installing', 'ready']) }),
+  addIntent
+    .extend({ ...scope, phase: z.enum(['installing', 'ready']) })
+    .refine(
+      (record) => !record.cancellationRequested || record.phase === 'ready',
+      'A cancellation requires an installed basket session',
+    ),
   editIntent.extend({ ...scope, phase: z.literal('ready') }),
 ]);
 export type BasketOperationRecord = z.infer<typeof basketOperationRecordSchema>;

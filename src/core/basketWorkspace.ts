@@ -73,6 +73,10 @@ export class BasketWorkspace {
     this.assertCurrent();
     return this.operations.mutate(input, locale);
   }
+  cancel(locale: string) {
+    this.assertCurrent();
+    return this.operations.cancel(locale);
+  }
   recover(locale: string) {
     this.assertCurrent();
     return this.operations.recover(locale);
