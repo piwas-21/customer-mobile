@@ -62,3 +62,9 @@ separately, require current orderable detail reads, seed required sides, and val
 variation and quantity. Side DTOs cannot express nested required groups or sauce choices; those
 shapes are unavailable in this projection. These pure projections do not fetch, write or calculate prices. Nested
 manifest composition, native UI and complete basket submission remain required.
+
+Basket transport can combine a customer's exact scoped access token and basket session, or use a
+guest's session without borrowing customer credentials. Canonical UUID sessions and immutable wire
+bodies are checked before dispatch. This adapter creates no session and retries no write; durable
+operation persistence, principal lifecycle guards, native basket UI and server integration remain
+required before submission is available.

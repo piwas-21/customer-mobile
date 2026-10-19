@@ -51,6 +51,8 @@ export class CustomerTransport {
     const method = options.method ?? 'GET';
     if (method !== 'GET' && context.tenant.status !== 'active')
       throw new Error('Restaurant is read-only');
+    // Snapshot the wire body before asynchronous credential reads can yield to UI changes.
+    const body = options.body === undefined ? undefined : JSON.stringify(options.body);
     const headers = await requestHeaders(context, this.vault, options);
     this.boundary.assertCurrent(context);
     const controller = new AbortController();
@@ -64,7 +66,7 @@ export class CustomerTransport {
         redirect: 'error',
         credentials: 'omit',
         signal: controller.signal,
-        ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
+        ...(body === undefined ? {} : { body }),
       });
       this.boundary.assertCurrent(context);
       const data = await decodeResponse(response, schema);
