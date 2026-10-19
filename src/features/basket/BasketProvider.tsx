@@ -36,6 +36,27 @@ function useBasketState() {
     retry: false,
     staleTime: 30_000,
   });
+  async function restoreAfterFailure(owner: BasketWorkspace): Promise<void> {
+    try {
+      const unresolved = await owner.hasPending();
+      owner.assertCurrent();
+      if (mounted.current) {
+        cache.setQueryData(pendingKey, unresolved);
+        setFailureScope(owner);
+      }
+    } catch {
+      // Withdrawn owners cannot recreate old cache entries or affect a new owner.
+      try {
+        owner.assertCurrent();
+        if (mounted.current) {
+          setFailureScope(owner);
+          cache.removeQueries({ queryKey: pendingKey, exact: true });
+        }
+      } catch {
+        /* Ownership has changed; leave the new owner untouched. */
+      }
+    }
+  }
   async function submit(input?: BasketAddInput): Promise<void> {
     if (
       !workspace ||
@@ -55,25 +76,7 @@ function useBasketState() {
       cache.setQueryData([...key, 'value', locale], result);
       cache.setQueryData(pendingKey, false);
     } catch (error) {
-      try {
-        const unresolved = await workspace.hasPending();
-        workspace.assertCurrent();
-        if (mounted.current) {
-          cache.setQueryData(pendingKey, unresolved);
-          setFailureScope(workspace);
-        }
-      } catch {
-        // Withdrawn owners cannot recreate old cache entries or affect a new owner.
-        try {
-          workspace.assertCurrent();
-          if (mounted.current) {
-            setFailureScope(workspace);
-            cache.removeQueries({ queryKey: pendingKey, exact: true });
-          }
-        } catch {
-          /* Ownership has changed; leave the new workspace untouched. */
-        }
-      }
+      await restoreAfterFailure(workspace);
       throw error;
     } finally {
       if (active.current === workspace) active.current = undefined;

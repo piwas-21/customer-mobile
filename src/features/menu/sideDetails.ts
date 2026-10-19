@@ -12,7 +12,9 @@ export function sideProductIds(product: ProductDetail): string[] {
   return z
     .array(z.uuid())
     .max(MAX_SIDE_PRODUCTS)
-    .parse([...new Set([...direct, ...nested])].sort());
+    .parse(
+      [...new Set([...direct, ...nested])].sort((first, second) => first.localeCompare(second)),
+    );
 }
 export async function readSideDetails(
   ids: readonly string[],
@@ -24,14 +26,15 @@ export async function readSideDetails(
     .parse([...new Set(ids)]);
   const details = new Map<string, ProductDetail>();
   let next = 0;
-  const workers = Array.from({ length: Math.min(PARALLEL_SIDE_READS, unique.length) }, async () => {
-    while (next < unique.length) {
-      const id = unique[next++]!;
-      const detail = await read(id);
-      if (detail.id !== id) throw new Error('Wrong side product');
-      details.set(id, detail);
-    }
-  });
+  async function readNext(): Promise<void> {
+    const id = unique[next++];
+    if (!id) return;
+    const detail = await read(id);
+    if (detail.id !== id) throw new Error('Wrong side product');
+    details.set(id, detail);
+    return readNext();
+  }
+  const workers = Array.from({ length: Math.min(PARALLEL_SIDE_READS, unique.length) }, readNext);
   await Promise.all(workers);
   return details;
 }

@@ -66,7 +66,7 @@ it('retains a rejected or unknown operation until an explicit recovery succeeds'
   await expect(f.workspace.hasPending()).resolves.toBe(true);
   const before = f.fetcher.mock.calls.length;
   await expect(f.workspace.add(basketInput, 'en')).rejects.toMatchObject({ status: 409 });
-  expect(f.fetcher.mock.calls.length).toBe(before);
+  expect(f.fetcher.mock.calls).toHaveLength(before);
 });
 it('refuses reads across a vault wait after logout before any HTTP dispatch', async () => {
   const f = await fixture(true);

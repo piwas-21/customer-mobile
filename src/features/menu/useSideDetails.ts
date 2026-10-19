@@ -26,7 +26,7 @@ export default function useSideDetails(product: ProductDetail, channel?: OrderTy
     queryFn: () => {
       if (!context || !client || unsupported) throw new Error('Side details unavailable');
       return readSideDetails(ids, (id) =>
-        cache.fetchQuery({
+        cache.query({
           queryKey: productQueryKey(context, id, locale, channel),
           queryFn: () => readProduct(client, context, id, locale, channel),
           staleTime: 30_000,
