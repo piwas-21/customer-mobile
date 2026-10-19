@@ -73,3 +73,9 @@ Private reads now capture their login revision through credential loading and re
 Logout, disposal or a later login withdraws the captured owner before dispatch and rejects late
 responses. The shared transport exposes the same guard for future writes; it never retries them.
 Basket controller integration, durable operation proof and installed lifecycle acceptance remain open.
+
+Native project generation now verifies an exact SDK-matching template before prebuild instead of
+using the mismatched template embedded in the pinned Expo package. Local commands, CI and EAS use
+the same SHA-512-verified artifact; both native projects generate without dependency mismatch warnings.
+The Android appearance plugin is installed; app configuration blocks microphone, media-storage and overlay permissions. Compilation, signing, Expo ownership and installed-device
+acceptance remain separate open gates; no publisher identities or production artifacts are supplied.

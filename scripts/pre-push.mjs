@@ -23,6 +23,7 @@ export function prePush(input, resolveNpm = () => trustedTool('npm')) {
   for (const args of [
     ['run', 'check'],
     ['run', 'audit:security'],
+    ['run', 'native:generate'],
     ['run', 'build'],
   ]) {
     execFileSync(process.execPath, [npm, ...args], { stdio: 'inherit', env: TOOL_ENV });

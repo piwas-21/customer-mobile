@@ -32,10 +32,22 @@ strict types, ESLint (hooks/a11y), source boundaries, unit/component coverage, s
 fixtures and duplicate source blocks. Native coverage includes the runtime screens, APIs and storage;
 separate V8 coverage includes workflow/security scripts and their subprocesses. Both reports
 feed Sonar. Native and tooling gates require at least 85% lines/statements/functions and 80% branches.
-The tooling suite runs the full dependency audit, so network access is required. Pre-push refuses direct protected-branch updates, then runs dependency audit and both native bundle exports.
+The tooling suite runs the full dependency audit, so network access is required. Pre-push refuses direct protected-branch updates, then runs dependency audit, verified native generation and both native bundle exports.
 CI repeats these in a clean checkout. No lifecycle scripts
 run during dependency installation. EAS custom builds run the explicit install, source repair, verification and audit steps before
 prebuild, CocoaPods or Gradle. Native plugins are exercised by development builds.
+
+Native generation uses the reviewed SDK-matching template in native-template.json. The pinned
+Expo package currently embeds a template for a different SDK; accepting that default produced
+runtime mismatch warnings. npm run native:prepare downloads only the exact npm registry archive,
+verifies SHA-512 before atomic installation and refuses a corrupted cache. npm run native:generate
+uses that artifact for both platforms without installing pods or signing. CI repeats generation;
+local Android/iOS commands and the EAS base prebuildCommand use the same artifact. Runtime upgrades
+must update and verify this template alongside Expo/React/React Native. expo-system-ui supplies the
+Android appearance plugin. Generated native projects are build evidence; successful compiler,
+signing and installed-device checks are separate gates.
+Template selection and the EAS override follow https://docs.expo.dev/workflow/continuous-native-generation/
+and https://docs.expo.dev/eas/json/.
 Build ordering follows https://docs.expo.dev/custom-builds/schema/.
 
 ## Design and performance

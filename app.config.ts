@@ -16,18 +16,28 @@ const config: ExpoConfig = {
   android: {
     package: identifier,
     allowBackup: false,
-    blockedPermissions: ['android.permission.RECORD_AUDIO'],
+    blockedPermissions: [
+      'android.permission.RECORD_AUDIO',
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+      'android.permission.SYSTEM_ALERT_WINDOW',
+    ],
   },
   plugins: [
     'expo-router',
-    ['expo-secure-store', { configureAndroidBackup: true }],
+    ['expo-secure-store', { configureAndroidBackup: true, faceIDPermission: false }],
     [
       'expo-camera',
-      { cameraPermission: 'Allow Sofra to scan restaurant QR codes.', recordAudioAndroid: false },
+      {
+        cameraPermission: 'Allow Sofra to scan restaurant QR codes.',
+        microphonePermission: false,
+        recordAudioAndroid: false,
+      },
     ],
     'expo-web-browser',
     'expo-localization',
     'expo-image',
+    'expo-system-ui',
   ],
   experiments: { typedRoutes: false },
   updates: { enabled: false },
