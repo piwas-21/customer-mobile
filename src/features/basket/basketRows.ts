@@ -29,10 +29,10 @@ export function basketRows(items: readonly BasketLine[]): BasketRow[] {
         line.variationName,
         ...(line.selectedIngredientNames ?? []),
         ...(line.addedIngredientNames ?? []),
-        ...(line.selectedSideItems ?? []).map(
-          (side) =>
-            `${side.quantity} × ${side.name}${side.variationName ? ` · ${side.variationName}` : ''}`,
-        ),
+        ...(line.selectedSideItems ?? []).map((side) => {
+          const name = [side.name, side.variationName].filter(Boolean).join(' · ');
+          return `${side.quantity} × ${name}`;
+        }),
       ].filter((value): value is string => Boolean(value)),
       removed: line.removedIngredientNames ?? [],
       instructions: line.specialInstructions ?? null,

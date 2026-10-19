@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import type { CustomerBasket } from '../../api/basketResponse';
 import { useBasket } from './BasketProvider';
 import { basketRows, type BasketRow } from './basketRows';
 import useBootstrap from '../restaurant/useBootstrap';
@@ -65,34 +66,7 @@ export default function BasketScreen() {
             />
           }
           renderItem={({ item }) => <Line row={item} price={price} />}
-          ListFooterComponent={
-            value && rows.length ? (
-              <View style={styles.totals}>
-                <Text style={[styles.hint, { color: theme.secondary }]}>
-                  {t('serverPricedBasket')}
-                </Text>
-                <Text style={[styles.body, { color: theme.text }]}>
-                  {t('subtotal')}: {price(value.subTotal)}
-                </Text>
-                {value.deliveryFee > 0 ? (
-                  <Text style={[styles.body, { color: theme.text }]}>
-                    {t('deliveryFee')}: {price(value.deliveryFee)}
-                  </Text>
-                ) : null}
-                {value.discount + value.customerDiscount > 0 ? (
-                  <Text style={[styles.body, { color: theme.text }]}>
-                    {t('discount')}: {price(value.discount + value.customerDiscount)}
-                  </Text>
-                ) : null}
-                <Text style={[styles.total, { color: theme.text }]}>
-                  {t('total')}: {price(value.total)}
-                </Text>
-                <Text style={[styles.body, { color: theme.secondary }]}>
-                  {t('checkoutPreparing')}
-                </Text>
-              </View>
-            ) : null
-          }
+          ListFooterComponent={value && rows.length ? <Totals value={value} price={price} /> : null}
         />
       ) : (
         <View style={styles.fill} />
@@ -118,19 +92,56 @@ function Line({ row, price }: Readonly<{ row: BasketRow; price: (amount: number)
       {row.amount !== null ? (
         <Text style={[styles.body, { color: theme.text }]}>{price(row.amount)}</Text>
       ) : null}
-      {row.description.map((detail, index) => (
-        <Text key={index} style={[styles.hint, { color: theme.secondary }]}>
+      {stableNames(row.description).map(({ name: detail, key }) => (
+        <Text key={key} style={[styles.hint, { color: theme.secondary }]}>
           {detail}
         </Text>
       ))}
-      {row.removed.map((name, index) => (
-        <Text key={index} style={[styles.hint, { color: theme.secondary }]}>
+      {stableNames(row.removed).map(({ name, key }) => (
+        <Text key={key} style={[styles.hint, { color: theme.secondary }]}>
           {t('withoutIngredient', { name })}
         </Text>
       ))}
       {row.instructions ? (
         <Text style={[styles.hint, { color: theme.secondary }]}>{row.instructions}</Text>
       ) : null}
+    </View>
+  );
+}
+function stableNames(names: readonly string[]) {
+  const counts = new Map<string, number>();
+  return names.map((name) => {
+    const occurrence = counts.get(name) ?? 0;
+    counts.set(name, occurrence + 1);
+    return { name, key: JSON.stringify([name, occurrence]) };
+  });
+}
+function Totals({
+  value,
+  price,
+}: Readonly<{ value: CustomerBasket; price: (amount: number) => string }>) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  return (
+    <View style={styles.totals}>
+      <Text style={[styles.hint, { color: theme.secondary }]}>{t('serverPricedBasket')}</Text>
+      <Text style={[styles.body, { color: theme.text }]}>
+        {t('subtotal')}: {price(value.subTotal)}
+      </Text>
+      {value.deliveryFee > 0 ? (
+        <Text style={[styles.body, { color: theme.text }]}>
+          {t('deliveryFee')}: {price(value.deliveryFee)}
+        </Text>
+      ) : null}
+      {value.discount + value.customerDiscount > 0 ? (
+        <Text style={[styles.body, { color: theme.text }]}>
+          {t('discount')}: {price(value.discount + value.customerDiscount)}
+        </Text>
+      ) : null}
+      <Text style={[styles.total, { color: theme.text }]}>
+        {t('total')}: {price(value.total)}
+      </Text>
+      <Text style={[styles.body, { color: theme.secondary }]}>{t('checkoutPreparing')}</Text>
     </View>
   );
 }
