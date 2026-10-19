@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { spacing, typography, useTheme } from './theme';
 type Props = Readonly<{
   label: string;
+  accessibilityLabel?: string;
   onPress: () => void;
   disabled?: boolean;
   busy?: boolean;
@@ -9,6 +10,7 @@ type Props = Readonly<{
 }>;
 export default function Button({
   label,
+  accessibilityLabel,
   onPress,
   disabled = false,
   busy = false,
@@ -18,7 +20,7 @@ export default function Button({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: disabled || busy, busy }}
       disabled={disabled || busy}
       onPress={onPress}

@@ -113,6 +113,23 @@ A lost cleanup acknowledgement blocks new adds and finishes cleanup without anot
 Logout, tenant switching and disposal refuse late proof. These are controlled source fixtures;
 full composition, basket UI/refresh, checkout, deployment and physical process-death checks remain open.
 
+Shared quantity/choice controls expose labelled 48dp actions, bounded adjustable accessibility values,
+radio/checkbox state, remaining counts and explicit options/portions limits. Choices use a virtual list
+and semantic theme tokens. Rejected single-choice replacements preserve fixed answers; no-answer and
+exclusion rules reuse the domain validator. These controls are not yet a connected ordering journey;
+guided screens, native focus/keyboard, RTL and physical screen-reader acceptance remain open.
+
+Standalone flow preparation puts quantity before authored decisions and one final review. Split recipe
+screens retain the complete draft while validating their own visible choices. The final request builder
+remains authoritative. Basket reads validate scoped ownership and the server's strictly empty nil envelope;
+reads never acknowledge an unresolved add. Connected native controls, refresh/edit/channel and checkout
+remain open.
+
+Native basket reads require `/api/customer-mobile/basket`, whose server guard refuses present rejected
+authentication before lookup. The legacy anonymous endpoint can otherwise make an expired customer
+session look like an empty guest basket. Older deployments return 404; there is no legacy fallback.
+The dependent server route must be accepted and deployed before this read is available.
+
 Standalone customization composition joins the accepted variation, explicit-group, recipe and side
 projections into one validated basket request. Authored customer screens retain their order; omitted
 active choices are completed without merging default dessert/accompaniment screens. Unknown versions,

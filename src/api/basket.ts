@@ -6,6 +6,8 @@ import {
 import { ApiFailure, type CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
 import { canonicalUuidSchema } from '../core/identifiers';
+import { principalSchema, type Principal } from '../core/credentials';
+import { assertOwnedBasket } from './basketOwnership';
 
 // No legacy-route fallback or automatic retry: this URL exists only with durable server operations.
 export async function submitBasketOperation(
@@ -38,11 +40,35 @@ export async function submitBasketOperation(
     },
   );
   assertCurrent();
-  const owned =
-    operation.principal.kind === 'customer'
-      ? basket.userId?.toLowerCase() === operation.principal.id.toLowerCase()
-      : basket.userId === null && basket.sessionId === operation.sessionId;
-  if (!owned || !canonicalUuidSchema.safeParse(basket.id).success || !basket.purchaseFingerprint)
-    throw new ApiFailure(200, 'contract');
+  assertOwnedBasket(basket, operation.principal, operation.sessionId);
+  return basket;
+}
+
+// A read never acknowledges an unresolved operation, even when its line appears in the basket.
+export async function readBasket(
+  client: CustomerTransport,
+  context: TenantContext,
+  principal: Principal,
+  sessionId: string,
+  assertCurrent: () => void,
+  locale: string,
+): Promise<CustomerBasket> {
+  const owner = principalSchema.parse(principal);
+  const session = canonicalUuidSchema.parse(sessionId);
+  assertCurrent();
+  const basket = await client.request(
+    context,
+    '/api/customer-mobile/basket',
+    basketResponseSchema,
+    {
+      credentials: 'basket',
+      principal: owner,
+      expectedBasketSessionId: session,
+      assertCurrent,
+      locale,
+    },
+  );
+  assertCurrent();
+  assertOwnedBasket(basket, owner, session, true);
   return basket;
 }
