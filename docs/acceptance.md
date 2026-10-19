@@ -55,3 +55,10 @@ keys are preserved without guessing from labels. Missing bundle marker metadata 
 base recipes block this projection. The additive server marker contract is backend PR #724 and
 must land before its dependent mobile source; deployment/readback remains separate. Full manifest
 composition, variation/side integration, native choice screens and basket writes remain required.
+
+Variation projections preserve exact IDs, deterministic active defaults, and the server's base-row
+fallback when all variations are inactive. Suggested sides retain association and product IDs
+separately, require current orderable detail reads, seed required sides, and validate each selected
+variation and quantity. Side DTOs cannot express nested required groups or sauce choices; those
+shapes are unavailable in this projection. These pure projections do not fetch, write or calculate prices. Nested
+manifest composition, native UI and complete basket submission remain required.
