@@ -1,4 +1,4 @@
-import { MAX_BASKET_ROWS } from '../../domain/basketLimits';
+import { MAX_BASKET_ROWS, MAX_BASKET_DEPTH } from '../../domain/basketLimits';
 import { canonicalUuidSchema } from '../../core/identifiers';
 import type { BasketLine } from '../../api/basketResponse';
 export type BasketRow = Readonly<{
@@ -12,13 +12,12 @@ export type BasketRow = Readonly<{
   instructions: string | null;
   nested: boolean;
 }>;
-const MAX_DEPTH = 8;
 export function basketRows(items: readonly BasketLine[]): BasketRow[] {
   const rows: BasketRow[] = [];
   const stack = items.map((line, index) => ({ line, key: String(index), depth: 0 })).reverse();
   while (stack.length) {
     const { line, key, depth } = stack.pop()!;
-    if (depth > MAX_DEPTH || rows.length >= MAX_BASKET_ROWS)
+    if (depth > MAX_BASKET_DEPTH || rows.length >= MAX_BASKET_ROWS)
       throw new Error('Unsupported basket composition');
     const name = line.productName || line.menuName || null;
     const label = line.presentationLabel;
