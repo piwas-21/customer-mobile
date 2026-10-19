@@ -1,4 +1,5 @@
 import { readBasket } from '../api/basket';
+import type { BasketItemMutation } from '../api/basketItemMutation';
 import type { BasketAddInput } from '../api/basketRequest';
 import { principalSchema, type Principal } from './credentials';
 import { BasketOperationController } from './basketOperationController';
@@ -67,6 +68,10 @@ export class BasketWorkspace {
   add(input: BasketAddInput, locale: string) {
     this.assertCurrent();
     return this.operations.add(input, locale);
+  }
+  mutate(input: BasketItemMutation, locale: string) {
+    this.assertCurrent();
+    return this.operations.mutate(input, locale);
   }
   recover(locale: string) {
     this.assertCurrent();

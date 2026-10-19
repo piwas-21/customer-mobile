@@ -1,3 +1,4 @@
+import { basketItemMutationRequest } from './basketItemMutation';
 import { basketResponseSchema, type CustomerBasket } from './basketResponse';
 import {
   basketOperationRecordSchema,
@@ -25,22 +26,26 @@ export async function submitBasketOperation(
   )
     throw new ApiFailure(0, 'refused');
   assertCurrent();
-  const basket = await client.request(
-    context,
-    '/api/customer-mobile/basket/items',
-    basketResponseSchema,
-    {
-      method: 'POST',
-      credentials: 'basket',
-      principal: operation.principal,
-      expectedBasketSessionId: operation.sessionId,
-      body: { ...operation.request, operationId: operation.operationId },
-      assertCurrent,
-      locale,
-    },
-  );
+  const request =
+    operation.schemaVersion === 1
+      ? {
+          path: '/api/customer-mobile/basket/items',
+          body: { ...operation.request, operationId: operation.operationId },
+        }
+      : basketItemMutationRequest(operation.request, operation.operationId);
+  const basket = await client.request(context, request.path, basketResponseSchema, {
+    method: 'POST',
+    credentials: 'basket',
+    principal: operation.principal,
+    expectedBasketSessionId: operation.sessionId,
+    body: request.body,
+    assertCurrent,
+    locale,
+  });
   assertCurrent();
   assertOwnedBasket(basket, operation.principal, operation.sessionId);
+  if (operation.schemaVersion === 2 && basket.id !== operation.request.expectedBasketId)
+    throw new ApiFailure(200, 'contract');
   return basket;
 }
 

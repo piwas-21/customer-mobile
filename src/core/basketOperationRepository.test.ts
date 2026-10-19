@@ -51,6 +51,7 @@ test('captures nested input and principal before waiting for the secure write qu
   owner.id = 'other';
   request.ingredientQuantities[tenantB] = 99;
   const result = await pending;
+  if (result.schemaVersion !== 1) throw new Error('Expected the saved add format');
   expect(result.principal.id).toBe('basket');
   expect(result.request.ingredientQuantities).toEqual({ [tenantB]: 1 });
 });
@@ -130,6 +131,7 @@ test('prepared and restored records deeply freeze every nested request and owner
   const restored = await new SessionRepository(store).baskets.load(context, principal, current);
   expect(restored).not.toBeNull();
   for (const record of [prepared, restored!]) {
+    if (record.schemaVersion !== 1) throw new Error('Expected the saved add format');
     expect(() => Object.assign(record, { operationId: tenantB })).toThrow(TypeError);
     expect(() => Object.assign(record.principal, { id: 'other' })).toThrow(TypeError);
     expect(() => Object.assign(record.request, { quantity: 99 })).toThrow(TypeError);

@@ -1,3 +1,5 @@
+import { basketItemMutationSchema, type BasketItemMutation } from '../api/basketItemMutation';
+import { basketOperationIntentSchema, type BasketOperationIntent } from './basketOperationRecord';
 import { basketAddInputSchema, type BasketAddInput } from '../api/basketRequest';
 import { submitBasketOperation } from '../api/basket';
 import type { CustomerBasket } from '../api/basketResponse';
@@ -44,18 +46,29 @@ export class BasketOperationController {
   }
 
   async add(input: BasketAddInput, locale: string): Promise<CustomerBasket> {
-    const request = basketAddInputSchema.parse(input);
-    return this.run(JSON.stringify(request), async () => {
+    return this.create({ schemaVersion: 1, request: basketAddInputSchema.parse(input) }, locale);
+  }
+
+  async mutate(input: BasketItemMutation, locale: string): Promise<CustomerBasket> {
+    return this.create(
+      { schemaVersion: 2, request: basketItemMutationSchema.parse(input) },
+      locale,
+    );
+  }
+
+  private create(input: BasketOperationIntent, locale: string): Promise<CustomerBasket> {
+    const intent = basketOperationIntentSchema.parse(input);
+    return this.run(JSON.stringify(intent), async () => {
       if (this.accepted) throw new ApiFailure(409, 'refused');
       if (await this.operations.load(this.context, this.principal, this.assertCurrent))
         throw new ApiFailure(409, 'refused');
       const bootstrap = await readBootstrap(this.client, this.context);
       this.assertCurrent();
       if (!canUse(bootstrap, 'ordering')) throw new ApiFailure(404, 'refused');
-      const pending = await this.operations.prepare(
+      const pending = await this.operations.prepareRequest(
         this.context,
         this.principal,
-        request,
+        intent,
         this.createId,
         this.assertCurrent,
         'create-only',
