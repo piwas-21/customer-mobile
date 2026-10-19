@@ -147,6 +147,9 @@ review choices before asynchronous credential reads without creating a session o
 Composition parsing checks depth and the complete row budget before recursive decoding; signed
 component modifiers and current fractional-cent discount rules remain representable. A quote creates
 no durable order/payment operation and transport failures are not automatically retried.
+The basket opens a read-only total review for a ready takeaway/delivery basket. It presents current
+server money and payment choices, withdraws changed/late/closed reviews and submits no order.
+The review currently requests zero tip and points; selecting these belongs to connected checkout.
 
 This source contract depends on the additive backend native checkout endpoint. Connected checkout,
 contact/address entry, durable order acceptance, payment recovery and installed-device evidence remain
