@@ -27,15 +27,20 @@ export function orderStatusKey(value: string, payment: boolean) {
   if (!known.has(value)) return 'receiptStatusUnknown';
   return `${group}.${value}`;
 }
-export function receiptFormatters(value: OrderReceipt, locale: string) {
+export function receiptFormatters(
+  value: Pick<OrderReceipt, 'businessTimeZoneId'> & { currency: string | null },
+  locale: string,
+) {
   const date = new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: value.businessTimeZoneId,
   });
-  const money = new Intl.NumberFormat(locale, { style: 'currency', currency: value.currency });
+  const money = value.currency
+    ? new Intl.NumberFormat(locale, { style: 'currency', currency: value.currency })
+    : undefined;
   return {
     date: (text: string) => date.format(new Date(text)),
-    price: (amount: number) => money.format(amount),
+    price: (amount: number) => money?.format(amount) ?? '',
   };
 }

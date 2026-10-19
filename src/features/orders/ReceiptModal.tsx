@@ -1,43 +1,29 @@
-import { useMemo, useState } from 'react';
-import { FlatList, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
-import BasketLine from '../basket/BasketLine';
 import type useOrderReceipts from './useOrderReceipts';
-import ReceiptSummary from './ReceiptSummary';
-import { receiptFormatters } from './orderPresentation';
-import { receiptRows } from './receiptRows';
+import ReceiptContent from './ReceiptContent';
 export default function ReceiptModal({
   orders,
 }: Readonly<{ orders: ReturnType<typeof useOrderReceipts> }>) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [confirm, setConfirm] = useState(false);
-  const value = orders.receipt;
-  const rows = useMemo(() => (value ? receiptRows(value.items) : []), [value]);
-  const format = value ? receiptFormatters(value, i18n.language) : undefined;
   return (
     <BaseModal title={t('savedOrder')} onClose={orders.close} scroll={false}>
-      <FlatList
-        data={rows}
-        keyExtractor={(row) => row.key}
-        renderItem={({ item }) => (
-          <BasketLine row={item} price={format!.price} edit={() => undefined} disabled />
-        )}
-        ListHeaderComponent={
-          <View>
-            {value ? <ReceiptSummary value={value} /> : null}
-            {orders.item?.outcome === 'Cancelled' ? (
-              <Feedback message={t('stoppedOrderAttempt')} />
-            ) : null}
-            {orders.receiptLoading ? <Feedback message={t('loading')} loading /> : null}
-            {orders.receiptFailed ? (
-              <Feedback message={t('receiptUnavailable')} retry={orders.refreshReceipt} />
-            ) : null}
-          </View>
+      <ReceiptContent
+        value={orders.receipt}
+        loading={orders.receiptLoading}
+        failed={orders.receiptFailed}
+        retry={orders.refreshReceipt}
+        header={
+          orders.item?.outcome === 'Cancelled' ? (
+            <Feedback message={t('stoppedOrderAttempt')} />
+          ) : null
         }
-        ListFooterComponent={
+        footer={
           <View>
             {orders.item?.outcome === 'Applied' ? (
               <Button

@@ -323,3 +323,17 @@ response does not bind a historical amount to an immutable currency. Search, sca
 back/removal/refresh use shared controls and scrollable virtualized lists. Expiry is checked again
 on foreground. Physical cached-menu timing, full locales/RTL and offboarding/purge acceptance remain
 separate plan requirements.
+
+## Owned historical receipt detail
+
+A selected account-history row opens a single receipt modal through the guarded customer GET.
+The response must match the selected UUID; malformed/private extras are rejected. It shares the
+bounded frozen-composition renderer with saved local receipts. Currency is the recorded historical
+currency only. Legacy null currency hides all monetary rows and line prices with an explanation;
+contents, options, quantities and separate payment/fulfillment status remain visible.
+
+Private queries use the current account/version and tenant generation, no retries or persistence,
+and zero cache retention. Refresh/foreground reads withdraw stale contents, and dismissal/owner
+withdrawal removes private queries. Back returns to the bounded history list; native modal escape
+and Close dismiss the flow. Real backend ownership, deployed readback, installed large-text/screen-
+reader behavior and full cancellation/reorder remain distinct acceptance gates.
