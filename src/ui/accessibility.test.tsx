@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
+import * as ReactNative from 'react-native';
 import Button from './Button';
 import Field from './Field';
 import { themes } from './theme';
@@ -41,3 +42,21 @@ it('keeps a persistent accessible field label and announces validation errors', 
   expect(screen.getByLabelText('Email address')).toBeTruthy();
   expect(screen.getByRole('alert')).toHaveTextContent('Enter an email address');
 });
+
+it.each(['light', 'dark'] as const)(
+  '%s destructive controls bind readable semantic colors and touch targets',
+  (scheme) => {
+    const color = jest.spyOn(ReactNative, 'useColorScheme').mockReturnValue(scheme);
+    try {
+      const screen = render(<Button label="Remove item" destructive onPress={jest.fn()} />);
+      expect(screen.getByRole('button', { name: 'Remove item' })).toHaveStyle({
+        backgroundColor: themes[scheme].surface,
+        borderColor: themes[scheme].danger,
+        minHeight: 48,
+      });
+      expect(screen.getByText('Remove item')).toHaveStyle({ color: themes[scheme].danger });
+    } finally {
+      color.mockRestore();
+    }
+  },
+);

@@ -58,10 +58,38 @@ const en = {
   openBasket: 'Open basket',
   basketEmpty: 'Your basket is empty.',
   basketUnavailable: 'Your basket could not be loaded. Try again before adding more dishes.',
-  basketPending: 'An earlier add needs confirmation. Check its result before adding another dish.',
-  recoverBasket: 'Check earlier add',
+  basketPending: 'An earlier change needs confirmation. Resolve it before changing your basket.',
+  recoverBasket: 'Check earlier change',
   basketAddFailed:
     'We could not confirm the add. Open your basket to check before trying another dish.',
+  close: 'Close',
+  editBasketItem: 'Edit {{name}}',
+  removeBasketItem: 'Remove item',
+  removeBasketTitle: 'Remove {{name}}?',
+  removeBasketConfirmation:
+    'Remove {{name}} × {{quantity}} and all its included choices from your basket?',
+  confirmRemoveBasketItem: 'Yes, remove item',
+  keepBasketItem: 'Keep item',
+  basketEditChanged:
+    'Your basket changed. Close this editor and review the current item before editing again.',
+  basketQuantityUnsupported:
+    'This item has quantity {{quantity}}. Change this quantity on the restaurant website, or remove the item here.',
+  basketNotesTooLong: 'Use up to 500 characters for kitchen instructions.',
+  basketEditPriceHint:
+    'The restaurant will confirm the updated price. Included choices stay with this item.',
+  basketEditFailed:
+    'We could not confirm the change. Close this editor and resolve the pending change in your basket.',
+  stopBasketRetry: 'Stop retrying this change',
+  confirmBasketCancellation: 'Confirm and check outcome',
+  finishBasketCancellation: 'Finish cancellation check',
+  basketCancelExplanation:
+    'We will ask the restaurant to stop this change if it has not happened yet. An already applied change stays in your basket. This does not undo or remove an item.',
+  basketCancelling: 'A cancellation check is pending. Finish it before changing your basket.',
+  basketAlreadyApplied:
+    'The earlier change was already applied. It has not been undone. Review your current basket.',
+  basketCancelled: 'The earlier change was stopped. Review your current basket before continuing.',
+  basketResolutionFailed:
+    'The result is still unconfirmed. Your basket stays protected. Try this check again.',
   serverPricedBasket: 'Prices confirmed by the restaurant',
   subtotal: 'Subtotal',
   total: 'Total',

@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                             | Remaining acceptance                                                                                           |
-| ----- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                                       |
-| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Checkout/payment return, notification tap and physical iPhone/Android journeys                                 |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                      |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, basket editing, checkout, orders/reorder/payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                                            |
-| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                             |
-| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                                                |
+| Phase | Current source                                                                                             | Remaining acceptance                                                                                     |
+| ----- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                                 |
+| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Checkout/payment return, notification tap and physical iPhone/Android journeys                           |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                |
+| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, channels, checkout, orders/reorder/payment recovery |
+| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                                      |
+| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                       |
+| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                                          |
 
 ## Workflow and dependency gates
 
@@ -87,20 +87,20 @@ reviewed basket ID/fingerprint and an explicit absolute quantity with preserved 
 update and removal cannot borrow or overwrite one another's pending identity. Unknown and stale
 refusals retain the journal; validated readback must still match the expected basket. Logout, late
 responses, process/controller restart and storage failures use the same owner/cleanup guards. This
-source does not expose edit controls yet. The explicit cancellation adapter first persists the
+source exposes connected root editing/removal controls. The explicit cancellation adapter first persists the
 customer's cancellation choice in the same secure journal; a restart cannot resume original execution.
 It sends the exact original body/route/identity to the dedicated cancellation endpoint. Validated
 Cancelled proof seals late execution; Applied proof explains the effect already happened, even when
 its original basket was erased. It never claims to undo that effect. Contradictory/substituted proof,
 storage failures and network errors retain the journal. Lost cleanup acknowledgement can finish from
 validated memory proof without another POST. Owner disposal/logout guards both dispatch and cleanup.
-Backend #728 supplies the accepted cancellation contract. Its migration/deployment and connected controls remain required.
+Backend #728 supplies the accepted cancellation contract. Its migration/deployment and installed acceptance remain required.
 No error or GET permits silent discard.
 
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes
-explicit pending-add recovery. Failed reads hide stale totals; unsupported depth/row counts refuse
+explicit pending-change recovery or a confirmed cancellation check. Cancellation recovery never resumes the original execution. Applied and Cancelled outcomes have distinct announcements. Failed reads hide stale totals; unsupported depth/row counts refuse
 presentation rather than silently truncating. Persistent menu access returns to the selected basket.
-Connected editing/removal, channel selection, checkout, order/payment idempotency and provider
+Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Channel selection, checkout, order/payment idempotency and provider
 settlement are still required. No source helper authorizes automatic order/payment retries or an offline write queue.
 
 ## Native and device evidence

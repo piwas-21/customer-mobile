@@ -30,6 +30,7 @@ it('keeps nested server composition and instructions while showing amounts only 
   expect(rows).toEqual([
     {
       key: '0',
+      itemId: root.id,
       name: 'Meal',
       quantity: 2,
       amount: 14,
@@ -40,6 +41,7 @@ it('keeps nested server composition and instructions while showing amounts only 
     },
     {
       key: '0.0',
+      itemId: null,
       name: 'Dish · Chicken',
       quantity: 2,
       amount: null,

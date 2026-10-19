@@ -1,6 +1,7 @@
 import '../../i18n';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
+import type { CustomerBasket } from '../../api/basketResponse';
 import BasketScreen from './BasketScreen';
 import BasketShortcut from './BasketShortcut';
 import { useBasket } from './BasketProvider';
@@ -10,6 +11,13 @@ import { basketResponse } from '../../test/basketApi';
 import { bootstrapSchema } from '../../core/capabilities';
 import { tenantA } from '../../test/fixtures';
 import { routerFixture } from '../../test/router';
+jest.mock(
+  'react-native-safe-area-context',
+  () =>
+    jest.requireActual<typeof import('react-native-safe-area-context/jest/mock')>(
+      'react-native-safe-area-context/jest/mock',
+    ).default,
+);
 jest.mock('./BasketProvider', () => ({ useBasket: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('expo-router', () => ({ useRouter: jest.fn(), Stack: { Screen: () => null } }));
@@ -45,12 +53,14 @@ it('shows server totals, instructions/removals and a persistent basket destinati
   fireEvent.press(shortcut.getByRole('button', { name: 'Basket · 2' }));
   expect(jest.mocked(useRouter)().push).toHaveBeenCalledWith('/basket');
 });
-it('requires an explicit recovery action even when the current basket already contains items', () => {
+it('requires an explicit recovery action even when the current basket already contains items', async () => {
   const state = basketState({ basket: basketResponse(), hasPending: true, canAdd: false });
   jest.mocked(useBasket).mockReturnValue(state);
   const screen = render(<BasketScreen />);
   expect(state.recover).not.toHaveBeenCalled();
-  fireEvent.press(screen.getByRole('button', { name: 'Check earlier add' }));
+  await act(async () => {
+    fireEvent.press(screen.getByRole('button', { name: 'Check earlier change' }));
+  });
   expect(state.recover).toHaveBeenCalledTimes(1);
 });
 it('withholds stale totals when a basket read failed and exposes refresh instead', () => {
@@ -69,4 +79,54 @@ it('offers menu navigation from an empty basket and hides the shortcut when orde
   const screen = render(<BasketScreen />);
   fireEvent.press(screen.getByRole('button', { name: 'Explore the menu' }));
   expect(jest.mocked(useRouter)().replace).toHaveBeenCalledWith('/menu');
+});
+it('edits roots only and discards private drafts as soon as the basket owner changes', () => {
+  const value: CustomerBasket = basketResponse();
+  value.items[0]!.childItems = [
+    { ...value.items[0]!, productName: 'Included child', childItems: [] },
+  ];
+  const first = basketState({ basket: value });
+  jest.mocked(useBasket).mockReturnValue(first);
+  const screen = render(<BasketScreen />);
+  expect(screen.queryByRole('button', { name: 'Edit Included child' })).toBeNull();
+  fireEvent.press(screen.getByRole('button', { name: 'Edit Meal' }));
+  fireEvent.changeText(
+    screen.getByLabelText('Instructions for the kitchen (optional)'),
+    'Private draft',
+  );
+  const next = basketState({
+    basket: basketResponse(),
+    revision: [
+      first.revision[0],
+      first.revision[1],
+      first.revision[2],
+      first.revision[3],
+      first.revision[4],
+      'next-owner',
+    ],
+  });
+  jest.mocked(useBasket).mockReturnValue(next);
+  screen.rerender(<BasketScreen />);
+  expect(screen.queryByDisplayValue('Private draft')).toBeNull();
+  expect(screen.queryByLabelText('Instructions for the kitchen (optional)')).toBeNull();
+  expect(first.mutate).not.toHaveBeenCalled();
+  expect(next.mutate).not.toHaveBeenCalled();
+});
+it('keeps the reviewed revision when the server basket changes and requires reopening the editor', () => {
+  const state = basketState({ basket: basketResponse() });
+  jest.mocked(useBasket).mockReturnValue(state);
+  const screen = render(<BasketScreen />);
+  fireEvent.press(screen.getByRole('button', { name: 'Edit Meal' }));
+  const changed = {
+    ...state,
+    basket: { ...basketResponse(), purchaseFingerprint: 'B'.repeat(64) },
+  };
+  jest.mocked(useBasket).mockReturnValue(changed);
+  screen.rerender(<BasketScreen />);
+  expect(screen.getByText(/Your basket changed/)).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Save changes', disabled: true }));
+  expect(state.mutate).not.toHaveBeenCalled();
+  fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+  fireEvent.press(screen.getByRole('button', { name: 'Edit Meal' }));
+  expect(screen.queryByText(/Your basket changed/)).toBeNull();
 });

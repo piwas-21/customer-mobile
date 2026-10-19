@@ -78,6 +78,7 @@ function exclusiveSelection(selected: readonly Choice[]): boolean {
   const keys = selected.map((option) => option.exclusionKey).filter(Boolean);
   return new Set(keys).size === keys.length;
 }
+export const MAX_ITEM_QUANTITY = 99;
 export function quantityIsValid(quantity: number): boolean {
-  return Number.isSafeInteger(quantity) && quantity >= 1 && quantity <= 99;
+  return Number.isSafeInteger(quantity) && quantity >= 1 && quantity <= MAX_ITEM_QUANTITY;
 }

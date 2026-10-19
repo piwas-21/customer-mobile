@@ -7,6 +7,7 @@ type Props = Readonly<{
   disabled?: boolean;
   busy?: boolean;
   secondary?: boolean;
+  destructive?: boolean;
 }>;
 export default function Button({
   label,
@@ -15,8 +16,12 @@ export default function Button({
   disabled = false,
   busy = false,
   secondary = false,
+  destructive = false,
 }: Props) {
   const theme = useTheme();
+  const outlined = secondary || destructive;
+  const baseForeground = secondary ? theme.text : theme.onAccent;
+  const foreground = destructive ? theme.danger : baseForeground;
   return (
     <Pressable
       accessibilityRole="button"
@@ -27,18 +32,16 @@ export default function Button({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: secondary ? theme.surface : theme.accent,
-          borderColor: theme.border,
+          backgroundColor: outlined ? theme.surface : theme.accent,
+          borderColor: destructive ? theme.danger : theme.border,
           opacity: pressed || disabled ? 0.65 : 1,
         },
       ]}
     >
       {busy ? (
-        <ActivityIndicator color={secondary ? theme.text : theme.onAccent} />
+        <ActivityIndicator color={foreground} />
       ) : (
-        <Text style={[styles.label, { color: secondary ? theme.text : theme.onAccent }]}>
-          {label}
-        </Text>
+        <Text style={[styles.label, { color: foreground }]}>{label}</Text>
       )}
     </Pressable>
   );
