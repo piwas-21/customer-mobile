@@ -45,7 +45,7 @@ it('retains full recipe state when an authored screen contains only a subset', (
       { kind: 'ProductIngredient', targetId: recipeIds.included, presentationOrder: 2 },
     ],
   };
-  const { steps, defaults } = productFlow(product, new Map(), 'en', compositionLabels);
+  const { steps, defaults, groups } = productFlow(product, new Map(), 'en', compositionLabels);
   const screens = steps.filter((step) => step.kind === 'groups');
   expect(screens).toHaveLength(4);
   const first = screens[0]!.choices[0]!;
@@ -56,6 +56,11 @@ it('retains full recipe state when an authored screen contains only a subset', (
   });
   expect(flowStepComplete(screens[0]!, defaults)).toBe(true);
   expect(defaults.groups.recipe).toEqual({ [recipeIds.fixed]: 1, [recipeIds.included]: 1 });
+  expect(groups.find(({ id }) => id === 'recipe')?.options.map(({ id }) => id)).toEqual([
+    recipeIds.fixed,
+    recipeIds.included,
+    recipeIds.extra,
+  ]);
 });
 it('requires exact explicit memberships while counting a repeated ingredient as one choice', () => {
   const product = explicitCompositionProduct();
