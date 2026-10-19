@@ -106,4 +106,3 @@ without generating new IDs. Rejections, unknown outcomes and invalid proof retai
 A lost cleanup acknowledgement blocks new adds and finishes cleanup without another POST.
 Logout, tenant switching and disposal refuse late proof. These are controlled source fixtures;
 full composition, basket UI/refresh, checkout, deployment and physical process-death checks remain open.
-
