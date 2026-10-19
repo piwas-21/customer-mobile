@@ -2,7 +2,10 @@ const methods = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'optio
 const own = (value, key) => Object.hasOwn(value ?? {}, key);
 const orderedEntries = (value) =>
   Object.keys(value)
-    .sort()
+    .sort((left, right) => {
+      if (left === right) return 0;
+      return left < right ? -1 : 1;
+    })
     .map((key) => [key, value[key]]);
 export function customerSubset(document, operations) {
   if (!/^3\.0\.\d+$/.test(document.openapi) || !Object.keys(operations).length)

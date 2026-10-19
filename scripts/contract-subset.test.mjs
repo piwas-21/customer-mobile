@@ -99,3 +99,13 @@ test('committed snapshot contains exactly the allowlisted operations and reachab
   const operations = JSON.parse(readFileSync('contracts/customer-operations.json', 'utf8'));
   assert.deepEqual(JSON.parse(JSON.stringify(customerSubset(snapshot, operations))), snapshot);
 });
+
+test('capture key ordering uses fixed code points rather than host language collation', () => {
+  const paths = { '/api/é': { get: {} }, '/api/a': { get: {} }, '/api/A': { get: {} } };
+  const operations = Object.fromEntries(Object.keys(paths).map((path) => [path, ['get']]));
+  assert.deepEqual(Object.keys(customerSubset({ openapi: '3.0.4', paths }, operations).paths), [
+    '/api/A',
+    '/api/a',
+    '/api/é',
+  ]);
+});
