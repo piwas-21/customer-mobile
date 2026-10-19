@@ -38,7 +38,14 @@ async function setup(data = addressPage()) {
     />,
     { wrapper: Wrapper },
   );
-  await waitFor(() => expect(screen.queryByText('Loading…')).toBeNull());
+  // Await actual ready content; the 20-row instrumented render can exceed the
+  // default one-second wait on a busy native build host. This is not device timing.
+  await screen.findAllByText(
+    data.items[0]?.label ?? 'There are no saved addresses on this page.',
+    {},
+    { timeout: 5000 },
+  );
+  expect(screen.queryByText('Loading…')).toBeNull();
   return {
     ...fixture,
     cache,
