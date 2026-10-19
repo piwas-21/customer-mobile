@@ -5,6 +5,8 @@ export const ordersEnglish = {
   refreshOrderHistory: 'Refresh order history',
   nextOrders: 'Older orders',
   previousOrders: 'Newer orders',
+  viewHistoryReceipt: 'View order {{number}}',
+  backToOrderHistory: 'Back to your orders',
   historyPayable: 'Current amount payable: {{price}}',
   historyAmountUnavailable: 'Historical amount unavailable. Ask the restaurant for a receipt.',
 

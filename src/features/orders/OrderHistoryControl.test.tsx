@@ -8,6 +8,7 @@ import { historyItem, historyPage } from '../../test/orderHistory';
 import { sessionSetup } from '../../test/sessions';
 import { response } from '../../test/transport';
 import { deferred } from '../../test/deferred';
+import { receiptResponse } from '../../test/orderReceipt';
 jest.mock('../account/SessionProvider', () => ({ useSession: jest.fn() }));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 jest.mock(
@@ -136,32 +137,48 @@ it('withdraws successful private rows and price on failed refresh and recovers t
     f.dispose();
   }
 });
-it('cannot restore old private history after owner withdrawal and a late HTTP success', async () => {
-  const f = await setup();
-  const reply = deferred<Response>();
-  const entered = deferred<void>();
-  f.fetcher.mockImplementationOnce(() => {
-    entered.resolve();
-    return reply.promise;
-  });
-  try {
-    f.open();
-    await act(async () => {
-      await entered.promise;
+it.each([false, true])(
+  'cannot restore private history/detail after owner withdrawal and late success: %s',
+  async (detail) => {
+    const f = await setup();
+    const reply = deferred<Response>();
+    const entered = deferred<void>();
+    if (detail) {
+      f.open();
+      await f.screen.findByText('Order HISTORY-1');
+    }
+    f.fetcher.mockImplementationOnce(() => {
+      entered.resolve();
+      return reply.promise;
     });
-    f.controller.dispose();
-    jest
-      .mocked(useSession)
-      .mockReturnValue({ ...f.state, userId: null, ownerVersion: f.controller.ownerVersion });
-    f.screen.rerender(f.view());
-    await act(async () => reply.resolve(response({ success: true, data: historyPage() })));
-    expect(f.screen.queryByText('Order HISTORY-1')).toBeNull();
-    expect(f.cache.getQueryCache().findAll()).toHaveLength(0);
-  } finally {
-    reply.resolve(response({}, 503));
-    f.dispose();
-  }
-});
+    try {
+      if (detail) fireEvent.press(f.screen.getByRole('button', { name: 'View order HISTORY-1' }));
+      else f.open();
+      await act(async () => {
+        await entered.promise;
+      });
+      f.controller.dispose();
+      jest
+        .mocked(useSession)
+        .mockReturnValue({ ...f.state, userId: null, ownerVersion: f.controller.ownerVersion });
+      f.screen.rerender(f.view());
+      await act(async () =>
+        reply.resolve(
+          response({
+            success: true,
+            data: detail ? { ...receiptResponse(), orderId: historyItem().orderId } : historyPage(),
+          }),
+        ),
+      );
+      expect(f.screen.queryByText('Order 20261019-001')).toBeNull();
+      expect(f.screen.queryByText('Order HISTORY-1')).toBeNull();
+      expect(f.cache.getQueryCache().findAll()).toHaveLength(0);
+    } finally {
+      reply.resolve(response({}, 503));
+      f.dispose();
+    }
+  },
+);
 it.each(['unavailable', 'needsCleanup'] as const)(
   'hides private history while %s and refuses a disposed account before opening',
   async (key) => {
@@ -202,6 +219,28 @@ it('does not resurrect a withdrawn private modal when account availability retur
     f.screen.rerender(f.view());
     expect(f.screen.queryByText('Order HISTORY-1')).toBeNull();
     expect(f.fetcher).toHaveBeenCalledTimes(1);
+  } finally {
+    f.dispose();
+  }
+});
+
+it('opens the selected owned detail in one modal and returns to the history page', async () => {
+  const f = await setup();
+  try {
+    f.open();
+    await f.screen.findByText('Order HISTORY-1');
+    f.fetcher.mockResolvedValueOnce(
+      response({ success: true, data: { ...receiptResponse(), orderId: historyItem().orderId } }),
+    );
+    fireEvent.press(f.screen.getByRole('button', { name: 'View order HISTORY-1' }));
+    await f.screen.findByText('Order 20261019-001');
+    expect(f.screen.queryByText('Order HISTORY-1')).toBeNull();
+    expect(f.screen.getAllByRole('button', { name: 'Close' })).toHaveLength(1);
+    fireEvent.press(f.screen.getByRole('button', { name: 'Back to your orders' }));
+    await f.screen.findByText('Order HISTORY-1');
+    expect(f.screen.queryByText('Order 20261019-001')).toBeNull();
+    fireEvent.press(f.screen.getByRole('button', { name: 'Close' }));
+    expect(f.cache.getQueryCache().findAll()).toHaveLength(0);
   } finally {
     f.dispose();
   }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,6 +15,7 @@ import Feedback from '../../ui/Feedback';
 import { useTheme } from '../../ui/theme';
 import { listSummaryStyles as styles } from '../../ui/listSummaryStyles';
 import { orderStatusKey } from './orderPresentation';
+import HistoryReceiptModal from './HistoryReceiptModal';
 type Props = Readonly<{
   context: TenantContext;
   controller: SessionController;
@@ -29,6 +31,7 @@ export default function OrderHistoryModal({
   onClose,
 }: Props) {
   const { t } = useTranslation();
+  const [selected, setSelected] = useState<string>();
   const page = usePrivatePages(
     context,
     userId,
@@ -38,6 +41,18 @@ export default function OrderHistoryModal({
     (data) => data.nextBefore,
   );
   const data = page.data;
+  if (selected)
+    return (
+      <HistoryReceiptModal
+        context={context}
+        controller={controller}
+        userId={userId}
+        ownerVersion={ownerVersion}
+        orderId={selected}
+        onBack={() => setSelected(undefined)}
+        onClose={onClose}
+      />
+    );
   let emptyMessage = 'noAccountOrders';
   if (page.loading) emptyMessage = 'loading';
   else if (page.failed) emptyMessage = 'orderHistoryUnavailable';
@@ -48,7 +63,13 @@ export default function OrderHistoryModal({
         keyExtractor={(item) => item.orderId}
         contentContainerStyle={styles.content}
         renderItem={({ item }) =>
-          data ? <HistoryRow item={item} zone={data.businessTimeZoneId} /> : null
+          data ? (
+            <HistoryRow
+              item={item}
+              zone={data.businessTimeZoneId}
+              open={() => setSelected(item.orderId)}
+            />
+          ) : null
         }
         ListHeaderComponent={
           data ? (
@@ -87,7 +108,11 @@ export default function OrderHistoryModal({
     </BaseModal>
   );
 }
-function HistoryRow({ item, zone }: Readonly<{ item: OrderHistoryItem; zone: string }>) {
+function HistoryRow({
+  item,
+  zone,
+  open,
+}: Readonly<{ item: OrderHistoryItem; zone: string; open: () => void }>) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const date = new Intl.DateTimeFormat(i18n.language, {
@@ -118,6 +143,11 @@ function HistoryRow({ item, zone }: Readonly<{ item: OrderHistoryItem; zone: str
       <Text style={[styles.body, { color: theme.secondary }]}>
         {price ? t('historyPayable', { price }) : t('historyAmountUnavailable')}
       </Text>
+      <Button
+        label={t('viewHistoryReceipt', { number: item.orderNumber })}
+        secondary
+        onPress={open}
+      />
     </View>
   );
 }

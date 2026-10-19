@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { OrderReceipt } from '../../api/orderReceipt';
+import type { HistoryReceipt } from '../../api/historyReceipt';
 import MoneySummary from '../../ui/MoneySummary';
+import Feedback from '../../ui/Feedback';
 import StatusBadge from '../../ui/StatusBadge';
 import { spacing, typography, useTheme } from '../../ui/theme';
 import { orderStatusKey, receiptFormatters } from './orderPresentation';
-export default function ReceiptSummary({ value }: Readonly<{ value: OrderReceipt }>) {
+export default function ReceiptSummary({ value }: Readonly<{ value: HistoryReceipt }>) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const format = receiptFormatters(value, i18n.language);
@@ -44,12 +45,18 @@ export default function ReceiptSummary({ value }: Readonly<{ value: OrderReceipt
       <Text style={[styles.body, { color: theme.secondary }]}>
         {t('receiptTimeZone', { zone: value.businessTimeZoneId })}
       </Text>
-      <MoneySummary value={value.money} price={format.price} />
-      {rows.map(([key, amount]) => (
-        <Text key={key} style={[styles.body, { color: theme.text }]}>
-          {t(key)}: {format.price(amount)}
-        </Text>
-      ))}
+      {value.currency ? (
+        <>
+          <MoneySummary value={value.money} price={format.price} />
+          {rows.map(([key, amount]) => (
+            <Text key={key} style={[styles.body, { color: theme.text }]}>
+              {t(key)}: {format.price(amount)}
+            </Text>
+          ))}
+        </>
+      ) : (
+        <Feedback message={t('historyAmountUnavailable')} />
+      )}
     </View>
   );
 }
