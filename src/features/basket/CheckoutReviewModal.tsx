@@ -12,40 +12,16 @@ export default function CheckoutReviewModal({
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const quote = review.quote;
-  const money = quote?.money;
-  const rows = money
-    ? [
-        { label: t('subtotal'), amount: money.subTotal },
-        ...(money.tax ? [{ label: t('tax'), amount: money.tax }] : []),
-        ...(money.deliveryFee ? [{ label: t('deliveryFee'), amount: money.deliveryFee }] : []),
-        ...(money.discount + money.customerDiscount
-          ? [{ label: t('discount'), amount: money.discount + money.customerDiscount }]
-          : []),
-        ...(money.pointsDiscount
-          ? [{ label: t('pointsCredit'), amount: money.pointsDiscount }]
-          : []),
-        ...(money.tip ? [{ label: t('tip'), amount: money.tip }] : []),
-      ]
-    : [];
   return (
     <BaseModal title={t('checkoutReview')} onClose={review.close}>
-      {review.changed ? (
-        <Feedback message={t('checkoutReviewChanged')} />
-      ) : review.busy || review.failed ? (
-        <Feedback
-          loading={review.busy}
-          message={t(review.busy ? 'loading' : 'checkoutQuoteUnavailable')}
-          retry={review.failed ? () => void review.show() : undefined}
-        />
-      ) : null}
-      {quote && money ? (
+      <ReviewFeedback review={review} />
+      {quote ? (
         <View style={styles.content}>
           <Text style={[styles.body, { color: theme.secondary }]}>
             {t(quote.priceChanged ? 'checkoutPriceChanged' : 'serverPricedBasket')}
           </Text>
           <MoneySummary
-            rows={rows}
-            total={money.total}
+            value={quote.money}
             price={(amount) =>
               new Intl.NumberFormat(i18n.language, {
                 style: 'currency',
@@ -67,6 +43,14 @@ export default function CheckoutReviewModal({
       <Button label={t('close')} onPress={review.close} secondary />
     </BaseModal>
   );
+}
+function ReviewFeedback({ review }: Readonly<{ review: ReturnType<typeof useCheckoutReview> }>) {
+  const { t } = useTranslation();
+  if (review.changed) return <Feedback message={t('checkoutReviewChanged')} />;
+  if (review.busy) return <Feedback loading message={t('loading')} />;
+  if (review.failed)
+    return <Feedback message={t('checkoutQuoteUnavailable')} retry={() => void review.show()} />;
+  return null;
 }
 const styles = StyleSheet.create({
   content: { gap: spacing.md },

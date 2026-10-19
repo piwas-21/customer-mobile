@@ -1,23 +1,39 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { spacing, typography, useTheme } from './theme';
-type Row = Readonly<{ label: string; amount: number }>;
+type Money = Readonly<{
+  subTotal: number;
+  deliveryFee: number;
+  discount: number;
+  customerDiscount: number;
+  total: number;
+  tax?: number;
+  pointsDiscount?: number;
+  tip?: number;
+}>;
 export default function MoneySummary({
-  rows,
-  total,
+  value,
   price,
-}: Readonly<{ rows: readonly Row[]; total: number; price: (amount: number) => string }>) {
+}: Readonly<{ value: Money; price: (amount: number) => string }>) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const rows = [
+    { key: 'subtotal', amount: value.subTotal },
+    { key: 'tax', amount: value.tax ?? 0 },
+    { key: 'deliveryFee', amount: value.deliveryFee },
+    { key: 'discount', amount: value.discount + value.customerDiscount },
+    { key: 'pointsCredit', amount: value.pointsDiscount ?? 0 },
+    { key: 'tip', amount: value.tip ?? 0 },
+  ].filter((row) => row.key === 'subtotal' || row.amount > 0);
   return (
     <View style={styles.summary}>
       {rows.map((row) => (
-        <Text key={row.label} style={[styles.body, { color: theme.text }]}>
-          {row.label}: {price(row.amount)}
+        <Text key={row.key} style={[styles.body, { color: theme.text }]}>
+          {t(row.key)}: {price(row.amount)}
         </Text>
       ))}
       <Text style={[styles.total, { color: theme.text }]}>
-        {t('total')}: {price(total)}
+        {t('total')}: {price(value.total)}
       </Text>
     </View>
   );

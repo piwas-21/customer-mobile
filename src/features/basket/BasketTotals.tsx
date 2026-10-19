@@ -12,19 +12,7 @@ export default function Totals({
   return (
     <View style={styles.totals}>
       <Text style={[styles.hint, { color: theme.secondary }]}>{t('serverPricedBasket')}</Text>
-      <MoneySummary
-        rows={[
-          { label: t('subtotal'), amount: value.subTotal },
-          ...(value.deliveryFee > 0
-            ? [{ label: t('deliveryFee'), amount: value.deliveryFee }]
-            : []),
-          ...(value.discount + value.customerDiscount > 0
-            ? [{ label: t('discount'), amount: value.discount + value.customerDiscount }]
-            : []),
-        ]}
-        total={value.total}
-        price={price}
-      />
+      <MoneySummary value={value} price={price} />
       <Text style={[styles.body, { color: theme.secondary }]}>{t('checkoutPreparing')}</Text>
     </View>
   );
