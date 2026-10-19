@@ -48,6 +48,8 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    const assertOwner = options.assertCurrent ?? (() => {});
+    assertOwner();
     const method = options.method ?? 'GET';
     if (method !== 'GET' && context.tenant.status !== 'active')
       throw new Error('Restaurant is read-only');
@@ -55,6 +57,7 @@ export class CustomerTransport {
     const body = options.body === undefined ? undefined : JSON.stringify(options.body);
     const headers = await requestHeaders(context, this.vault, options);
     this.boundary.assertCurrent(context);
+    assertOwner();
     const controller = new AbortController();
     const cancel = () => controller.abort();
     context.signal.addEventListener('abort', cancel, { once: true });
@@ -69,8 +72,10 @@ export class CustomerTransport {
         ...(body === undefined ? {} : { body }),
       });
       this.boundary.assertCurrent(context);
+      assertOwner();
       const data = await decodeResponse(response, schema);
       this.boundary.assertCurrent(context);
+      assertOwner();
       return data;
     } catch (error) {
       if (error instanceof ApiFailure) throw error;
