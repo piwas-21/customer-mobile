@@ -17,4 +17,5 @@ export type RequestOptions = {
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
+  expectedBasketSessionId?: string;
 };

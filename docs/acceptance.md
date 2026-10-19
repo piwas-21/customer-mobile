@@ -89,3 +89,11 @@ validation excludes prices/totals and future enum values; authoring/availability
 to the complete ordering projection. Server-proof acknowledgement, submission/principal lifecycle
 controller, native UI and process-death/device checks remain required. Backend PR #725 supplies
 the dependent server contract and must land before native submission is connected.
+
+The native basket adapter uses only `/api/customer-mobile/basket/items`, whose server contract
+requires a durable operation ID. It binds dispatch to the journal's exact basket session, validates
+server totals and nested line shapes, and refuses wrong-owner/empty proof. It retains the journal
+on every result; the controller must acknowledge only a validated success. No legacy fallback,
+write retry, native submission UI or installed ordering acceptance is introduced. Backend PR #725
+and the pending-operation/lifecycle sources must land before this adapter is released.
+
