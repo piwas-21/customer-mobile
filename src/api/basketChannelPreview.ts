@@ -27,7 +27,7 @@ export type BasketChannelPreview = z.infer<typeof previewSchema>;
 type PreviewRequest = Readonly<{
   principal: Principal;
   sessionId: string;
-  reviewed: CustomerBasket;
+  reviewed: CustomerBasket | null;
   orderType: OrderType;
   locale: string;
 }>;
@@ -41,11 +41,11 @@ export async function readBasketChannelPreview(
   const owner = Object.freeze(principalSchema.parse(principal));
   const session = canonicalUuidSchema.parse(sessionId);
   const target = orderTypeSchema.parse(orderType);
-  assertOwnedBasket(reviewed, owner, session, true);
+  if (reviewed) assertOwnedBasket(reviewed, owner, session, true);
   const snapshot = {
-    id: reviewed.id,
-    fingerprint: reviewed.purchaseFingerprint,
-    roots: new Map(reviewed.items.map((row) => [row.id, row.quantity])),
+    id: reviewed?.id ?? emptyUuid,
+    fingerprint: reviewed?.purchaseFingerprint ?? '',
+    roots: new Map(reviewed?.items.map((row) => [row.id, row.quantity]) ?? []),
   };
   assertCurrent();
   const preview = await client.request(

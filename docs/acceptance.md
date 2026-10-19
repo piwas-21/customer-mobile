@@ -103,6 +103,21 @@ presentation rather than silently truncating. Persistent menu access returns to 
 Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Channel selection, checkout, order/payment idempotency and provider
 settlement are still required. No source helper authorizes automatic order/payment retries or an offline write queue.
 
+## Reviewed channel operations
+
+The native channel adapter validates enabled order types and a read-only conflict preview against the
+captured owned basket ID, purchase fingerprint, root identities and quantities. First-install previews
+create no session, basket or operation. Existing-session reads preserve the exact principal and reject
+substituted revisions or contradictory conflicts. The workspace clones reviewed rows before awaiting
+secure credentials, and withdrawn owners cannot dispatch or publish a preview.
+
+Version-3 journal records capture the target channel and the exact confirmed root-removal IDs. Existing
+basket changes require their installed canonical session; first-install changes retain the original
+session-installation barrier. Add/edit records restore unchanged. Explicit recovery and cancellation
+use the saved original channel payload and operation ID. Applied results for an existing basket must
+match its reviewed identity before acknowledgement. The backend channel contract is in PR #729;
+backend deployment, connected channel confirmation UI and installed acceptance remain required.
+
 ## Native and device evidence
 
 Both iOS/Android JS exports pass a measured bundle budget. Verified native generation and an Android
