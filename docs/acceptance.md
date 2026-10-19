@@ -300,3 +300,26 @@ Local saved receipt access remains available through its original guarded proof 
 History summaries are source integration work; backend acceptance/readback and installed accessibility
 remain open. Detailed account-wide receipts, accepted-order cancellation and revalidated reorder are
 still required plan work. No new order, payment, provider or notification action is part of this read.
+
+## Public saved-menu previews
+
+Successful current menu browsing may persist a public text-only projection for offline reading.
+The entry is explicit from restaurant discovery, including when the live directory cannot be
+reached. It never restores a trusted tenant context or supplies a network origin, capability,
+session, checkout option, monetary amount or availability decision. Known current directory
+removal/disablement/incompatibility hides a preview. Ordering requires the normal fresh online gates.
+
+The cache has strict versioned per-environment storage, tenant/locale record identities, at most
+8 previews and 200 unique public dishes per preview, a 262144 UTF-16-code-unit envelope budget and
+7-day display/read TTL. Expired bytes are filtered from reads; replacement and explicit removal
+clear stored records. Automatic physical purge remains open. Old/future/invalid/oversized/extra-private data is rejected. Writes/removals serialize;
+older replies cannot replace a newer saved record. Oversized single records fail without changing
+storage. Storage failures leave online browsing available and are visible for explicit preview reads.
+
+Each preview shows its saved date/language and incomplete-state explanation. The oldest saved page
+date is retained across pagination. Names/descriptions and recorded allergens are text only; no
+remote images or links are requested. Prices/options remain online because the public catalogue
+response does not bind a historical amount to an immutable currency. Search, scalable text and
+back/removal/refresh use shared controls and scrollable virtualized lists. Expiry is checked again
+on foreground. Physical cached-menu timing, full locales/RTL and offboarding/purge acceptance remain
+separate plan requirements.

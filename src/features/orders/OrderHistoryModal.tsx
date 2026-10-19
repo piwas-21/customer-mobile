@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   readOrderHistory,
@@ -11,7 +11,8 @@ import usePrivatePages from '../../core/usePrivatePages';
 import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
-import { spacing, typography, useTheme } from '../../ui/theme';
+import { useTheme } from '../../ui/theme';
+import { listSummaryStyles as styles } from '../../ui/listSummaryStyles';
 import { orderStatusKey } from './orderPresentation';
 type Props = Readonly<{
   context: TenantContext;
@@ -120,9 +121,3 @@ function HistoryRow({ item, zone }: Readonly<{ item: OrderHistoryItem; zone: str
     </View>
   );
 }
-const styles = StyleSheet.create({
-  content: { gap: spacing.md },
-  row: { gap: spacing.sm, paddingVertical: spacing.md, borderBottomWidth: 1 },
-  title: { fontSize: typography.heading, fontWeight: '600' },
-  body: { fontSize: typography.body, lineHeight: 26 },
-});
