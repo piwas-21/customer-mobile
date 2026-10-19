@@ -1,9 +1,6 @@
-import { basketItemMutationRequest } from './basketItemMutation';
+import { basketOperationRequest } from './basketOperationRequest';
 import { basketResponseSchema, type CustomerBasket } from './basketResponse';
-import {
-  basketOperationRecordSchema,
-  type PendingBasketOperation,
-} from '../core/basketOperationRecord';
+import type { PendingBasketOperation } from '../core/basketOperationRecord';
 import { ApiFailure, type CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
 import { canonicalUuidSchema } from '../core/identifiers';
@@ -18,21 +15,9 @@ export async function submitBasketOperation(
   assertCurrent: () => void,
   locale: string,
 ): Promise<CustomerBasket> {
-  const operation = basketOperationRecordSchema.parse(pending);
-  if (
-    operation.phase !== 'ready' ||
-    operation.environment !== context.environment ||
-    operation.tenantId !== context.tenant.id
-  )
-    throw new ApiFailure(0, 'refused');
+  const { operation, request } = basketOperationRequest(context, pending);
+  if (operation.cancellationRequested) throw new ApiFailure(409, 'refused');
   assertCurrent();
-  const request =
-    operation.schemaVersion === 1
-      ? {
-          path: '/api/customer-mobile/basket/items',
-          body: { ...operation.request, operationId: operation.operationId },
-        }
-      : basketItemMutationRequest(operation.request, operation.operationId);
   const basket = await client.request(context, request.path, basketResponseSchema, {
     method: 'POST',
     credentials: 'basket',

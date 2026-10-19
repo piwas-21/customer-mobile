@@ -1,3 +1,4 @@
+import { BasketCancellationController } from './basketCancellationController';
 import { basketItemMutationSchema, type BasketItemMutation } from '../api/basketItemMutation';
 import { basketOperationIntentSchema, type BasketOperationIntent } from './basketOperationRecord';
 import { basketAddInputSchema, type BasketAddInput } from '../api/basketRequest';
@@ -16,6 +17,7 @@ import type { TenantContext } from './tenantContext';
 
 export class BasketOperationController {
   private readonly principal: Principal;
+  private readonly cancellation: BasketCancellationController;
   private readonly assertOwner: () => void;
   private disposed = false;
   private active: { key: string; promise: Promise<CustomerBasket> } | null = null;
@@ -30,17 +32,26 @@ export class BasketOperationController {
   ) {
     this.principal = Object.freeze(principalSchema.parse(principal));
     this.assertOwner = sessions.captureRequestOwner(this.principal);
+    this.cancellation = new BasketCancellationController(
+      context,
+      client,
+      operations,
+      this.principal,
+      this.assertCurrent,
+    );
   }
 
   dispose(): void {
     this.disposed = true;
     this.accepted = null;
+    this.cancellation.dispose();
   }
 
   async pending(): Promise<PendingBasketOperation | null> {
     this.assertCurrent();
     return (
       this.accepted?.pending ??
+      this.cancellation.pending ??
       this.operations.load(this.context, this.principal, this.assertCurrent)
     );
   }
@@ -82,9 +93,17 @@ export class BasketOperationController {
     return this.run('recover', async () => {
       if (this.accepted) return this.acknowledge();
       const pending = await this.operations.load(this.context, this.principal, this.assertCurrent);
-      if (!pending) throw new ApiFailure(409, 'refused');
+      if (!pending || pending.cancellationRequested) throw new ApiFailure(409, 'refused');
       return this.submit(pending, locale);
     });
+  }
+
+  async cancel(locale: string) {
+    this.assertCurrent();
+    if (this.active) throw new ApiFailure(409, 'refused');
+    const applied = this.accepted;
+    this.accepted = null;
+    return this.cancellation.cancel(locale, applied);
   }
 
   private async submit(pending: PendingBasketOperation, locale: string): Promise<CustomerBasket> {
@@ -117,6 +136,7 @@ export class BasketOperationController {
 
   private run(key: string, work: () => Promise<CustomerBasket>): Promise<CustomerBasket> {
     this.assertCurrent();
+    if (this.cancellation.busy || this.cancellation.pending) throw new ApiFailure(409, 'refused');
     if (this.active) {
       if (this.active.key !== key) throw new ApiFailure(409, 'refused');
       return this.active.promise;

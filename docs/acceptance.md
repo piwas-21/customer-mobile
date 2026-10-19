@@ -87,8 +87,15 @@ reviewed basket ID/fingerprint and an explicit absolute quantity with preserved 
 update and removal cannot borrow or overwrite one another's pending identity. Unknown and stale
 refusals retain the journal; validated readback must still match the expected basket. Logout, late
 responses, process/controller restart and storage failures use the same owner/cleanup guards. This
-source does not expose edit controls yet: backend publication and durable cancellation/sealing are
-required before an unresolved edit can be safely abandoned. No error or GET permits silent discard.
+source does not expose edit controls yet. The explicit cancellation adapter first persists the
+customer's cancellation choice in the same secure journal; a restart cannot resume original execution.
+It sends the exact original body/route/identity to the dedicated cancellation endpoint. Validated
+Cancelled proof seals late execution; Applied proof explains the effect already happened, even when
+its original basket was erased. It never claims to undo that effect. Contradictory/substituted proof,
+storage failures and network errors retain the journal. Lost cleanup acknowledgement can finish from
+validated memory proof without another POST. Owner disposal/logout guards both dispatch and cleanup.
+Backend publication, cancellation migration/deployment and connected controls remain required.
+No error or GET permits silent discard.
 
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes
 explicit pending-add recovery. Failed reads hide stale totals; unsupported depth/row counts refuse
