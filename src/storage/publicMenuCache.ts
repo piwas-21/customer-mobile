@@ -54,7 +54,7 @@ export function savePublicMenu(
   return update(environment, async () => {
     const existing = await readPublicMenus(environment, now);
     const identity = snapshotIdentity(snapshot);
-    const newer = existing.find(
+    const newer = existing.some(
       (value) =>
         snapshotIdentity(value) === identity &&
         Date.parse(value.capturedAt) > Date.parse(snapshot.capturedAt),
