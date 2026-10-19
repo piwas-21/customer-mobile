@@ -141,6 +141,9 @@ receipts, payment recovery and installed form acceptance remain required.
 The native quote adapter submits only the six server review fields, with the installed owner-scoped
 basket session. It checks restaurant/bootstrap, basket revision, channel, currency, root identities,
 variation/quantity/notes, requested points/tip and available methods before publishing a response.
+The basket owner workspace supplies the reviewed state and installed session, refuses unresolved
+basket operations and withdraws work on logout/disposal. It snapshots basket roots, bootstrap and
+review choices before asynchronous credential reads without creating a session or operation.
 Composition parsing checks depth and the complete row budget before recursive decoding; signed
 component modifiers and current fractional-cent discount rules remain representable. A quote creates
 no durable order/payment operation and transport failures are not automatically retried.

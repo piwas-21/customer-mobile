@@ -1,3 +1,5 @@
+import { readCheckoutQuote } from '../api/checkoutQuote';
+import { bootstrapSchema, type Bootstrap } from './capabilities';
 import type { BasketChannelInput } from '../api/basketChannel';
 import { readBasket } from '../api/basket';
 import { basketResponseSchema, type CustomerBasket } from '../api/basketResponse';
@@ -106,6 +108,39 @@ export class BasketWorkspace {
         sessionId: session,
         reviewed: snapshot,
         orderType: target,
+        locale,
+      },
+      this.assertCurrent,
+    );
+  }
+  async quote(
+    reviewed: CustomerBasket,
+    bootstrap: Bootstrap,
+    selection: Readonly<{ pointsToRedeem: number; tip: number }>,
+    locale: string,
+  ) {
+    this.assertCurrent();
+    const snapshot = basketResponseSchema.parse(reviewed);
+    const configuration = bootstrapSchema.parse(bootstrap);
+    const { pointsToRedeem, tip } = selection;
+    if (await this.hasPending()) throw new ApiFailure(409, 'refused');
+    const sessionId = await this.repository.vault.capability(
+      this.context,
+      'guest-session',
+      this.principal,
+    );
+    this.assertCurrent();
+    if (sessionId === null) throw new ApiFailure(409, 'refused');
+    return readCheckoutQuote(
+      this.client,
+      this.context,
+      {
+        principal: this.principal,
+        sessionId,
+        reviewed: snapshot,
+        bootstrap: configuration,
+        pointsToRedeem,
+        tip,
         locale,
       },
       this.assertCurrent,
