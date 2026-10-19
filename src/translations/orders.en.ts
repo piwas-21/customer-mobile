@@ -1,4 +1,13 @@
 export const ordersEnglish = {
+  accountOrderHistory: 'Your account orders',
+  noAccountOrders: 'There are no orders for your account at this restaurant.',
+  orderHistoryUnavailable: 'Your order history could not be loaded. Refresh to check again.',
+  refreshOrderHistory: 'Refresh order history',
+  nextOrders: 'Older orders',
+  previousOrders: 'Newer orders',
+  historyPayable: 'Current amount payable: {{price}}',
+  historyAmountUnavailable: 'Historical amount unavailable. Ask the restaurant for a receipt.',
+
   savedOrdersIntro: 'Orders saved on this device for this restaurant.',
   noSavedOrders: 'No orders are saved on this device yet.',
   savedOrder: 'Saved order',
