@@ -52,6 +52,12 @@ export class CustomerTransport {
     assertOwner();
     const method = options.method ?? 'GET';
     const receiptRead = options.credentials === 'order-receipt';
+    const renewal = options.credentials === 'receipt-renewal';
+    if (
+      renewal &&
+      (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
+    )
+      throw new ApiFailure(401, 'refused');
     if (receiptRead && (method !== 'POST' || path !== '/api/customer-mobile/orders/receipt'))
       throw new ApiFailure(401, 'refused');
     const orderRecovery =
@@ -59,7 +65,13 @@ export class CustomerTransport {
       options.credentials === 'order' &&
       (path === '/api/customer-mobile/checkout/recover' ||
         path === '/api/customer-mobile/checkout/cancel');
-    if (method !== 'GET' && context.tenant.status !== 'active' && !orderRecovery && !receiptRead)
+    if (
+      method !== 'GET' &&
+      context.tenant.status !== 'active' &&
+      !orderRecovery &&
+      !receiptRead &&
+      !renewal
+    )
       throw new Error('Restaurant is read-only');
     // Snapshot the wire body before asynchronous credential reads can yield to UI changes.
     const body = options.body === undefined ? undefined : JSON.stringify(options.body);

@@ -69,7 +69,12 @@ export async function requestHeaders(
   if (orderProof)
     Object.assign(
       headers,
-      await orderRequestHeaders(context, vault, orderProof, mode === 'order-receipt'),
+      await orderRequestHeaders(
+        context,
+        vault,
+        orderProof,
+        mode === 'order-receipt' || mode === 'receipt-renewal',
+      ),
     );
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
     Object.assign(headers, await sessionHeaders(context, vault, principal, mode, expectedSession));

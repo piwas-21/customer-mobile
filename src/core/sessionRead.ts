@@ -35,3 +35,21 @@ export async function retryAuthenticatedRead<T>(
   assertCurrent();
   return result;
 }
+
+export async function writeSession<T>(
+  client: CustomerTransport,
+  context: TenantContext,
+  input: { userId: string; path: string; body: unknown; schema: z.ZodType<T>; locale: string },
+  assertCurrent: () => void,
+): Promise<T> {
+  const result = await client.request(context, input.path, input.schema, {
+    method: 'PUT',
+    body: input.body,
+    credentials: 'customer',
+    principal: { kind: 'customer', id: input.userId },
+    assertCurrent,
+    locale: input.locale,
+  });
+  assertCurrent();
+  return result;
+}

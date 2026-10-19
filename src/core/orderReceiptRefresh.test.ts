@@ -1,3 +1,10 @@
+import { CustomerTransport } from './transport';
+import { TenantBoundary } from './tenantContext';
+import { parseDirectory } from './directory';
+import { directoryInput, tenantA } from '../test/fixtures';
+import { decisionProof } from './orderDecisions';
+import { signIn, refreshSession } from '../api/auth';
+import { z } from 'zod';
 import { OrderReceiptController } from './orderReceiptController';
 import { SessionController } from './sessionController';
 import { savedOrderFixture, receiptResponse } from '../test/orderReceipt';
@@ -101,4 +108,65 @@ it('does not exchange credentials for a forgotten receipt or a local owner refus
   await f.reader.forget(basketOperationId);
   await expect(f.sessions.receipt(f.decision, 'en')).rejects.toMatchObject({ reason: 'refused' });
   expect(f.fetcher).not.toHaveBeenCalled();
+});
+
+it('renews only an owned saved receipt in an actual read-only directory tenant', async () => {
+  const f = await fixture(false);
+  const input = directoryInput();
+  input.tenants[0]!.status = 'read-only';
+  const boundary = new TenantBoundary(parseDirectory(input, 'staging'));
+  const context = boundary.select(tenantA);
+  const client = new CustomerTransport(boundary, f.repository.vault, f.fetcher);
+  const sessions = new SessionController(context, client, f.repository, false, true);
+  await sessions.initialize();
+  const reader = new OrderReceiptController(context, f.repository, sessions, f.principal);
+  f.fetcher.mockImplementation(async (url, options) =>
+    url.endsWith('/refresh-token')
+      ? authResponse()
+      : options.headers?.Authorization === `Bearer ${session.accessToken}`
+        ? response({}, 401)
+        : response({ success: true, data: receiptResponse() }),
+  );
+  expect(context.tenant.status).toBe('read-only');
+  expect((await reader.read(basketOperationId, 'en')).orderNumber).toBe('20261019-001');
+  expect(f.fetcher).toHaveBeenCalledTimes(3);
+  expect(f.fetcher.mock.calls[1]![1].headers).not.toHaveProperty('Authorization');
+  expect(f.fetcher.mock.calls[1]![1].headers?.['X-Session-Id']).toBe(f.decision.sessionId);
+  await expect(
+    signIn(client, context, { email: 'fixture@example.test', password: 'password' }, 'en'),
+  ).rejects.toThrow('read-only');
+  await expect(refreshSession(client, context, renewed)).rejects.toThrow('read-only');
+  await expect(
+    client.request(context, '/api/customer-mobile/checkout/submit', z.unknown(), {
+      method: 'POST',
+      credentials: 'receipt-renewal',
+      principal: f.principal,
+      expectedOrderProof: decisionProof(f.decision),
+      assertCurrent: reader.assertCurrent,
+    }),
+  ).rejects.toThrow();
+  expect(f.fetcher).toHaveBeenCalledTimes(3);
+});
+it('withdraws credential renewal before dispatch when logout occurs during its proof-header await', async () => {
+  const f = await fixture(false);
+  const entered = deferred<void>();
+  const gate = deferred<void>();
+  const original = f.repository.vault.orderReceiptRecords.bind(f.repository.vault);
+  let reads = 0;
+  jest.spyOn(f.repository.vault, 'orderReceiptRecords').mockImplementation(async (...args) => {
+    const captured = await original(...args);
+    if (++reads === 2) {
+      entered.resolve();
+      await gate.promise;
+    }
+    return captured;
+  });
+  f.fetcher.mockResolvedValue(response({}, 401));
+  const pending = f.reader.read(basketOperationId, 'en');
+  await entered.promise;
+  await f.sessions.logout();
+  gate.resolve();
+  await expect(pending).rejects.toThrow();
+  expect(f.fetcher).toHaveBeenCalledTimes(1);
+  expect(await f.repository.load(f.context)).toBeNull();
 });

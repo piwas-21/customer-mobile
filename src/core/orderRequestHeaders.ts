@@ -12,12 +12,14 @@ export function captureOrderProof(
   context: TenantContext,
   options: RequestOptions,
 ): OrderOperationProof | null {
-  if (options.credentials !== 'order' && options.credentials !== 'order-receipt') {
+  if (!['order', 'order-receipt', 'receipt-renewal'].includes(options.credentials ?? 'none')) {
     if (options.expectedOrderProof !== undefined) throw new ApiFailure(401, 'refused');
     return null;
   }
   const proof = orderOperationProofSchema.parse(options.expectedOrderProof);
   assertOrderProofScope(context, proof);
+  if (options.credentials === 'receipt-renewal' && proof.principal.kind !== 'customer')
+    throw new ApiFailure(401, 'refused');
   if (
     proof.principal.kind !== options.principal?.kind ||
     proof.principal.id !== options.principal?.id

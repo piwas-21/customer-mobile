@@ -210,7 +210,9 @@ proof and customer JWT when applicable. These secrets remain in SecureStore; Que
 local descriptors and the private receipt projection. This is device-saved history, not customer-wide
 historical order synchronization. Explicit refresh reads status without replaying checkout or payment. A definitive HTTP 401 may
 serialize one credential renewal and retry only the same receipt read, including after a recovery-only
-restart. Owner/proof guards still apply; permission, local refusal and contract errors never renew.
+restart or a directory transition to read-only. Read-only renewal requires the exact saved applied
+receipt proof, customer owner guard and the dedicated credential mode restricted to the refresh route;
+ordinary login and writes stay refused. Logout during credential-header loading prevents dispatch. Owner/proof guards still apply; permission, local refusal and contract errors never renew.
 A failed status refresh withdraws the previous receipt display until a fresh authorized response.
 
 Fulfillment and payment labels are separate. Display uses the frozen receipt currency and server

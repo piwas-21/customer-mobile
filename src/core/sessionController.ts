@@ -1,7 +1,8 @@
+import type { OrderOperationProof } from './orderOperationProof';
 import { renewStoredSession } from './sessionRenewal';
 import { readOrderReceipt } from '../api/orderReceipt';
-import { orderDecisionSchema, type OrderDecision } from './orderDecisions';
-import { readSession, retryAuthenticatedRead } from './sessionRead';
+import { decisionProof, orderDecisionSchema, type OrderDecision } from './orderDecisions';
+import { readSession, retryAuthenticatedRead, writeSession } from './sessionRead';
 import type { z } from 'zod';
 import { signIn, type LoginInput } from '../api/auth';
 import { ApiFailure, type CustomerTransport } from './transport';
@@ -39,9 +40,7 @@ export class SessionController {
   }
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
+    return () => void this.listeners.delete(listener);
   }
   private publish(session: CustomerSession | null) {
     this.session = session;
@@ -124,8 +123,7 @@ export class SessionController {
     if (!this.accountsEnabled && !captured) return;
     const session =
       captured ?? (this.context.signal.aborted ? null : await this.repository.load(this.context));
-    if (!session) return;
-    await this.clearSession(session);
+    if (session) await this.clearSession(session);
   }
   private async clearSession(session: CustomerSession): Promise<void> {
     this.pendingCleanup = session;
@@ -146,18 +144,22 @@ export class SessionController {
     const decision = orderDecisionSchema.parse(saved);
     const read = (guard: () => void) =>
       readOrderReceipt(this.client, this.context, decision, guard, locale);
-    if (decision.principal.kind === 'customer') return this.readOwned(decision.principal.id, read);
+    if (decision.principal.kind === 'customer')
+      return this.readOwned(decision.principal.id, read, decisionProof(decision));
     return read(this.captureRequestOwner(decision.principal));
   }
-  private async readOwned<T>(userId: string, read: (guard: () => void) => Promise<T>): Promise<T> {
+  private async readOwned<T>(
+    userId: string,
+    read: (guard: () => void) => Promise<T>,
+    proof?: OrderOperationProof,
+  ): Promise<T> {
     const revision = this.revision;
     const captured = this.assertPrincipal(revision, userId);
     const guard = this.captureRequestOwner({ kind: 'customer', id: userId });
     const renew = () =>
       this.tasks.run(async () => {
         guard();
-        const current = this.assertPrincipal(revision, userId);
-        if (current.accessToken === captured.accessToken) await this.refresh(revision);
+        if (this.session?.accessToken === captured.accessToken) await this.refresh(revision, proof);
       });
     return retryAuthenticatedRead(() => read(guard), renew, guard);
   }
@@ -169,20 +171,14 @@ export class SessionController {
     locale: string,
   ): Promise<T> {
     if (this.onlyRecoverOrders) throw new ApiFailure(401, 'refused');
-    const principal = { kind: 'customer', id: userId } as const;
-    const assertCurrent = this.captureRequestOwner(principal);
-    const result = await this.client.request(this.context, path, schema, {
-      method: 'PUT',
-      body,
-      credentials: 'customer',
-      principal,
-      assertCurrent,
-      locale,
-    });
-    assertCurrent();
-    return result;
+    return writeSession(
+      this.client,
+      this.context,
+      { userId, path, body, schema, locale },
+      this.captureRequestOwner({ kind: 'customer', id: userId }),
+    );
   }
-  private async refresh(revision: number): Promise<void> {
+  private async refresh(revision: number, proof?: OrderOperationProof): Promise<void> {
     const captured = this.session;
     if (!captured) throw new ApiFailure(401, 'refused');
     const next = await renewStoredSession(
@@ -192,6 +188,7 @@ export class SessionController {
       captured,
       () => this.isCurrent(revision),
       () => this.clearSession(captured),
+      proof,
     );
     this.assertCurrent(revision);
     this.publish(next);
