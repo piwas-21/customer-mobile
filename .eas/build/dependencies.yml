@@ -8,3 +8,4 @@ functions:
       npm run dependencies:prepare
       npm run check
       npm run audit:security
+      npm run native:prepare

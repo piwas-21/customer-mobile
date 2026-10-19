@@ -41,6 +41,8 @@ jobs:
       - run: npm run check
       - run: npm run audit:security
       - run: npm run contracts:generate && git diff --exit-code -- src/api/generated.ts
+      - name: Generate both pinned native projects without signing
+        run: npm run native:generate
       - run: npm run build
       - name: SonarCloud Code Analysis
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6
