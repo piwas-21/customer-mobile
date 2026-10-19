@@ -16,6 +16,10 @@ jest.mock('../features/account/SessionProvider', () => ({
   default: ({ children }: PropsWithChildren) => children,
   useSession: () => ({ unavailable: true }),
 }));
+jest.mock('../features/basket/BasketProvider', () => ({
+  __esModule: true,
+  default: ({ children }: PropsWithChildren) => children,
+}));
 jest.mock('../features/account/AccountScreen', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');

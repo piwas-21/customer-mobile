@@ -5,8 +5,6 @@ import { principalSchema, type CustomerSession, type Principal } from './credent
 import type { TenantContext } from './tenantContext';
 import type { SessionRepository } from './sessionRepository';
 import { SerialTasks } from './serialTasks';
-// One controller per immutable restaurant generation. Auth mutations serialize;
-// reads remain parallel and logout withdraws secure selection without waiting on the network.
 export class SessionController {
   private readonly tasks = new SerialTasks();
   private readonly listeners = new Set<() => void>();
@@ -24,6 +22,9 @@ export class SessionController {
   ) {}
   get userId(): string | null {
     return this.session?.userId ?? null;
+  }
+  get ownerVersion(): string {
+    return `${this.revision}:${!this.signingIn && !this.pendingCleanup}`;
   }
   get needsCleanup(): boolean {
     return this.pendingCleanup !== null;
@@ -83,6 +84,7 @@ export class SessionController {
       return Promise.reject(new ApiFailure(401, 'refused'));
     const revision = ++this.revision;
     this.signingIn = true;
+    this.publish(this.session);
     const captured = { ...input };
     return this.tasks
       .run(async () => {
@@ -96,7 +98,10 @@ export class SessionController {
         return session.userId;
       })
       .finally(() => {
-        if (this.isCurrent(revision)) this.signingIn = false;
+        if (this.isCurrent(revision)) {
+          this.signingIn = false;
+          this.publish(this.session);
+        }
       });
   }
   async logout(): Promise<void> {
@@ -131,7 +136,6 @@ export class SessionController {
       if (!(error instanceof ApiFailure) || error.status !== 401) throw error;
       await this.tasks.run(async () => {
         const current = this.assertPrincipal(revision, userId);
-        // Another concurrent read may already have rotated this exact session.
         if (current.accessToken === captured.accessToken) await this.refresh(revision);
       });
       result = await this.read(revision, userId, path, schema);

@@ -17,6 +17,7 @@ import useBootstrap from '../restaurant/useBootstrap';
 type SessionState = Readonly<{
   controller: SessionController | undefined;
   userId: string | null;
+  ownerVersion: string;
   needsCleanup: boolean;
   loading: boolean;
   unavailable: boolean;
@@ -49,6 +50,11 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   const userId = useSyncExternalStore(subscribe, snapshot);
   const cleanupSnapshot = useCallback(() => controller?.needsCleanup ?? false, [controller]);
   const needsCleanup = useSyncExternalStore(subscribe, cleanupSnapshot);
+  const versionSnapshot = useCallback(
+    () => controller?.ownerVersion ?? 'unavailable',
+    [controller],
+  );
+  const ownerVersion = useSyncExternalStore(subscribe, versionSnapshot);
   const retry = useCallback(() => setAttempt((previous) => previous + 1), []);
   useEffect(() => {
     if (!scope.available || !scope.context || !scope.client) return;
@@ -90,6 +96,7 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
     () => ({
       controller,
       userId,
+      ownerVersion,
       needsCleanup,
       loading: bootstrap.isPending || Boolean(available && !controller && !error),
       unavailable: !accountsAvailable,
@@ -99,6 +106,7 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
     [
       controller,
       userId,
+      ownerVersion,
       needsCleanup,
       bootstrap.isPending,
       error,

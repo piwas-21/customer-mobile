@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { tenantA, tenantB } from '../test/fixtures';
 import { response } from '../test/transport';
 import { session, renewed, authResponse, dataResponse, sessionSetup } from '../test/sessions';
-it('publishes only identity changes and unsubscribes listeners', async () => {
+it('publishes owner transitions and unsubscribes listeners', async () => {
   const { controller, fetcher, repository, context } = await sessionSetup(false);
   const changes: (string | null)[] = [];
   const unsubscribe = controller.subscribe(() => changes.push(controller.userId));
@@ -13,7 +13,7 @@ it('publishes only identity changes and unsubscribes listeners', async () => {
   expect(await repository.load(context)).toEqual(renewed);
   unsubscribe();
   await controller.logout();
-  expect(changes).toEqual([tenantA]);
+  expect(changes).toEqual([null, tenantA, tenantA]);
   expect(controller.userId).toBeNull();
   expect(await repository.load(context)).toBeNull();
 });
