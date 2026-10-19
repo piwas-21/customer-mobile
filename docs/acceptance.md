@@ -112,3 +112,10 @@ without generating new IDs. Rejections, unknown outcomes and invalid proof retai
 A lost cleanup acknowledgement blocks new adds and finishes cleanup without another POST.
 Logout, tenant switching and disposal refuse late proof. These are controlled source fixtures;
 full composition, basket UI/refresh, checkout, deployment and physical process-death checks remain open.
+
+Standalone customization composition joins the accepted variation, explicit-group, recipe and side
+projections into one validated basket request. Authored customer screens retain their order; omitted
+active choices are completed without merging default dessert/accompaniment screens. Unknown versions,
+stale/duplicate/wrong-owner references and conflicting global pickers block the final projection.
+All 337 tests pass locally with independent review. This pure source slice supplies no prices or
+network writes; bundle composition, native choice screens and installed ordering acceptance remain open.
