@@ -136,3 +136,9 @@ can be omitted; required minima still follow the server rule and block when thei
 Unsupported root customization/variation contracts and missing authoritative recipe metadata fail closed.
 Independent payload/rejection fixtures cover nested choices; native guided screens, deployed server
 revalidation and installed-device ordering remain open.
+
+Ordering-only tenants initialize a guest session owner while Account stays unavailable. This policy
+never reads or deletes saved customer sessions and refuses login; enabling accounts creates a new
+controller and restores only then. Capability transitions dispose old request owners. A transport
+fixture confirms the guest basket session is sent without a stored customer's Authorization header.
+Guided ordering UI and physical lifecycle acceptance remain required.
