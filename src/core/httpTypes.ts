@@ -13,7 +13,7 @@ export type Fetch = (
 export type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
-  credentials?: 'none' | 'customer' | 'guest' | 'table';
+  credentials?: 'none' | 'customer' | 'guest' | 'table' | 'basket';
   principal?: Principal;
   locale?: string;
 };
