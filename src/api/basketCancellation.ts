@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { basketResponseSchema } from './basketResponse';
 import { basketOperationRequest } from './basketOperationRequest';
-import { assertOwnedBasket } from './basketOwnership';
+import { assertBasketOperationResult } from './basketOperationProof';
 import { canonicalUuidSchema } from '../core/identifiers';
 import type { PendingBasketOperation } from '../core/basketOperationRecord';
 import type { TenantContext } from '../core/tenantContext';
@@ -45,9 +45,7 @@ export async function cancelBasketOperation(
   )
     throw new ApiFailure(200, 'contract');
   if (basket !== null) {
-    assertOwnedBasket(basket, operation.principal, operation.sessionId);
-    if (operation.schemaVersion === 2 && basket.id !== operation.request.expectedBasketId)
-      throw new ApiFailure(200, 'contract');
+    assertBasketOperationResult(basket, operation);
   }
   return { ...resolution, basket };
 }

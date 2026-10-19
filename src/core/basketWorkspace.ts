@@ -1,4 +1,9 @@
+import type { BasketChannelInput } from '../api/basketChannel';
 import { readBasket } from '../api/basket';
+import { basketResponseSchema, type CustomerBasket } from '../api/basketResponse';
+import { readBasketChannelPreview, type BasketChannelPreview } from '../api/basketChannelPreview';
+import { orderTypeSchema, type OrderType } from '../api/orderType';
+import { emptyUuid } from './identifiers';
 import type { BasketItemMutation } from '../api/basketItemMutation';
 import type { BasketAddInput } from '../api/basketRequest';
 import { principalSchema, type Principal } from './credentials';
@@ -45,7 +50,9 @@ export class BasketWorkspace {
     const pending = await this.operations.pending();
     this.assertCurrent();
     if (!pending) return null;
-    const kind = pending.schemaVersion === 1 ? 'add' : pending.request.action.toLowerCase();
+    let kind = 'add';
+    if (pending.schemaVersion === 2) kind = pending.request.action.toLowerCase();
+    if (pending.schemaVersion === 3) kind = 'channel';
     // Query state receives only a descriptor, never the journal's session capability or payload.
     return { kind, cancelling: pending.cancellationRequested === true };
   }
@@ -71,6 +78,39 @@ export class BasketWorkspace {
       locale,
     );
   }
+  async previewChannel(
+    reviewed: CustomerBasket | null,
+    orderType: OrderType,
+    locale: string,
+  ): Promise<BasketChannelPreview> {
+    this.assertCurrent();
+    // Capture nested rows before the vault await; callers cannot change the reviewed revision.
+    const snapshot = reviewed === null ? null : basketResponseSchema.parse(reviewed);
+    const target = orderTypeSchema.parse(orderType);
+    const session = await this.repository.vault.capability(
+      this.context,
+      'guest-session',
+      this.principal,
+    );
+    this.assertCurrent();
+    if (session === null) {
+      if (snapshot !== null) throw new ApiFailure(409, 'refused');
+      // Nothing exists to remove. The first write still validates availability server-side.
+      return { basketId: emptyUuid, purchaseFingerprint: '', orderType: target, conflicts: [] };
+    }
+    return readBasketChannelPreview(
+      this.client,
+      this.context,
+      {
+        principal: this.principal,
+        sessionId: session,
+        reviewed: snapshot,
+        orderType: target,
+        locale,
+      },
+      this.assertCurrent,
+    );
+  }
   add(input: BasketAddInput, locale: string) {
     this.assertCurrent();
     return this.operations.add(input, locale);
@@ -78,6 +118,10 @@ export class BasketWorkspace {
   mutate(input: BasketItemMutation, locale: string) {
     this.assertCurrent();
     return this.operations.mutate(input, locale);
+  }
+  changeChannel(input: BasketChannelInput, locale: string) {
+    this.assertCurrent();
+    return this.operations.changeChannel(input, locale);
   }
   cancel(locale: string) {
     this.assertCurrent();

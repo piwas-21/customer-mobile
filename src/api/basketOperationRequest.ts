@@ -1,3 +1,4 @@
+import { basketChannelRequest } from './basketChannel';
 import { basketItemMutationRequest } from './basketItemMutation';
 import {
   basketOperationRecordSchema,
@@ -16,12 +17,20 @@ export function basketOperationRequest(context: TenantContext, pending: PendingB
   )
     throw new ApiFailure(0, 'refused');
   const operation = immutableBasketOperation(record);
-  const request =
-    operation.schemaVersion === 1
-      ? {
-          path: '/api/customer-mobile/basket/items',
-          body: { ...operation.request, operationId: operation.operationId },
-        }
-      : basketItemMutationRequest(operation.request, operation.operationId);
+  const request = requestFor(operation);
   return { operation, request };
+}
+
+function requestFor(operation: PendingBasketOperation) {
+  switch (operation.schemaVersion) {
+    case 1:
+      return {
+        path: '/api/customer-mobile/basket/items',
+        body: { ...operation.request, operationId: operation.operationId },
+      };
+    case 2:
+      return basketItemMutationRequest(operation.request, operation.operationId);
+    case 3:
+      return basketChannelRequest(operation.request, operation.operationId);
+  }
 }

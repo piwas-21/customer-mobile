@@ -1,3 +1,4 @@
+import { basketChannelInputSchema, type BasketChannelInput } from '../api/basketChannel';
 import { BasketCancellationController } from './basketCancellationController';
 import { basketItemMutationSchema, type BasketItemMutation } from '../api/basketItemMutation';
 import { basketOperationIntentSchema, type BasketOperationIntent } from './basketOperationRecord';
@@ -63,6 +64,13 @@ export class BasketOperationController {
   async mutate(input: BasketItemMutation, locale: string): Promise<CustomerBasket> {
     return this.create(
       { schemaVersion: 2, request: basketItemMutationSchema.parse(input) },
+      locale,
+    );
+  }
+
+  async changeChannel(input: BasketChannelInput, locale: string): Promise<CustomerBasket> {
+    return this.create(
+      { schemaVersion: 3, request: basketChannelInputSchema.parse(input) },
       locale,
     );
   }

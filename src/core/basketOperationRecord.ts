@@ -1,16 +1,24 @@
 import { z } from 'zod';
 import { basketAddInputSchema } from '../api/basketRequest';
+import { basketChannelInputSchema } from '../api/basketChannel';
 import { basketItemMutationSchema } from '../api/basketItemMutation';
 import { principalSchema } from './credentials';
 import { environmentSchema } from './directory';
-import { canonicalUuidSchema } from './identifiers';
+import { canonicalUuidSchema, emptyUuid } from './identifiers';
 const addIntent = z.object({ schemaVersion: z.literal(1), request: basketAddInputSchema }).strict();
 const editIntent = z
   .object({ schemaVersion: z.literal(2), request: basketItemMutationSchema })
   .strict();
+const channelIntent = z
+  .object({ schemaVersion: z.literal(3), request: basketChannelInputSchema })
+  .strict();
+function cancellationReady(record: { cancellationRequested?: true | undefined; phase: string }) {
+  return !record.cancellationRequested || record.phase === 'ready';
+}
 export const basketOperationIntentSchema = z.discriminatedUnion('schemaVersion', [
   addIntent,
   editIntent,
+  channelIntent,
 ]);
 export type BasketOperationIntent = z.infer<typeof basketOperationIntentSchema>;
 const scope = {
@@ -24,11 +32,15 @@ const scope = {
 export const basketOperationRecordSchema = z.discriminatedUnion('schemaVersion', [
   addIntent
     .extend({ ...scope, phase: z.enum(['installing', 'ready']) })
-    .refine(
-      (record) => !record.cancellationRequested || record.phase === 'ready',
-      'A cancellation requires an installed basket session',
-    ),
+    .refine(cancellationReady, 'A cancellation requires an installed basket session'),
   editIntent.extend({ ...scope, phase: z.literal('ready') }),
+  channelIntent
+    .extend({ ...scope, phase: z.enum(['installing', 'ready']) })
+    .refine(cancellationReady, 'A cancellation requires an installed basket session')
+    .refine(
+      (record) => record.phase === 'ready' || record.request.expectedBasketId === emptyUuid,
+      'An existing reviewed basket requires its installed session',
+    ),
 ]);
 export type BasketOperationRecord = z.infer<typeof basketOperationRecordSchema>;
 type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;

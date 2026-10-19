@@ -1,8 +1,8 @@
 import type { CustomerBasket } from './basketResponse';
 import type { Principal } from '../core/credentials';
-import { canonicalUuidSchema } from '../core/identifiers';
+import { canonicalUuidSchema, emptyUuid } from '../core/identifiers';
 import { ApiFailure } from '../core/transport';
-export const emptyBasketId = '00000000-0000-0000-0000-000000000000';
+export const emptyBasketId = emptyUuid;
 export function assertOwnedBasket(
   basket: CustomerBasket,
   principal: Principal,
