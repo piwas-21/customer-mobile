@@ -2,6 +2,10 @@ import { useRef, useState } from 'react';
 import type { CheckoutQuote } from '../../api/checkoutQuoteResponse';
 import useMounted from '../../core/useMounted';
 import type { useBasket } from './BasketProvider';
+const defaultSelection: Readonly<{ pointsToRedeem: number; tip: number }> = Object.freeze({
+  pointsToRedeem: 0,
+  tip: 0,
+});
 export default function useCheckoutReview(basket: ReturnType<typeof useBasket>) {
   const mounted = useMounted();
   const generation = useRef(0);
@@ -23,7 +27,7 @@ export default function useCheckoutReview(basket: ReturnType<typeof useBasket>) 
     (basket.basket.orderType === 'Takeaway' || basket.basket.orderType === 'Delivery'),
   );
   const changed = open && (reviewed !== revision || !allowed);
-  async function show(selection = { pointsToRedeem: 0, tip: 0 }) {
+  async function show(selection = defaultSelection) {
     if (!allowed || active.current) return;
     active.current = true;
     const request = ++generation.current;

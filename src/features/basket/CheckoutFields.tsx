@@ -46,7 +46,7 @@ export default function CheckoutFields({
       {[...fields.contact, ...fields.address].map((field) => (
         <Field
           key={field.key}
-          label={`${t(`checkoutField.${field.key}`)}${field.required ? '' : t('optionalSuffix')}`}
+          label={t('checkoutField.' + field.key) + (field.required ? '' : t('optionalSuffix'))}
           value={flow.draft[field.key]}
           onChangeText={(value) => flow.change(field.key, value)}
           maxLength={checkoutInputLimits[field.key]}

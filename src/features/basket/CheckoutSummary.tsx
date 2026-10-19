@@ -48,9 +48,10 @@ export default function CheckoutSummary({
             },
           ]}
         >
-          <Text
-            style={[styles.body, { color: theme.text }]}
-          >{`${flow.method === method ? '● ' : '○ '}${t(`checkoutPayment${method}`)}`}</Text>
+          <Text style={[styles.body, { color: theme.text }]}>
+            {flow.method === method ? '● ' : '○ '}
+            {t(`checkoutPayment${method}`)}
+          </Text>
         </Pressable>
       ))}
       <Text style={[styles.body, { color: theme.secondary }]}>{t('checkoutPaymentHint')}</Text>

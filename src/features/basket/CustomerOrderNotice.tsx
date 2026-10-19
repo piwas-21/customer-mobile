@@ -1,3 +1,4 @@
+import OrderRecoveryActions from './OrderRecoveryActions';
 import { View, StyleSheet } from 'react-native';
 import { spacing, useTheme } from '../../ui/theme';
 import { useState } from 'react';
@@ -31,32 +32,12 @@ export default function CustomerOrderNotice({
       {decision?.outcome === 'Applied' ? <Feedback message={t('orderReceived')} /> : null}
       {decision?.outcome === 'Cancelled' ? <Feedback message={t('orderAttemptCancelled')} /> : null}
       {pending ? (
-        <>
-          <Feedback
-            message={t(
-              pending.cleanupPending
-                ? 'orderCleanupPending'
-                : pending.cancelling
-                  ? 'orderCancellationPending'
-                  : 'orderOutcomePending',
-            )}
-          />
-          <Button
-            label={t(
-              pending.cleanupPending || pending.cancelling ? 'finishOrderCheck' : 'checkOrder',
-            )}
-            busy={basket.busy}
-            onPress={() => void resolve(false)}
-          />
-          {!pending.cancelling && !pending.cleanupPending ? (
-            <Button
-              label={t('stopOrderAttempt')}
-              secondary
-              disabled={basket.busy}
-              onPress={() => setConfirm(true)}
-            />
-          ) : null}
-        </>
+        <OrderRecoveryActions
+          pending={pending}
+          busy={basket.busy}
+          recover={() => void resolve(false)}
+          stop={() => setConfirm(true)}
+        />
       ) : null}
       {basket.canContinueAsGuest ? (
         <Button

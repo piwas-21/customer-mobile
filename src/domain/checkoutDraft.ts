@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { checkoutAddressSchema, checkoutContactSchema } from '../api/checkoutIntent';
 import { checkoutMoney } from '../api/checkoutMoney';
 import type { CheckoutFields } from './checkoutFields';
@@ -15,6 +16,18 @@ export function emptyCheckoutDraft() {
   };
 }
 export type CheckoutDraft = ReturnType<typeof emptyCheckoutDraft>;
+const tipSchema = z
+  .string()
+  .trim()
+  .regex(/^(?:\d+(?:[.,]\d{1,2})?)?$/)
+  .transform((text) => Number(text.replace(',', '.')))
+  .pipe(checkoutMoney);
+function collectErrors(
+  issues: readonly { path: PropertyKey[] }[],
+  errors: Set<keyof CheckoutDraft>,
+) {
+  for (const issue of issues) errors.add(issue.path[0] as keyof CheckoutDraft);
+}
 export function inspectCheckoutDraft(draft: CheckoutDraft, fields: CheckoutFields) {
   const errors = new Set<keyof CheckoutDraft>();
   const contact = checkoutContactSchema.safeParse({
@@ -22,8 +35,7 @@ export function inspectCheckoutDraft(draft: CheckoutDraft, fields: CheckoutField
     email: draft.email,
     phone: draft.phone,
   });
-  if (!contact.success)
-    for (const issue of contact.error.issues) errors.add(issue.path[0] as keyof CheckoutDraft);
+  if (!contact.success) collectErrors(contact.error.issues, errors);
   const address = fields.address.length
     ? checkoutAddressSchema.safeParse({
         street: draft.street,
@@ -33,14 +45,11 @@ export function inspectCheckoutDraft(draft: CheckoutDraft, fields: CheckoutField
         additionalInfo: draft.additionalInfo,
       })
     : null;
-  if (address && !address.success)
-    for (const issue of address.error.issues) errors.add(issue.path[0] as keyof CheckoutDraft);
+  if (address && !address.success) collectErrors(address.error.issues, errors);
   for (const field of [...fields.contact, ...fields.address])
     if (field.required && !draft[field.key].trim()) errors.add(field.key);
-  const text = draft.tip.trim();
-  const amount = text === '' ? 0 : Number(text.replace(',', '.'));
-  const tip = checkoutMoney.safeParse(amount);
-  if ((text !== '' && !/^\d+(?:[.,]\d{1,2})?$/.test(text)) || !tip.success) errors.add('tip');
+  const tip = tipSchema.safeParse(draft.tip);
+  if (!tip.success) errors.add('tip');
   return {
     errors,
     values:
