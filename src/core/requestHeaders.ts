@@ -4,6 +4,14 @@ import type { CredentialVault, Principal } from './credentials';
 import type { TenantContext } from './tenantContext';
 import type { RequestOptions } from './httpTypes';
 
+function expectedBasketSession(options: RequestOptions): string | undefined {
+  const expected = options.expectedBasketSessionId;
+  if (expected === undefined) return undefined;
+  if (options.credentials !== 'basket' || !canonicalUuidSchema.safeParse(expected).success)
+    throw new ApiFailure(401, 'refused');
+  return expected;
+}
+
 async function customerHeaders(
   context: TenantContext,
   vault: CredentialVault,
@@ -20,12 +28,15 @@ async function sessionHeaders(
   vault: CredentialVault,
   principal: Principal | undefined,
   mode: 'basket' | 'guest' | 'table',
+  expectedSession: string | undefined,
 ): Promise<Record<string, string>> {
   if (!principal || (mode !== 'basket' && principal.kind !== 'guest'))
     throw new ApiFailure(401, 'refused');
   const session = await vault.capability(context, 'guest-session', principal);
   if (!session) throw new ApiFailure(401, 'refused');
   if (mode === 'basket' && !canonicalUuidSchema.safeParse(session).success)
+    throw new ApiFailure(401, 'refused');
+  if (expectedSession !== undefined && session !== expectedSession)
     throw new ApiFailure(401, 'refused');
   const headers: Record<string, string> = { 'X-Session-Id': session };
   if (mode === 'table') {
@@ -45,10 +56,11 @@ export async function requestHeaders(
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   if (options.locale) headers['Accept-Language'] = options.locale;
   const mode = options.credentials ?? 'none';
+  const expectedSession = expectedBasketSession(options);
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
   if (mode === 'customer' || (mode === 'basket' && principal?.kind === 'customer'))
     Object.assign(headers, await customerHeaders(context, vault, principal));
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
-    Object.assign(headers, await sessionHeaders(context, vault, principal, mode));
+    Object.assign(headers, await sessionHeaders(context, vault, principal, mode, expectedSession));
   return headers;
 }

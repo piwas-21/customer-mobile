@@ -32,6 +32,7 @@ export class BasketOperationRepository {
     input: BasketAddInput,
     createId: () => string,
     assertCurrent: AssertCurrent,
+    policy: 'recover-or-create' | 'create-only' = 'recover-or-create',
   ): Promise<PendingBasketOperation> {
     const owner = principalSchema.parse(principal);
     const request = basketAddInputSchema.parse(input);
@@ -39,6 +40,8 @@ export class BasketOperationRepository {
       this.check(context, assertCurrent);
       const previous = await this.read(context, owner, assertCurrent);
       if (previous) {
+        if (policy === 'create-only')
+          throw new Error('Recover the pending basket add before preparing another.');
         if (JSON.stringify(previous.request) !== JSON.stringify(request))
           throw new Error('Recover the pending basket add before preparing another.');
         return immutableBasketOperation(previous);
