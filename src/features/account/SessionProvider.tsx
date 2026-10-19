@@ -31,10 +31,12 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   const queryClient = useQueryClient();
   const accountsAvailable = canUse(bootstrap.data, 'accounts');
   const available = accountsAvailable || canUse(bootstrap.data, 'ordering');
+  const recoveryAvailable =
+    bootstrap.data?.compatibility === 'supported' && bootstrap.data.lifecycle !== 'disabled';
   const [attempt, setAttempt] = useState(0);
   const scope = useMemo(
-    () => ({ context, client, available, accountsAvailable, attempt }),
-    [context, client, available, accountsAvailable, attempt],
+    () => ({ context, client, available, recoveryAvailable, accountsAvailable, attempt }),
+    [context, client, available, recoveryAvailable, accountsAvailable, attempt],
   );
   const [restored, setRestored] = useState<{
     scope: typeof scope;
@@ -57,13 +59,14 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   const ownerVersion = useSyncExternalStore(subscribe, versionSnapshot);
   const retry = useCallback(() => setAttempt((previous) => previous + 1), []);
   useEffect(() => {
-    if (!scope.available || !scope.context || !scope.client) return;
+    if ((!scope.available && !scope.recoveryAvailable) || !scope.context || !scope.client) return;
     // Each effect owns its controller, including React's development setup/cleanup replay.
     const current = new SessionController(
       scope.context,
       scope.client,
       deviceSessions,
       scope.accountsAvailable,
+      !scope.available,
     );
     let active = true;
     void current
@@ -98,7 +101,8 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
       userId,
       ownerVersion,
       needsCleanup,
-      loading: bootstrap.isPending || Boolean(available && !controller && !error),
+      loading:
+        bootstrap.isPending || Boolean((available || recoveryAvailable) && !controller && !error),
       unavailable: !accountsAvailable,
       failed: error,
       retry,
@@ -111,6 +115,7 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
       bootstrap.isPending,
       error,
       available,
+      recoveryAvailable,
       accountsAvailable,
       retry,
     ],

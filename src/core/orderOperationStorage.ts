@@ -1,0 +1,103 @@
+import { orderDecisionsSchema, type OrderDecision } from './orderDecisions';
+import { checkoutIntentSchema, type CheckoutIntent } from '../api/checkoutIntent';
+import { secretKey, type Principal, type SecretStore } from './credentials';
+import {
+  assertOrderProofScope,
+  orderOperationProofSchema,
+  type OrderOperationProof,
+} from './orderOperationProof';
+import type { TenantContext } from './tenantContext';
+import { z } from 'zod';
+import { canonicalUuidSchema } from './identifiers';
+const contactRecord = z.strictObject({
+  operationId: canonicalUuidSchema,
+  intent: checkoutIntentSchema,
+});
+export class OrderOperationStorage {
+  constructor(private readonly store: SecretStore) {}
+  check(context: TenantContext, assertCurrent: () => void) {
+    if (context.signal.aborted) throw new Error('Restaurant changed');
+    assertCurrent();
+  }
+  async ensureBasketUnclaimed(
+    context: TenantContext,
+    principal: Principal,
+    assertCurrent: () => void,
+  ) {
+    const pending = await this.store.get(secretKey(context, 'basket-operation', principal));
+    this.check(context, assertCurrent);
+    if (pending !== null)
+      throw new Error('Resolve the pending basket change before placing an order');
+  }
+  async read(
+    context: TenantContext,
+    principal: Principal,
+    assertCurrent: () => void,
+  ): Promise<OrderOperationProof | null> {
+    this.check(context, assertCurrent);
+    const value = await this.store.get(secretKey(context, 'order-operation-proof', principal));
+    this.check(context, assertCurrent);
+    if (value === null) return null;
+    const proof = orderOperationProofSchema.parse(JSON.parse(value));
+    assertOrderProofScope(context, proof);
+    if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
+      throw new Error('Order owner changed');
+    return proof;
+  }
+  async intent(
+    context: TenantContext,
+    proof: OrderOperationProof,
+    assertCurrent: () => void,
+  ): Promise<CheckoutIntent | null> {
+    const value = await this.store.get(secretKey(context, 'order-contact', proof.principal));
+    this.check(context, assertCurrent);
+    if (value === null) return null; // Logout removes contact without erasing the financial decision proof.
+    const record = contactRecord.parse(JSON.parse(value));
+    if (record.operationId !== proof.operationId) throw new Error('Order contact scope changed');
+    return record.intent;
+  }
+  async save(
+    context: TenantContext,
+    principal: Principal,
+    kind: 'order-operation-proof' | 'order-contact' | 'order-decisions',
+    value: unknown,
+    assertCurrent: () => void,
+  ) {
+    this.check(context, assertCurrent);
+    const key = secretKey(context, kind, principal);
+    const wire = JSON.stringify(value);
+    await this.store.set(key, wire);
+    if ((await this.store.get(key)) !== wire) throw new Error('Secure order save incomplete');
+    this.check(context, assertCurrent);
+  }
+  async decisions(
+    context: TenantContext,
+    principal: Principal,
+    assertCurrent: () => void,
+  ): Promise<OrderDecision[]> {
+    const value = await this.store.get(secretKey(context, 'order-decisions', principal));
+    this.check(context, assertCurrent);
+    if (value === null) return [];
+    const decisions = orderDecisionsSchema.parse(JSON.parse(value));
+    for (const decision of decisions) {
+      assertOrderProofScope(context, decision);
+      if (decision.principal.kind !== principal.kind || decision.principal.id !== principal.id)
+        throw new Error('Saved order owner changed');
+    }
+    return decisions;
+  }
+  async removeProof(context: TenantContext, principal: Principal, assertCurrent: () => void) {
+    this.check(context, assertCurrent);
+    const key = secretKey(context, 'order-operation-proof', principal);
+    await this.store.remove(key);
+    if ((await this.store.get(key)) !== null) throw new Error('Secure order removal incomplete');
+    this.check(context, assertCurrent);
+  }
+  async removeContact(context: TenantContext, principal: Principal, assertCurrent: () => void) {
+    this.check(context, assertCurrent);
+    const key = secretKey(context, 'order-contact', principal);
+    await this.store.remove(key);
+    if ((await this.store.get(key)) !== null) throw new Error('Secure contact removal incomplete');
+    this.check(context, assertCurrent);
+  }
+}

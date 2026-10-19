@@ -75,6 +75,11 @@ export class BasketOperationRepository {
           throw new Error('Recover the pending basket change before preparing another.');
         return immutableBasketOperation(previous);
       }
+      // The same secure queue arbitrates basket and order claims across controller instances.
+      // Any unresolved proof (including malformed data) blocks a new basket effect.
+      if ((await this.store.get(secretKey(context, 'order-operation-proof', owner))) !== null)
+        throw new Error('Resolve the pending order before changing the basket');
+      this.storage.check(context, assertCurrent);
       const existingSession = await this.vault.capability(context, 'guest-session', owner);
       this.storage.check(context, assertCurrent);
       const reviewed =

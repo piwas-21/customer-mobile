@@ -1,3 +1,4 @@
+import { checkoutEnglish } from './translations/checkout.en';
 import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { getLocales } from 'expo-localization';
@@ -22,6 +23,9 @@ const en = {
   allergensUnknown: 'Allergen information unavailable. Please ask the restaurant.',
   unavailableDish: 'Currently unavailable',
   viewDish: 'View {{name}}',
+  checkout: 'Checkout',
+  reviewOrder: 'Review order',
+  ...checkoutEnglish,
   basket: 'Basket',
   basketCount: 'Basket · {{count}}',
   quantity: 'Quantity',

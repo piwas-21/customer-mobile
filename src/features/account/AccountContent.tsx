@@ -8,7 +8,6 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
   const { session } = account;
   if (session.loading) return <Feedback message={t('loading')} loading />;
   if (session.failed) return <Feedback message={t('sessionUnavailable')} retry={session.retry} />;
-  if (session.unavailable) return <Feedback message={t('accountUnavailable')} />;
   if (account.failure === 'logout' || session.needsCleanup) {
     const retry = account.busy
       ? undefined
@@ -23,6 +22,7 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
       />
     );
   }
+  if (session.unavailable) return <Feedback message={t('accountUnavailable')} />;
   if (session.userId)
     return (
       <ProfileCard

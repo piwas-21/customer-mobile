@@ -29,7 +29,10 @@ export type CredentialKind =
   | 'table-participant'
   | 'guest-order'
   | 'payment'
-  | 'basket-operation';
+  | 'basket-operation'
+  | 'order-operation-proof'
+  | 'order-contact'
+  | 'order-decisions';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,
@@ -61,7 +64,10 @@ export class CredentialVault {
   }
   async capability(
     context: TenantContext,
-    kind: Exclude<CredentialKind, 'session' | 'basket-operation'>,
+    kind: Exclude<
+      CredentialKind,
+      'session' | 'basket-operation' | 'order-contact' | 'order-decisions'
+    >,
     principal: Principal,
   ): Promise<string | null> {
     const value = await this.store.get(secretKey(context, kind, principal));
@@ -69,7 +75,10 @@ export class CredentialVault {
   }
   async saveCapability(
     context: TenantContext,
-    kind: Exclude<CredentialKind, 'session' | 'basket-operation'>,
+    kind: Exclude<
+      CredentialKind,
+      'session' | 'basket-operation' | 'order-contact' | 'order-decisions'
+    >,
     principal: Principal,
     value: string,
   ): Promise<void> {
@@ -84,6 +93,10 @@ export class CredentialVault {
       'guest-order',
       'payment',
       'basket-operation',
+      'order-contact',
+      'order-decisions',
+      // Keep the minimal order decision proof until explicit acceptance/cancellation recovery.
+      // Contact, tokens and ordinary guest sessions are still purged on logout.
     ] as const;
     const removals = await Promise.allSettled(
       kinds.map((kind) => this.store.remove(secretKey(context, kind, scoped))),

@@ -1,3 +1,4 @@
+import type { OrderOperationProof } from './orderOperationProof';
 import type { Principal } from './credentials';
 export type Fetch = (
   url: string,
@@ -13,9 +14,10 @@ export type Fetch = (
 export type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
-  credentials?: 'none' | 'customer' | 'guest' | 'table' | 'basket';
+  credentials?: 'none' | 'customer' | 'guest' | 'table' | 'basket' | 'order';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
+  expectedOrderProof?: OrderOperationProof;
 };

@@ -1,3 +1,6 @@
+import useCheckoutFields from './useCheckoutFields';
+import { checkoutFields } from '../../domain/checkoutFields';
+import { customerForms } from '../../test/customerForms';
 import '../../i18n';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import type { BasketChannelPreview } from '../../api/basketChannelPreview';
@@ -20,11 +23,17 @@ jest.mock(
       'react-native-safe-area-context/jest/mock',
     ).default,
 );
+jest.mock('./useCheckoutFields', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('./useOrderTypes', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('./BasketProvider', () => ({ useBasket: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('expo-router', () => ({ useRouter: jest.fn(), Stack: { Screen: () => null } }));
 beforeEach(() => {
+  jest.mocked(useCheckoutFields).mockReturnValue({
+    fields: checkoutFields(customerForms(), 'Takeaway'),
+    isPending: false,
+    refetch: jest.fn(),
+  } as unknown as ReturnType<typeof useCheckoutFields>);
   jest
     .mocked(useOrderTypes)
     .mockReturnValue({ data: ['Takeaway'], isPending: false } as ReturnType<typeof useOrderTypes>);
@@ -53,12 +62,10 @@ it('shows server totals, instructions/removals and a persistent basket destinati
   expect(screen.getByText('Without Onion')).toBeTruthy();
   expect(screen.getByText('Total: €17.20')).toBeTruthy();
   expect(screen.getByText('Subtotal: €14.00')).toBeTruthy();
-  expect(screen.queryByRole('button', { name: 'Checkout' })).toBeNull();
-  await act(async () =>
-    fireEvent.press(screen.getByRole('button', { name: 'Review order total' })),
-  );
-  expect(state.quote).toHaveBeenCalledWith({ pointsToRedeem: 0, tip: 0 });
-  expect(screen.getByText('Total: CHF 17.00')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Checkout' })).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Checkout' }));
+  expect(screen.getByLabelText('Full name')).toBeTruthy();
+  expect(state.quote).not.toHaveBeenCalled();
   fireEvent.press(screen.getByRole('button', { name: 'Close' }));
   screen.unmount();
   const shortcut = render(<BasketShortcut />);
@@ -193,4 +200,32 @@ it('discards a private channel review and its late response when the basket owne
   expect(screen.getByRole('button', { name: 'Takeaway' })).toBeTruthy();
   expect(first.changeChannel).not.toHaveBeenCalled();
   expect(next.changeChannel).not.toHaveBeenCalled();
+});
+
+it('discards a private checkout contact draft immediately when the basket owner changes', () => {
+  const first = basketState({ basket: { ...basketResponse(), orderType: 'Takeaway' } });
+  jest.mocked(useBasket).mockReturnValue(first);
+  const screen = render(<BasketScreen />);
+  fireEvent.press(screen.getByRole('button', { name: 'Checkout' }));
+  fireEvent.changeText(screen.getByLabelText('Email'), 'private@example.test');
+  const next = basketState({
+    basket: { ...basketResponse(), orderType: 'Takeaway' },
+    revision: [
+      first.revision[0],
+      first.revision[1],
+      first.revision[2],
+      first.revision[3],
+      first.revision[4],
+      'new-owner',
+      first.revision[6],
+    ],
+  });
+  jest.mocked(useBasket).mockReturnValue(next);
+  screen.rerender(<BasketScreen />);
+  expect(screen.queryByDisplayValue('private@example.test')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Place order' })).toBeNull();
+  fireEvent.press(screen.getByRole('button', { name: 'Checkout' }));
+  expect(screen.getByLabelText('Email')).toHaveProp('value', '');
+  expect(first.placeOrder).not.toHaveBeenCalled();
+  expect(next.placeOrder).not.toHaveBeenCalled();
 });
