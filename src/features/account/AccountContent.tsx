@@ -24,6 +24,15 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
     );
   }
   if (session.userId)
-    return <ProfileCard profile={account.profile} logout={account.logout} busy={account.busy} />;
+    return (
+      <ProfileCard
+        key={session.userId}
+        profile={account.profile}
+        logout={account.logout}
+        busy={account.busy}
+        session={session}
+        profileQueryKey={account.profileQueryKey}
+      />
+    );
   return <AccountAccess account={account} />;
 }

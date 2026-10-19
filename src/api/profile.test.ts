@@ -2,16 +2,7 @@ import { readProfile } from './profile';
 import { tenantA, tenantB } from '../test/fixtures';
 import { sessionSetup, authResponse } from '../test/sessions';
 import { response } from '../test/transport';
-const profile = {
-  id: tenantA,
-  role: 'Customer',
-  email: 'guest@example.test',
-  firstName: 'Alex',
-  lastName: 'Guest',
-  phoneNumber: null,
-  isEmailConfirmed: true,
-  isDeleted: false,
-};
+import { customerProfile as profile } from '../test/customerProfile';
 it('reads only the signed-in customer profile and strips internal metadata', async () => {
   const { controller, fetcher } = await sessionSetup();
   fetcher.mockResolvedValue(

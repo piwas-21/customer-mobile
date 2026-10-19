@@ -1,21 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { z } from 'zod';
+import useMounted from '../../core/useMounted';
 export default function useAccountRequest<T>(
   schema: z.ZodType<T>,
   send: (input: T) => Promise<void>,
   onSettled: () => void,
 ) {
-  const mounted = useRef(true);
+  const mounted = useMounted();
   const pending = useRef(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [failure, setFailure] = useState<'input' | 'request'>();
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
   async function submit(input: T): Promise<boolean> {
     if (!mounted.current || pending.current) return false;
     const parsed = schema.safeParse(input);
@@ -42,5 +37,5 @@ export default function useAccountRequest<T>(
       }
     }
   }
-  return { submit, busy, sent, failure };
+  return { submit, busy, sent, failure, canLeave: () => mounted.current && !pending.current };
 }

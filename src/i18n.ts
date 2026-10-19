@@ -57,6 +57,17 @@ const en = {
   signingOut: 'Signing out…',
   sessionUnavailable: 'Your saved session could not be opened. Please try again.',
   profileUnavailable: 'Your profile could not be loaded. Please try again.',
+  editProfile: 'Edit profile',
+  saveProfile: 'Save changes',
+  cancel: 'Cancel',
+  phoneNumber: 'Phone number',
+  profilePhoneHint: 'Use a number the restaurant can reach you on. Leave it blank to remove it.',
+  profileNameInvalid: 'Enter a name with 1 to 100 characters.',
+  profileNameHint: 'First and last names are required.',
+  profilePhoneInvalid: 'Enter a valid phone number or leave it blank.',
+  profileSaveFailed:
+    'We could not confirm your changes. Try again, or cancel to reload your profile.',
+  profileSaved: 'Your profile has been saved.',
   verificationRequired: 'Check your email to verify your account before placing an order.',
   accountFailure: {
     input: 'Enter a valid email address and your password.',
