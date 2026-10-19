@@ -16,6 +16,7 @@ export function assertOwnedBasket(
       basket.items.length === 0 &&
       basket.totalItems === 0 &&
       basket.orderType === null &&
+      basket.customerDiscountName == null &&
       basket.purchaseFingerprint === '' &&
       [
         basket.subTotal,

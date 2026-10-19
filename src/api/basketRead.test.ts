@@ -87,6 +87,7 @@ it.each([
   { total: 1 },
   { tax: 1 },
   { customerDiscount: 1 },
+  { customerDiscountName: 'Unexpected discount' },
   { totalItems: 1 },
   { userId: tenantA },
   { sessionId: tenantA },
