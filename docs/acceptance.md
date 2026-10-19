@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                      | Remaining acceptance                                                                                           |
-| ----- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                  | Two approved pilot tenants, company publisher accounts and EAS ownership                                       |
-| P1    | Menu, standalone guided choices, owned basket state/read/add/recovery, QR and switching foundations | Bundle UI, checkout/payment return, notification tap and physical iPhone/Android journeys                      |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation   | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                      |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls     | Social/verification/reset links, addresses/deletion, basket editing, checkout, orders/reorder/payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                               | Reservations, loyalty, table rounds/payments and transactional push                                            |
-| P5    | Source build and privacy foundations                                                                | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                             |
-| P6    | Runtime directory/configuration foundations                                                         | Third-tenant activation, rollback and support/offboarding proof                                                |
+| Phase | Current source                                                                                             | Remaining acceptance                                                                                           |
+| ----- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                                       |
+| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Checkout/payment return, notification tap and physical iPhone/Android journeys                                 |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                      |
+| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, basket editing, checkout, orders/reorder/payment recovery |
+| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                                            |
+| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                             |
+| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                                                |
 
 ## Workflow and dependency gates
 
@@ -56,9 +56,14 @@ metadata resets to fresh defaults and asks for review. Required sides need curre
 shared product cache keys and at most four concurrent side reads avoid duplicate/per-row requests.
 Final projection revalidates every rule and sends identities/quantities/instructions without prices.
 
-Bundle composition helpers preserve fixed/user-selected variations, sections, required/dependent
-minima, nested recipe/choices/sides and authored ordering. Native bundle interaction is still required;
-unsupported bundle roots show the fallback rather than submitting a partial composition.
+Native bundle screens share quantity, nested choice, review and final submission controls with
+standalone ordering. Selected sections retain per-bundle portions separately from the parent quantity;
+fixed and user-selected variations keep distinct wire identities. Authored component screens appear
+only for selected rows. Removing a component clears its notes/choices and transitive dependent choices.
+Inactive required dependencies block progress with a return-to-dish explanation. Final review retains
+explicit removals, nested sides and component instructions. Unknown rules/unsupported roots block
+submission. Query/screen integration verifies private nested notes reset on owner changes; physical
+bundle interaction, navigation and screen-reader acceptance remain required.
 
 Basket providers are bound to an initialized, immutable principal and login revision. They restore
 only that owner's secure journal, read only the strict native GET, and remove old private queries on

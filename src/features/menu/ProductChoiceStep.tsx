@@ -1,4 +1,5 @@
 import { SectionList, StyleSheet, Text, View } from 'react-native';
+import StepHeading from './StepHeading';
 import { useTranslation } from 'react-i18next';
 import type { FlowChoice } from '../../domain/productFlow';
 import type { CatalogueChoiceGroup } from '../../domain/catalogueChoices';
@@ -8,11 +9,13 @@ import ChoiceOption from '../../ui/ChoiceOption';
 import { spacing, typography, useTheme } from '../../ui/theme';
 export default function ProductChoiceStep({
   choices,
+  heading,
   groups,
   selection,
   disabled,
   onChange,
 }: Readonly<{
+  heading?: string | undefined;
   choices: readonly FlowChoice[];
   groups: readonly CatalogueChoiceGroup[];
   selection: ProductSelections['groups'];
@@ -25,6 +28,7 @@ export default function ProductChoiceStep({
   const sections = choices.map((choice) => ({ ...choice, data: choice.group.options }));
   return (
     <SectionList
+      ListHeaderComponent={heading ? <StepHeading text={heading} /> : null}
       sections={sections}
       keyExtractor={({ id }) => id}
       stickySectionHeadersEnabled={false}
