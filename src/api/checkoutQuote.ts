@@ -102,12 +102,11 @@ export async function readCheckoutQuote(
     quote.items.some((row) => {
       const reviewed = roots.get(row.basketItemId!);
       return (
-        !reviewed ||
-        (row.productId ?? null) !== reviewed.productId ||
-        (row.menuId ?? null) !== reviewed.menuId ||
-        (row.productVariationId ?? null) !== reviewed.variationId ||
-        row.quantity !== reviewed.quantity ||
-        (row.specialInstructions ?? null) !== reviewed.instructions
+        (row.productId ?? null) !== reviewed?.productId ||
+        (row.menuId ?? null) !== reviewed?.menuId ||
+        (row.productVariationId ?? null) !== reviewed?.variationId ||
+        row.quantity !== reviewed?.quantity ||
+        (row.specialInstructions ?? null) !== reviewed?.instructions
       );
     })
   )

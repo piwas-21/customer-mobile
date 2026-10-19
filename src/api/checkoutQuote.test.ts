@@ -36,6 +36,7 @@ it.each([
   { availablePaymentMethods: ['Cash'] },
   { availablePaymentMethods: ['Cash', 'CreditCard', 'OnlinePayment'] },
   { items: [] },
+  { items: [{ ...checkoutQuote().items[0], basketItemId: checkoutQuote().basketId }] },
   { items: [{ ...checkoutQuote().items[0], quantity: 1 }] },
   { items: [{ ...checkoutQuote().items[0], productId: checkoutQuote().basketId }] },
   { items: [{ ...checkoutQuote().items[0], specialInstructions: 'Substituted' }] },
