@@ -18,18 +18,14 @@ export default function BundleReview({
       const component = selection.components[option.id];
       if (quantity <= 0 || !component) continue;
       const name = `${group.label} · ${option.label}`;
-      rows.push({ id: `component:${option.id}`, label: t('bundlePortions', { name, quantity }) });
       rows.push(
+        { id: `component:${option.id}`, label: t('bundlePortions', { name, quantity }) },
         ...selectionReviewRows(plan.component(option.id), component, t).map((row) => ({
           ...row,
           id: `${option.id}:${row.id}`,
         })),
+        { id: `notes:${option.id}`, label: t('componentNotes', { name }), component: option.id },
       );
-      rows.push({
-        id: `notes:${option.id}`,
-        label: t('componentNotes', { name }),
-        component: option.id,
-      });
     }
   return (
     <ReviewList
