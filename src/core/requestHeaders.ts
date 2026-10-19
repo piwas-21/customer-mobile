@@ -62,10 +62,15 @@ export async function requestHeaders(
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
   if (
     mode === 'customer' ||
-    ((mode === 'basket' || mode === 'order') && principal?.kind === 'customer')
+    ((mode === 'basket' || mode === 'order' || mode === 'order-receipt') &&
+      principal?.kind === 'customer')
   )
     Object.assign(headers, await customerHeaders(context, vault, principal));
-  if (orderProof) Object.assign(headers, await orderRequestHeaders(context, vault, orderProof));
+  if (orderProof)
+    Object.assign(
+      headers,
+      await orderRequestHeaders(context, vault, orderProof, mode === 'order-receipt'),
+    );
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
     Object.assign(headers, await sessionHeaders(context, vault, principal, mode, expectedSession));
   return headers;

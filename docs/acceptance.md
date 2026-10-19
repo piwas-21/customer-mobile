@@ -38,8 +38,8 @@ Email sign-in/restore, registration/recovery request forms and owned profile rea
 backend contracts. Profile updates send only names/phone; phone removal depends on backend #723.
 Secure account writes serialize, logout persists cleanup, and stale/same-user login responses cannot
 publish private data. Account-disabled ordering initializes a guest without reading a saved customer's
-credentials unless the exact active customer has a scoped pending order proof. That customer session
-is restored only for order recovery; account actions and new purchases stay blocked. Publisher identities, social audiences, server revocation/deletion and installed keyboard/
+credentials unless the exact active customer has a scoped pending or accepted order proof. That customer session
+is restored only for order recovery/receipts; account actions and new purchases stay blocked. Publisher identities, social audiences, server revocation/deletion and installed keyboard/
 secure-store acceptance remain open.
 
 ## Menu, choices and basket
@@ -201,3 +201,22 @@ keyboard/back/gesture focus, secure process death and concurrent recovery, two-t
 verified links, provider returns, notification taps and actual store/APK updates. Useful cached menu
 <2s and cold online menu <3s need named physical devices and network conditions. Expo/EAS ownership,
 Apple/Google publisher accounts, signing, hosted builds and store distribution remain owner-side gates.
+
+## Native saved receipts
+
+The Orders destination lists at most 32 local decisions for the current restaurant and principal.
+Only the selected accepted order makes a receipt request, using its original session/hash/operation
+proof and customer JWT when applicable. These secrets remain in SecureStore; Query contains minimal
+local descriptors and the private receipt projection. This is device-saved history, not customer-wide
+historical order synchronization. Explicit refresh reads status without replaying checkout or payment.
+
+Fulfillment and payment labels are separate. Display uses the frozen receipt currency and server
+restaurant timezone, preserves historical names/ingredients/instructions after catalogue deletion,
+and virtualizes bounded composition. Unknown status values show a neutral unavailable label.
+Removing a receipt requires confirmation, blocks its unresolved pending identity, clears its query
+value and local proof, and never cancels an order or refunds money. Logout/tenant/controller changes
+withdraw late responses and old private data. Recovery-only customers may explicitly sign out and
+continue as guests after pending order resolution; secure-cleanup failure keeps a usable retry.
+Backend #737 and the operation migrations must be released before connected device acceptance.
+Installed status updates, font/RTL/screen-reader behavior, process death and receipt privacy remain
+required physical acceptance. Hosted payment, reorder and complete account history remain open.
