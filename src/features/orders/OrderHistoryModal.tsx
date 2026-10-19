@@ -1,0 +1,128 @@
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import {
+  readOrderHistory,
+  type OrderHistoryCursor,
+  type OrderHistoryItem,
+} from '../../api/orderHistory';
+import type { SessionController } from '../../core/sessionController';
+import type { TenantContext } from '../../core/tenantContext';
+import usePrivatePages from '../../core/usePrivatePages';
+import BaseModal from '../../ui/BaseModal';
+import Button from '../../ui/Button';
+import Feedback from '../../ui/Feedback';
+import { spacing, typography, useTheme } from '../../ui/theme';
+import { orderStatusKey } from './orderPresentation';
+type Props = Readonly<{
+  context: TenantContext;
+  controller: SessionController;
+  userId: string;
+  ownerVersion: string;
+  onClose: () => void;
+}>;
+export default function OrderHistoryModal({
+  context,
+  controller,
+  userId,
+  ownerVersion,
+  onClose,
+}: Props) {
+  const { t } = useTranslation();
+  const page = usePrivatePages(
+    context,
+    userId,
+    ownerVersion,
+    'order-history',
+    (cursor?: OrderHistoryCursor) => readOrderHistory(controller, userId, cursor),
+    (data) => data.nextBefore,
+  );
+  const data = page.data;
+  let emptyMessage = 'noAccountOrders';
+  if (page.loading) emptyMessage = 'loading';
+  else if (page.failed) emptyMessage = 'orderHistoryUnavailable';
+  return (
+    <BaseModal title={t('accountOrderHistory')} onClose={onClose} scroll={false}>
+      <FlatList
+        data={data?.items ?? []}
+        keyExtractor={(item) => item.orderId}
+        contentContainerStyle={styles.content}
+        renderItem={({ item }) =>
+          data ? <HistoryRow item={item} zone={data.businessTimeZoneId} /> : null
+        }
+        ListHeaderComponent={
+          data ? (
+            <Feedback message={t('receiptTimeZone', { zone: data.businessTimeZoneId })} />
+          ) : null
+        }
+        ListEmptyComponent={<Feedback loading={page.loading} message={t(emptyMessage)} />}
+        ListFooterComponent={
+          <View style={styles.content}>
+            <Button
+              label={t('refreshOrderHistory')}
+              secondary
+              disabled={page.loading}
+              onPress={page.refresh}
+            />
+            {page.hasPrevious ? (
+              <Button
+                label={t('previousOrders')}
+                secondary
+                disabled={page.loading}
+                onPress={page.previous}
+              />
+            ) : null}
+            {page.hasNext ? (
+              <Button
+                label={t('nextOrders')}
+                secondary
+                disabled={page.loading}
+                onPress={page.next}
+              />
+            ) : null}
+          </View>
+        }
+      />
+      <Button label={t('close')} secondary onPress={onClose} />
+    </BaseModal>
+  );
+}
+function HistoryRow({ item, zone }: Readonly<{ item: OrderHistoryItem; zone: string }>) {
+  const { t, i18n } = useTranslation();
+  const theme = useTheme();
+  const date = new Intl.DateTimeFormat(i18n.language, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: zone,
+  });
+  const price =
+    item.currency !== null && item.payableTotal !== null
+      ? new Intl.NumberFormat(i18n.language, { style: 'currency', currency: item.currency }).format(
+          item.payableTotal,
+        )
+      : null;
+  return (
+    <View style={[styles.row, { borderColor: theme.border }]}>
+      <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>
+        {t('orderReceipt', { number: item.orderNumber })}
+      </Text>
+      <Text style={[styles.body, { color: theme.text }]}>
+        {t('receiptDate', { date: date.format(new Date(item.orderDate)) })}
+      </Text>
+      <Text style={[styles.body, { color: theme.text }]}>
+        {t(orderStatusKey(item.status, false))}
+      </Text>
+      <Text style={[styles.body, { color: theme.text }]}>
+        {t(orderStatusKey(item.paymentStatus, true))}
+      </Text>
+      <Text style={[styles.body, { color: theme.secondary }]}>
+        {price ? t('historyPayable', { price }) : t('historyAmountUnavailable')}
+      </Text>
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  content: { gap: spacing.md },
+  row: { gap: spacing.sm, paddingVertical: spacing.md, borderBottomWidth: 1 },
+  title: { fontSize: typography.heading, fontWeight: '600' },
+  body: { fontSize: typography.body, lineHeight: 26 },
+});

@@ -277,3 +277,26 @@ order contracts remain authoritative after the customer reviews the selected det
 
 Complete locale/RTL coverage and installed keyboard/screen-reader/process-death acceptance remain
 required plan work. No tenant activation or signed release is claimed.
+
+## Account-wide order history
+
+Signed-in customers can explicitly open a bounded history list from Orders. The private versioned
+read requires the current customer and returns20 summaries per page with paired UTC date/UUID
+continuation. The client preserves original cursor precision, checks deterministic date/tie order,
+unique IDs, exact last-item continuation and forward progress. Unsupported/private fields,
+contradictory nullable money, unknown versions and ambiguous timestamps are refused. Future status
+strings display an unavailable update rather than an invented fulfillment or paid state.
+
+Recorded currency is authoritative. Legacy orders without recorded currency remain visible with an
+unavailable amount; no current restaurant currency is substituted. Fulfillment, payment status and
+current payable total are separate. Dates use the response's validated restaurant timezone.
+
+History and saved addresses reuse one private paging hook: owner-scoped keys, inner bounded server
+reads, explicit next/previous navigation, no persistence, no automatic Query retries, foreground checks,
+withdrawal during/after failed refresh and query removal on dismissal or scope change. A withdrawn
+account cannot reopen its former modal or repopulate a private page after a late HTTP response.
+Local saved receipt access remains available through its original guarded proof workflow.
+
+History summaries are source integration work; backend acceptance/readback and installed accessibility
+remain open. Detailed account-wide receipts, accepted-order cancellation and revalidated reorder are
+still required plan work. No new order, payment, provider or notification action is part of this read.
