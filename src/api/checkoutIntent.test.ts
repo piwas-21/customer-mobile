@@ -42,7 +42,7 @@ it('retains the normalized contact and independent email wire boundary', () => {
     checkoutContactSchema.parse({ ...contact, name: '  Customer  ', phone: '  +41000000000  ' }),
   ).toEqual(contact);
   const email = 'a'.repeat(64) + '@' + 'b'.repeat(30) + '.test';
-  expect(email.length).toBe(100);
+  expect(email).toHaveLength(100);
   expect(checkoutContactSchema.safeParse({ ...contact, email }).success).toBe(true);
   expect(checkoutContactSchema.safeParse({ ...contact, email: email + 'x' }).success).toBe(false);
 });

@@ -17,17 +17,19 @@ export default function CheckoutControl({
     flow.open && !flow.review.open && !flow.busy && Boolean(flow.fields.fields?.address.length),
     flow.applyAddress,
   );
+  if (addresses.current)
+    return (
+      <SavedAddressesModal
+        key={addresses.current.ownerVersion}
+        {...addresses.current}
+        onClose={addresses.close}
+        onSelect={addresses.select}
+      />
+    );
   return (
     <>
       {flow.allowed ? <Button label={t('checkout')} onPress={flow.show} /> : null}
-      {addresses.current ? (
-        <SavedAddressesModal
-          key={addresses.current.ownerVersion}
-          {...addresses.current}
-          onClose={addresses.close}
-          onSelect={addresses.select}
-        />
-      ) : flow.open ? (
+      {flow.open ? (
         <BaseModal title={t('checkout')} onClose={flow.close}>
           {flow.review.open ? (
             <CheckoutSummary flow={flow} />
