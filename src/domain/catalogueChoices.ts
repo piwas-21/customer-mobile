@@ -10,7 +10,7 @@ export type CatalogueChoice = Choice &
   }>;
 export type CatalogueChoiceGroup = Omit<ChoiceGroup, 'options'> &
   Readonly<{
-    kind: 'explicit' | 'bundle';
+    kind: 'explicit' | 'bundle' | 'recipe' | 'sauce';
     options: readonly CatalogueChoice[];
     defaults: Selection;
   }>;

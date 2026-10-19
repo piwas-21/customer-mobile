@@ -36,6 +36,7 @@ export const ingredientSchema = z.object({
   displayOrder: z.number().int(),
   maxQuantity: z.number().int().nonnegative(),
   kind: z.string().min(1),
+  isNoneOption: z.boolean().optional(),
   exclusionGroup: z.string().nullish(),
   content: translatedContentSchema.nullable(),
 });
