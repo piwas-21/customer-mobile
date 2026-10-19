@@ -6,7 +6,7 @@ export function basketState(
     basket: null,
     loading: false,
     unavailable: false,
-    revision: ['staging', undefined, 'guest:basket', 'basket', 0, 'fixture-owner'],
+    revision: ['staging', undefined, 'guest:basket', 'basket', 0, 'fixture-owner', 1],
     hasPending: false,
     cancelling: false,
     resolution: null,

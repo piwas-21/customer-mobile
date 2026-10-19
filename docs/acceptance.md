@@ -67,7 +67,7 @@ bundle interaction, navigation and screen-reader acceptance remain required.
 
 Basket providers are bound to an initialized, immutable principal and login revision. They restore
 only that owner's secure journal, read only the strict native GET, and remove old private queries on
-teardown. Failed sign-in also announces an owner revision. Late replies cannot affect another owner.
+teardown. Failed sign-in also announces an owner revision. Late replies cannot affect another owner. Private basket editors also key teardown on a unique effect-owned workspace version, so a replacement controller/client cannot inherit a draft even when the account and external owner version are identical.
 First-open browsing creates neither a session nor HTTP writes. Failed secure restoration/read blocks
 new adds. Customers may read their owned older web session; guests require the exact unowned session.
 Nil-ID empty responses must have zero totals, no items/owner/discount label, and the requested session.
@@ -98,7 +98,7 @@ Backend #728 supplies the accepted cancellation contract. Its migration/deployme
 No error or GET permits silent discard.
 
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes
-explicit pending-change recovery or a confirmed cancellation check. Cancellation recovery never resumes the original execution. Applied and Cancelled outcomes have distinct announcements. Failed reads hide stale totals; unsupported depth/row counts refuse
+explicit pending-change recovery or a confirmed cancellation check. Cancellation recovery never resumes the original execution. Applied and Cancelled outcomes have distinct announcements. Accepted writes withdraw every other locale quote and refetch the active language without changing the accepted write outcome. Failed reads hide stale totals; unsupported depth/row counts refuse
 presentation rather than silently truncating. Persistent menu access returns to the selected basket.
 Connected root edits capture the reviewed revision and exact prior instructions; child rows have no independent edit. Removal needs confirmation. Owner changes unmount private drafts, stale revisions block writes, and unsupported server quantities remain visible without clamping. Shared native controls retain scalable labels, 48dp targets and destructive semantic colors. Channel selection, checkout, order/payment idempotency and provider
 settlement are still required. No source helper authorizes automatic order/payment retries or an offline write queue.

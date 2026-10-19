@@ -5,6 +5,7 @@ import { BasketWorkspace } from '../../core/basketWorkspace';
 import { deviceSessions } from '../../storage/sessions';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import { useSession } from '../account/SessionProvider';
+let nextWorkspaceVersion = 0;
 export default function useBasketScope() {
   const { context, client } = useRestaurant();
   const { controller, userId, ownerVersion } = useSession();
@@ -25,7 +26,11 @@ export default function useBasketScope() {
       ] as const,
     [context, userId, ownerVersion],
   );
-  const [resource, setResource] = useState<{ scope: typeof scope; workspace: BasketWorkspace }>();
+  const [resource, setResource] = useState<{
+    scope: typeof scope;
+    workspace: BasketWorkspace;
+    version: number;
+  }>();
   useEffect(() => {
     if (!scope.context || !scope.client || !scope.controller) return;
     let workspace: BasketWorkspace;
@@ -41,13 +46,14 @@ export default function useBasketScope() {
     } catch {
       return;
     }
+    const version = ++nextWorkspaceVersion;
     let active = true;
     // Restore the secure journal before exposing this effect-owned workspace.
     void workspace
       .hasPending()
       .catch(() => undefined)
       .then(() => {
-        if (active) setResource({ scope, workspace });
+        if (active) setResource({ scope, workspace, version });
       });
     return () => {
       active = false;
@@ -56,5 +62,7 @@ export default function useBasketScope() {
       cache.removeQueries({ queryKey: key });
     };
   }, [scope, key, cache]);
-  return { workspace: resource?.scope === scope ? resource.workspace : undefined, key };
+  const current = resource?.scope === scope ? resource : undefined;
+  const revision = useMemo(() => [...key, current?.version] as const, [key, current?.version]);
+  return { workspace: current?.workspace, key, revision };
 }

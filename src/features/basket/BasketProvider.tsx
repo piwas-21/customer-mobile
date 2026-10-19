@@ -11,7 +11,7 @@ import useMounted from '../../core/useMounted';
 import useBootstrap from '../restaurant/useBootstrap';
 import useBasketScope from './useBasketScope';
 function useBasketState() {
-  const { workspace, key } = useBasketScope();
+  const { workspace, key, revision } = useBasketScope();
   const cache = useQueryClient();
   const mounted = useMounted();
   const { i18n } = useTranslation();
@@ -86,8 +86,17 @@ function useBasketState() {
       if (!mounted.current) throw new ApiFailure(0, 'refused');
       cache.setQueryData(pendingKey, null);
       if (result.outcome) setResolution({ owner: workspace, outcome: result.outcome });
-      if (result.basket !== null) cache.setQueryData([...key, 'value', locale], result.basket);
-      else {
+      if (result.basket !== null) {
+        cache.setQueryData([...key, 'value', locale], result.basket);
+        // Locale variants contain the same financial revision. Withdraw their old quotes and
+        // refetch whichever other locale is active without retrying an accepted write.
+        void cache
+          .resetQueries({
+            queryKey: [...key, 'value'],
+            predicate: (query) => query.queryKey.at(-1) !== locale,
+          })
+          .catch(() => undefined);
+      } else {
         // A cancellation proof is already accepted. Hide the old quote while reading the current
         // basket; a read failure must not turn that successful decision into another cancellation.
         void cache.resetQueries({ queryKey: [...key, 'value'] }).catch(() => undefined);
@@ -105,7 +114,7 @@ function useBasketState() {
     basket: workspace && ordering ? basket.data : undefined,
     loading: Boolean(workspace && (pending.isPending || (ordering && basket.isPending))),
     unavailable: !workspace || !ordering,
-    revision: key,
+    revision,
     hasPending: pending.isSuccess && pending.data !== null,
     cancelling: pending.data?.cancelling === true,
     resolution: resolution && resolution.owner === workspace ? resolution.outcome : null,

@@ -103,6 +103,7 @@ it('edits roots only and discards private drafts as soon as the basket owner cha
       first.revision[3],
       first.revision[4],
       'next-owner',
+      first.revision[6],
     ],
   });
   jest.mocked(useBasket).mockReturnValue(next);
