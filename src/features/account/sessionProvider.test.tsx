@@ -40,7 +40,7 @@ it('fails closed before bootstrap and never restores credentials when accounts a
         bootstrap({ ...accountBootstrap.data, capabilities: { accounts: 'disabled' } }),
       );
     screen.rerender(<AccountRoute />);
-    expect(screen.getByText(/Account access is being prepared/)).toBeTruthy();
+    await waitFor(() => expect(screen.getByText(/Account access is being prepared/)).toBeTruthy());
     expect(screen.queryByLabelText('Email')).toBeNull();
     expect(load).not.toHaveBeenCalled();
   } finally {

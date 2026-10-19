@@ -87,13 +87,16 @@ it('withdraws cached ordering UI after product refresh fails while retaining a c
     expect(f.cache.getQueryData(key)).toBeDefined();
     f.fetcher.mockResolvedValue(response({}, 503));
     await act(async () => {
-      void f.cache.refetchQueries({ queryKey: key, exact: true });
+      const refetch = f.cache.refetchQueries({ queryKey: key, exact: true });
+      await jest.advanceTimersByTimeAsync(1);
+      await refetch;
     });
     await waitFor(() =>
       expect(f.screen.queryByRole('button', { name: 'Add to basket' })).toBeNull(),
     );
     expect(f.screen.getByText('The menu is unavailable right now. Please try again.')).toBeTruthy();
     expect(f.cache.getQueryData(key)).toBeDefined();
+    expect(f.cache.getQueryState(key)?.status).toBe('error');
     expect(f.basket.add).not.toHaveBeenCalled();
   } finally {
     f.close();

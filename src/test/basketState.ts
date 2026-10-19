@@ -5,6 +5,8 @@ export function basketState(
   patch: Partial<ReturnType<typeof useBasket>> = {},
 ): ReturnType<typeof useBasket> {
   return {
+    canContinueAsGuest: false,
+    continueAsGuest: jest.fn(async () => {}),
     basket: null,
     loading: false,
     unavailable: false,

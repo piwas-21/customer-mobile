@@ -15,13 +15,13 @@ import useMounted from '../../core/useMounted';
 import useBootstrap from '../restaurant/useBootstrap';
 import useBasketScope from './useBasketScope';
 function useBasketState() {
-  const { workspace, orders, key, revision } = useBasketScope();
+  const { workspace, orders, key, revision, recoveryOnly, sessionController } = useBasketScope();
   const cache = useQueryClient();
   const mounted = useMounted();
   const { i18n } = useTranslation();
   const locale = i18n.language;
   const bootstrap = useBootstrap();
-  const ordering = canUse(bootstrap.data, 'ordering');
+  const ordering = !recoveryOnly && canUse(bootstrap.data, 'ordering');
   const active = useRef<BasketWorkspace | undefined>(undefined);
   const [busyScope, setBusyScope] = useState<BasketWorkspace>();
   const [failureScope, setFailureScope] = useState<BasketWorkspace>();
@@ -125,7 +125,28 @@ function useBasketState() {
         setBusyScope((previous) => (previous === workspace ? undefined : previous));
     }
   }
+  const canContinueAsGuest = Boolean(
+    canUse(bootstrap.data, 'ordering') &&
+    !busy &&
+    sessionController &&
+    (sessionController.needsCleanup ||
+      (sessionController.onlyRecoverOrders &&
+        sessionController.userId &&
+        order.pending === null &&
+        order.decision &&
+        order.decision.outcome !== 'Unseen')),
+  );
   return {
+    canContinueAsGuest,
+    continueAsGuest: async () => {
+      if (!canContinueAsGuest || !sessionController) throw new ApiFailure(409, 'refused');
+      if (!sessionController.needsCleanup) {
+        if (!orders) throw new ApiFailure(409, 'refused');
+        orders.assertCurrent();
+        if (await orders.pending()) throw new ApiFailure(409, 'refused');
+      }
+      await sessionController.logout();
+    },
     basket: workspace && ordering ? basket.data : undefined,
     loading: Boolean(
       workspace && (pending.isPending || order.loading || (ordering && basket.isPending)),

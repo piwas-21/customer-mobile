@@ -12,7 +12,7 @@ jest.mock(
 );
 it('an unknown outcome never retries automatically and stopping it requires a separate explicit confirmation', async () => {
   const basket = basketState({
-    pendingOrder: { cancelling: false, canResume: true },
+    pendingOrder: { cancelling: false, canResume: true, cleanupPending: false },
     canAdd: false,
   });
   const screen = render(<CustomerOrderNotice basket={basket} />);
@@ -35,7 +35,7 @@ it('an unknown outcome never retries automatically and stopping it requires a se
 });
 it('a persisted cancellation choice offers only its continuation and keeps failures pending', async () => {
   const basket = basketState({
-    pendingOrder: { cancelling: true, canResume: false },
+    pendingOrder: { cancelling: true, canResume: false, cleanupPending: false },
     recoverOrder: jest.fn(async () => {
       throw new Error('Unknown cancellation');
     }),

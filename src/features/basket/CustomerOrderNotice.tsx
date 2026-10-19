@@ -22,22 +22,33 @@ export default function CustomerOrderNotice({
     }
     setConfirm(false);
   }
-  if (!pending && !decision) return null;
+  if (!pending && !decision && !basket.canContinueAsGuest) return null;
   return (
     <View style={[styles.notice, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      {basket.canContinueAsGuest && !decision ? (
+        <Feedback message={t('accountFailure.logout')} />
+      ) : null}
       {decision?.outcome === 'Applied' ? <Feedback message={t('orderReceived')} /> : null}
       {decision?.outcome === 'Cancelled' ? <Feedback message={t('orderAttemptCancelled')} /> : null}
       {pending ? (
         <>
           <Feedback
-            message={t(pending.cancelling ? 'orderCancellationPending' : 'orderOutcomePending')}
+            message={t(
+              pending.cleanupPending
+                ? 'orderCleanupPending'
+                : pending.cancelling
+                  ? 'orderCancellationPending'
+                  : 'orderOutcomePending',
+            )}
           />
           <Button
-            label={t(pending.cancelling ? 'finishOrderCheck' : 'checkOrder')}
+            label={t(
+              pending.cleanupPending || pending.cancelling ? 'finishOrderCheck' : 'checkOrder',
+            )}
             busy={basket.busy}
             onPress={() => void resolve(false)}
           />
-          {!pending.cancelling ? (
+          {!pending.cancelling && !pending.cleanupPending ? (
             <Button
               label={t('stopOrderAttempt')}
               secondary
@@ -46,6 +57,13 @@ export default function CustomerOrderNotice({
             />
           ) : null}
         </>
+      ) : null}
+      {basket.canContinueAsGuest ? (
+        <Button
+          label={t('continueAsGuest')}
+          secondary
+          onPress={() => void basket.continueAsGuest().catch(() => undefined)}
+        />
       ) : null}
       {confirm && pending ? (
         <BaseModal

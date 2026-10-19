@@ -74,5 +74,12 @@ export default function useBasketScope() {
   }, [scope, key, cache]);
   const current = resource?.scope === scope ? resource : undefined;
   const revision = useMemo(() => [...key, current?.version] as const, [key, current?.version]);
-  return { workspace: current?.workspace, orders: current?.orders, key, revision };
+  return {
+    sessionController: controller,
+    workspace: current?.workspace,
+    orders: current?.orders,
+    key,
+    revision,
+    recoveryOnly: controller?.onlyRecoverOrders === true,
+  };
 }

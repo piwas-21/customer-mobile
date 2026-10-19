@@ -28,6 +28,8 @@ export const checkoutEnglish = {
     'We have not confirmed the earlier order. Check it before placing another order.',
   orderCancellationPending:
     'A check to stop the earlier attempt is pending. Finish the check before ordering again.',
+  orderCleanupPending: 'The result is confirmed. Finish saving it on this device.',
+  continueAsGuest: 'Sign out and continue as guest',
   checkOrder: 'Check earlier order',
   finishOrderCheck: 'Finish order check',
   stopOrderAttempt: 'Stop this attempt',

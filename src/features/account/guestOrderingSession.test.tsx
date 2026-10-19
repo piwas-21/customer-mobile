@@ -125,7 +125,7 @@ it('dispatches guest basket reads without the saved customer JWT when accounts a
     fixture.queryClient.clear();
   }
 });
-it.each(['disabled', 'read-only'] as const)(
+it.each(['disabled'] as const)(
   'never creates a guest controller for lifecycle %s',
   async (lifecycle) => {
     const fixture = accountFixture();

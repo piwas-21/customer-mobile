@@ -1,3 +1,4 @@
+import { readSession } from './sessionRead';
 import type { z } from 'zod';
 import { signIn, refreshSession, type LoginInput } from '../api/auth';
 import { ApiFailure, type CustomerTransport } from './transport';
@@ -19,7 +20,11 @@ export class SessionController {
     private readonly client: CustomerTransport,
     private readonly repository: SessionRepository,
     private readonly accountsEnabled = true,
+    private readonly recoveryOnly = false,
   ) {}
+  get onlyRecoverOrders(): boolean {
+    return this.recoveryOnly || (!this.accountsEnabled && this.session !== null);
+  }
   get userId(): string | null {
     return this.session?.userId ?? null;
   }
@@ -72,7 +77,9 @@ export class SessionController {
     const revision = this.revision;
     return this.tasks.run(async () => {
       this.assertCurrent(revision);
-      const session = this.accountsEnabled ? await this.repository.load(this.context) : null;
+      const session = await (this.accountsEnabled
+        ? this.repository.load(this.context)
+        : this.repository.loadForOrderRecovery(this.context));
       this.assertCurrent(revision);
       this.initialized = true;
       this.publish(session);
@@ -80,7 +87,7 @@ export class SessionController {
     });
   }
   login(input: LoginInput, locale: string): Promise<string> {
-    if (!this.accountsEnabled || this.pendingCleanup)
+    if (!this.accountsEnabled || this.onlyRecoverOrders || this.pendingCleanup)
       return Promise.reject(new ApiFailure(401, 'refused'));
     const revision = ++this.revision;
     this.signingIn = true;
@@ -111,7 +118,7 @@ export class SessionController {
     const captured = this.pendingCleanup ?? this.session;
     this.pendingCleanup = captured;
     this.publish(null);
-    if (!this.accountsEnabled) return;
+    if (!this.accountsEnabled && !captured) return;
     const session =
       captured ?? (this.context.signal.aborted ? null : await this.repository.load(this.context));
     if (!session) return;
@@ -127,35 +134,26 @@ export class SessionController {
     this.publish(null);
   }
   async get<T>(userId: string, path: string, schema: z.ZodType<T>): Promise<T> {
+    if (this.onlyRecoverOrders) throw new ApiFailure(401, 'refused');
     const revision = this.revision;
     const captured = this.assertPrincipal(revision, userId);
     let result: T;
     try {
-      result = await this.read(revision, userId, path, schema);
+      result = await readSession(this.client, this.context, userId, path, schema, () => {
+        this.assertPrincipal(revision, userId);
+      });
     } catch (error) {
       if (!(error instanceof ApiFailure) || error.status !== 401) throw error;
       await this.tasks.run(async () => {
         const current = this.assertPrincipal(revision, userId);
         if (current.accessToken === captured.accessToken) await this.refresh(revision);
       });
-      result = await this.read(revision, userId, path, schema);
+      result = await readSession(this.client, this.context, userId, path, schema, () => {
+        this.assertPrincipal(revision, userId);
+      });
     }
     this.assertPrincipal(revision, userId);
     return result;
-  }
-  private read<T>(
-    revision: number,
-    userId: string,
-    path: string,
-    schema: z.ZodType<T>,
-  ): Promise<T> {
-    return this.client.request(this.context, path, schema, {
-      credentials: 'customer',
-      principal: { kind: 'customer', id: userId },
-      assertCurrent: () => {
-        this.assertPrincipal(revision, userId);
-      },
-    });
   }
   async put<T>(
     userId: string,
@@ -164,6 +162,7 @@ export class SessionController {
     schema: z.ZodType<T>,
     locale: string,
   ): Promise<T> {
+    if (this.onlyRecoverOrders) throw new ApiFailure(401, 'refused');
     const principal = { kind: 'customer', id: userId } as const;
     const assertCurrent = this.captureRequestOwner(principal);
     const result = await this.client.request(this.context, path, schema, {

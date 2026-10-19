@@ -71,7 +71,11 @@ it('unknown submission remains pending; unseen recovery does not submit again an
     return fetch(url, options);
   });
   await expect(f.subject.submit(f.input)).rejects.toMatchObject({ reason: 'network' });
-  expect(await f.subject.pending()).toEqual({ cancelling: false, canResume: true });
+  expect(await f.subject.pending()).toEqual({
+    cancelling: false,
+    canResume: true,
+    cleanupPending: false,
+  });
   await expect(f.subject.submit(f.input)).rejects.toThrow();
   f.fetcher.mockResolvedValueOnce(
     response({ success: true, data: { ...appliedOrder(), outcome: 'Unseen', orderId: null } }),

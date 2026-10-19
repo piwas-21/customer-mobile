@@ -43,6 +43,7 @@ export class CustomerOrderController {
   };
   async pending() {
     this.assertCurrent();
+    if (this.resolved) return { cancelling: false, canResume: false, cleanupPending: true };
     const pending = await this.repository.orders.load(
       this.context,
       this.principal,
@@ -50,7 +51,11 @@ export class CustomerOrderController {
     );
     this.assertCurrent();
     return pending
-      ? { cancelling: pending.proof.cancellationRequested, canResume: pending.intent !== null }
+      ? {
+          cancelling: pending.proof.cancellationRequested,
+          canResume: pending.intent !== null,
+          cleanupPending: false,
+        }
       : null;
   }
   submit(input: OrderRequest): Promise<CustomerOrderResolution> {

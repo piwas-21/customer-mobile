@@ -20,7 +20,7 @@ jest.mock('expo-crypto', () => ({ randomUUID: jest.fn() }));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 jest.mock('../account/SessionProvider', () => ({ useSession: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));
-async function fixture() {
+async function configuration() {
   const f = await basketWorkspaceFixture();
   mockRepository = f.repository;
   jest.mocked(randomUUID).mockReturnValue(basketOperationId);
@@ -33,6 +33,10 @@ async function fixture() {
         : { ...basketResponse(), orderType: 'Takeaway' },
     }),
   );
+  return f;
+}
+async function fixture() {
+  const f = await configuration();
   const view = renderHook(useBasket, { wrapper: f.Wrapper });
   await waitFor(() => expect(view.result.current.canAdd).toBe(true));
   return {
@@ -85,7 +89,11 @@ it('restores an unknown order hold and recovery never resends the original order
     await act(async () => {
       await expect(f.view.result.current.placeOrder(checkoutIntent())).rejects.toThrow();
     });
-    expect(f.view.result.current.pendingOrder).toEqual({ cancelling: false, canResume: true });
+    expect(f.view.result.current.pendingOrder).toEqual({
+      cancelling: false,
+      canResume: true,
+      cleanupPending: false,
+    });
     expect(f.view.result.current.canAdd).toBe(false);
     await expect(f.view.result.current.add(basketInput)).rejects.toMatchObject({ status: 409 });
     f.fetcher.mockImplementation(async (url, options) =>

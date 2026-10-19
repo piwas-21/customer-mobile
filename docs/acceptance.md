@@ -38,7 +38,8 @@ Email sign-in/restore, registration/recovery request forms and owned profile rea
 backend contracts. Profile updates send only names/phone; phone removal depends on backend #723.
 Secure account writes serialize, logout persists cleanup, and stale/same-user login responses cannot
 publish private data. Account-disabled ordering initializes a guest without reading a saved customer's
-credentials. Publisher identities, social audiences, server revocation/deletion and installed keyboard/
+credentials unless the exact active customer has a scoped pending order proof. That customer session
+is restored only for order recovery; account actions and new purchases stay blocked. Publisher identities, social audiences, server revocation/deletion and installed keyboard/
 secure-store acceptance remain open.
 
 ## Menu, choices and basket
@@ -168,9 +169,16 @@ the hold. A separate confirmed stop request persists cancellation before dispatc
 and can only resume the cancellation check after restart. Applied proof means the restaurant received
 the order; cancellation cannot undo that order or refund a payment. Cancelled proof permits fresh
 basket review. A validated decision is securely retained before proof cleanup; failed cleanup can
-finish from memory without another POST. Minimal decision history is bounded and is cleared on
+finish from memory without another POST. A lost deletion acknowledgement keeps an explicit local
+confirmation action visible even after the proof key is gone. Minimal decision history is bounded and is cleared on
 logout; the pending proof survives separately until a server decision. Contact data is purged on
 logout. React Query stores only minimal pending state and validated outcome, never the contact/digest.
+
+Supported active/read-only restaurants retain order recovery after ordering/account withdrawal.
+Guests send only the original operation session. Customer credentials are loaded only after matching
+the original pending proof's environment, tenant and principal. Disabled accounts never unlock profile,
+login or new purchasing actions. When guest ordering remains enabled, a resolved customer may explicitly
+sign out and continue as a guest; failed secure logout retains a visible cleanup retry.
 
 The additive backend acceptance contract depends on the accepted operation-store migration and the
 native endpoints under backend review. Its final server money comparison and strict points debit

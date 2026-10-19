@@ -1,7 +1,8 @@
+import { assertOrderProofScope, orderOperationProofSchema } from './orderOperationProof';
 import { OrderOperationRepository } from './orderOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
-import { CredentialVault, type CustomerSession, type SecretStore } from './credentials';
+import { CredentialVault, secretKey, type CustomerSession, type SecretStore } from './credentials';
 import { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
 const pointerKey = (context: TenantContext) =>
@@ -27,6 +28,22 @@ export class SessionRepository {
       await this.completePendingRemoval(context);
       const id = await this.store.get(pointerKey(context));
       return id === null ? null : this.vault.session(context, z.uuid().parse(id));
+    });
+  }
+  loadForOrderRecovery(context: TenantContext): Promise<CustomerSession | null> {
+    return this.writes.run(async () => {
+      await this.completePendingRemoval(context);
+      const id = await this.store.get(pointerKey(context));
+      if (id === null) return null;
+      const principal = { kind: 'customer', id: z.uuid().parse(id) } as const;
+      const raw = await this.store.get(secretKey(context, 'order-operation-proof', principal));
+      if (raw === null) return null;
+      const proof = orderOperationProofSchema.parse(JSON.parse(raw));
+      assertOrderProofScope(context, proof);
+      if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
+        throw new Error('Order recovery owner mismatch');
+      // Account-disabled browsing never reads a saved JWT unless its exact owner has a pending order.
+      return this.vault.session(context, principal.id);
     });
   }
   activate(
