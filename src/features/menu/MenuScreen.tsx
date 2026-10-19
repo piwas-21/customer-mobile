@@ -1,3 +1,4 @@
+import BasketShortcut from '../basket/BasketShortcut';
 import { canBrowse } from '../../core/capabilities';
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
@@ -94,6 +95,7 @@ export default function MenuScreen() {
           />
         }
       />
+      <BasketShortcut />
     </Screen>
   );
 }
