@@ -241,7 +241,7 @@ release precede dependent mobile publication. Scheduling is not immediate erasur
 proof. Existing web confirmation and cleanup remain authoritative. Apple/provider revocation, push
 subscription erasure, signed installed-device cleanup and the full deletion journey remain open.
 
-## Native saved-address reads
+## Native saved addresses
 
 The account screen can open a virtualized saved-address list using the new current-customer,
 versioned backend read contract. It loads one bounded page at a time and discards private query
@@ -250,6 +250,30 @@ customer. Unknown fields, contradictory continuation, duplicate/out-of-order IDs
 pages are refused. Character limits preserve valid Unicode database text.
 
 Failed refresh hides cached private rows; foreground return performs a new read. Owner/tenant
-switches and logout cannot publish a late result. This is a read-only source slice: create/edit/
-remove/default management, checkout selection, backend integration/readback and installed-device
-accessibility remain required plan work. It does not activate a tenant or claim a signed release.
+switches and logout cannot publish a late result.
+
+Native create/edit/remove/default controls use the same labelled fields, semantic tokens and shared
+modal/buttons. Required and Unicode storage validation runs before sending. Editing preserves null
+optional values and never sends coordinates or owner/policy fields. Default/remove require an
+address-specific confirmation; existing OrderAddress snapshots remain separate from saved addresses.
+A synchronous decision lock prevents duplicate presses and busy dismissal. Unknown responses block
+another submission and offer a return to a freshly read list for explicit checking. No write uses
+automatic retry, token refresh or an offline queue. Create is not idempotent: a fresh read cannot
+prove an earlier request will never arrive, and it must not automatically trigger another create.
+Private form state is discarded on dismissal or owner withdrawal.
+
+This consumes the pending versioned native mutation contract and shared backend address hardening.
+Backend acceptance/deployment must precede dependent app publication. Delivery checkout offers an
+explicit saved-address picker with the same bounded private list and read-failure withdrawal.
+It replaces the checkout modal while open; cancellation retains manually entered details.
+Selection fills the draft only and does not mutate addresses, quote or submit an order. Apartment
+and region are combined into visible street/locality fields without truncation; overlong combined
+values remain visible and block review until corrected. Populated imported country/instructions
+remain editable even when those optional fields are hidden in the restaurant form policy. Checkout
+wire bounds explicitly match server UTF-16 validation; saved-address storage bounds count code points. Optional absent phone retains the entered
+contact phone. Explicit selection never replaces name/email/tip, and closing removes private query
+resources. The current session guard rejects withdrawn-owner callbacks. Existing server quote and
+order contracts remain authoritative after the customer reviews the selected details.
+
+Complete locale/RTL coverage and installed keyboard/screen-reader/process-death acceptance remain
+required plan work. No tenant activation or signed release is claimed.

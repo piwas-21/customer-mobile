@@ -45,7 +45,7 @@ export async function writeSession<T>(
     body: unknown;
     schema: z.ZodType<T>;
     locale: string;
-    method: 'POST' | 'PUT';
+    method: 'POST' | 'PUT' | 'DELETE';
   },
   assertCurrent: () => void,
 ): Promise<T> {

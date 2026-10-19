@@ -1,5 +1,36 @@
 export const addressesEnglish = {
   savedAddresses: 'Saved addresses',
+  chooseSavedAddress: 'Choose a saved delivery address',
+  useSavedAddress: 'Use {{label}} address',
+  addAddress: 'Add address',
+  editAddress: 'Edit address',
+  saveAddress: 'Save address',
+  makeDefaultAddress: 'Make default address',
+  removeAddress: 'Remove address',
+  editSavedAddress: 'Edit {{label}}',
+  removeSavedAddress: 'Remove {{label}}',
+  setSavedAddressDefault: 'Make {{label}} the default',
+  removeAddressPrompt:
+    'Remove this saved address? Existing orders keep their original delivery details.',
+  defaultAddressPrompt: 'Use this address as your default for this restaurant?',
+  addressSaved: 'Your address change has been saved.',
+  checkSavedAddresses: 'Check saved addresses',
+  addressWriteUnknown:
+    'The result could not be confirmed. Check your saved addresses before trying again.',
+  addressWriteRefused:
+    'The address could not be changed. Check the details and your account, then try again.',
+  addressFieldInvalid: 'Use up to {{count}} characters. Required fields cannot be blank.',
+  addressFields: {
+    label: 'Label',
+    addressLine1: 'Street address',
+    addressLine2: 'Apartment or floor (optional)',
+    city: 'City',
+    state: 'Region (optional)',
+    postalCode: 'Postal code',
+    country: 'Country',
+    phone: 'Delivery phone (optional)',
+    deliveryInstructions: 'Delivery instructions (optional)',
+  },
   defaultAddress: 'Default address',
   savedDeliveryInstructions: 'Delivery instructions: {{instructions}}',
   savedAddressesUnavailable:

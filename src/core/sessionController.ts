@@ -171,7 +171,7 @@ export class SessionController {
     body: unknown,
     schema: z.ZodType<T>,
     locale: string,
-    method: 'POST' | 'PUT' = 'PUT',
+    method: 'POST' | 'PUT' | 'DELETE' = 'PUT',
   ): Promise<T> {
     if (this.onlyRecoverOrders) throw new ApiFailure(401, 'refused');
     return writeSession(
