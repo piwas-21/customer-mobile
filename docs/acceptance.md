@@ -80,6 +80,12 @@ the same SHA-512-verified artifact; both native projects generate without depend
 The Android appearance plugin is installed; app configuration blocks microphone, media-storage and overlay permissions. Compilation, signing, Expo ownership and installed-device
 acceptance remain separate open gates; no publisher identities or production artifacts are supplied.
 
+Entry, QR and product routes now include the bottom safe inset while tab-contained screens retain
+their tab-bar spacing. The entry header/search scroll within its existing virtual list, keeping the
+scan action available at large text sizes and in landscape. Android API 36 Pixel 7 emulator checks
+at font scale 2 in dark mode confirmed the footer clears the gesture area and content can scroll.
+Existing source checks pass; physical-device, iOS keyboard/focus and TalkBack acceptance remain open.
+
 The secure basket-operation repository persists an exact supported request and operation/session
 identity before submission can use it. Installation state is persisted before the session capability, and returned records are deeply
 immutable. Restarts and duplicate preparations retain that identity;

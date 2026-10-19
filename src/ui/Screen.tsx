@@ -2,12 +2,15 @@ import { type PropsWithChildren } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { spacing, useTheme } from './theme';
-export default function Screen({ children }: Readonly<PropsWithChildren>) {
+export default function Screen({
+  children,
+  bottom = false,
+}: Readonly<PropsWithChildren<{ bottom?: boolean }>>) {
   const theme = useTheme();
   return (
     <SafeAreaView
       style={[styles.safe, { backgroundColor: theme.background }]}
-      edges={['left', 'right', 'top']}
+      edges={bottom ? ['left', 'right', 'top', 'bottom'] : ['left', 'right', 'top']}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
