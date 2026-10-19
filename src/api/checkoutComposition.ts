@@ -70,6 +70,11 @@ const compositionSchema = z
   .unknown()
   .refine(withinCompositionBudget)
   .pipe(z.array(recursiveLine).min(1));
+function invalidRoot(kind: 'quote' | 'receipt', row: CheckoutLine, ids: ReadonlySet<string>) {
+  if (row.kind || row.unitPrice < 0) return true;
+  if (kind === 'receipt') return Boolean(row.basketItemId);
+  return !row.basketItemId || ids.has(row.basketItemId);
+}
 function checkedItems(kind: 'quote' | 'receipt') {
   return compositionSchema.superRefine((roots, context) => {
     const ids = new Set<string>();
@@ -82,11 +87,7 @@ function checkedItems(kind: 'quote' | 'receipt') {
           message: 'A quote line must identify a catalogue item',
         });
       if (root) {
-        const invalidId =
-          kind === 'quote'
-            ? !row.basketItemId || ids.has(row.basketItemId)
-            : Boolean(row.basketItemId);
-        if (invalidId || row.kind || row.unitPrice < 0)
+        if (invalidRoot(kind, row, ids))
           context.addIssue({ code: 'custom', message: 'Invalid customer order root' });
         if (row.basketItemId) ids.add(row.basketItemId);
       } else if (row.basketItemId || row.itemTotal !== 0 || !row.kind) {

@@ -22,9 +22,10 @@ const payments = new Set([
   'PartiallyPaid',
 ]);
 export function orderStatusKey(value: string, payment: boolean) {
-  return (payment ? payments : fulfillment).has(value)
-    ? `${payment ? 'receiptPayment' : 'receiptStatus'}.${value}`
-    : 'receiptStatusUnknown';
+  const known = payment ? payments : fulfillment;
+  const group = payment ? 'receiptPayment' : 'receiptStatus';
+  if (!known.has(value)) return 'receiptStatusUnknown';
+  return `${group}.${value}`;
 }
 export function receiptFormatters(value: OrderReceipt, locale: string) {
   const date = new Intl.DateTimeFormat(locale, {

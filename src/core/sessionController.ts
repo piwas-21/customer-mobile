@@ -40,7 +40,9 @@ export class SessionController {
   }
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
-    return () => void this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
   private publish(session: CustomerSession | null) {
     this.session = session;
