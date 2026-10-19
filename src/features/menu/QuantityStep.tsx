@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ProductDetail } from '../../api/productDetail';
+import { MAX_ITEM_QUANTITY } from '../../domain/customization';
 import ProductDescription from './ProductDescription';
 import QuantityStepper from '../../ui/QuantityStepper';
 import { spacing } from '../../ui/theme';
@@ -23,7 +24,7 @@ export default function QuantityStep({
         label={t('quantity')}
         value={quantity}
         minimum={1}
-        maximum={99}
+        maximum={MAX_ITEM_QUANTITY}
         disabled={disabled}
         onChange={change}
       />

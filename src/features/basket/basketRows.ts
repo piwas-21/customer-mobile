@@ -1,6 +1,8 @@
+import { canonicalUuidSchema } from '../../core/identifiers';
 import type { BasketLine } from '../../api/basketResponse';
 export type BasketRow = Readonly<{
   key: string;
+  itemId: string | null;
   name: string | null;
   quantity: number;
   amount: number | null;
@@ -22,6 +24,7 @@ export function basketRows(items: readonly BasketLine[]): BasketRow[] {
     const label = line.presentationLabel;
     rows.push({
       key,
+      itemId: depth === 0 && canonicalUuidSchema.safeParse(line.id).success ? line.id! : null,
       name: label && label !== name ? [label, name].filter(Boolean).join(' · ') : name,
       quantity: line.quantity,
       amount: depth === 0 ? line.itemTotal : null,

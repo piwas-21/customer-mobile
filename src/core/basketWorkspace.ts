@@ -40,11 +40,17 @@ export class BasketWorkspace {
     this.disposed = true;
     this.operations.dispose();
   }
-  async hasPending(): Promise<boolean> {
+  async pendingChange() {
     this.assertCurrent();
     const pending = await this.operations.pending();
     this.assertCurrent();
-    return pending !== null;
+    if (!pending) return null;
+    const kind = pending.schemaVersion === 1 ? 'add' : pending.request.action.toLowerCase();
+    // Query state receives only a descriptor, never the journal's session capability or payload.
+    return { kind, cancelling: pending.cancellationRequested === true };
+  }
+  async hasPending(): Promise<boolean> {
+    return (await this.pendingChange()) !== null;
   }
   async read(locale: string) {
     this.assertCurrent();
