@@ -240,3 +240,16 @@ This consumes the additive backend deletion contract in backend PR #739. Backend
 release precede dependent mobile publication. Scheduling is not immediate erasure or email-delivery
 proof. Existing web confirmation and cleanup remain authoritative. Apple/provider revocation, push
 subscription erasure, signed installed-device cleanup and the full deletion journey remain open.
+
+## Native saved-address reads
+
+The account screen can open a virtualized saved-address list using the new current-customer,
+versioned backend read contract. It loads one bounded page at a time and discards private query
+resources on dismissal. Previous/next navigation is explicit; a cursor never selects another
+customer. Unknown fields, contradictory continuation, duplicate/out-of-order IDs and regressing
+pages are refused. Character limits preserve valid Unicode database text.
+
+Failed refresh hides cached private rows; foreground return performs a new read. Owner/tenant
+switches and logout cannot publish a late result. This is a read-only source slice: create/edit/
+remove/default management, checkout selection, backend integration/readback and installed-device
+accessibility remain required plan work. It does not activate a tenant or claim a signed release.

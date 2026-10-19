@@ -1,3 +1,4 @@
+import { addressesEnglish } from './translations/addresses.en';
 import { accountEnglish } from './translations/account.en';
 import { deletionEnglish } from './translations/deletion.en';
 import { ordersEnglish } from './translations/orders.en';
@@ -139,6 +140,7 @@ const en = {
   allowCamera: 'Allow camera',
   invalidQr: 'This QR code could not be opened. Use the restaurant’s app link or try another code.',
   ...accountEnglish,
+  ...addressesEnglish,
   priceUnavailable: 'Price unavailable',
   backToMenu: 'Explore the menu',
   itemDetails: 'Dish details',
