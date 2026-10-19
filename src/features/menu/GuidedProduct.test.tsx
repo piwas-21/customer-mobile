@@ -12,6 +12,13 @@ import { tenantA } from '../../test/fixtures';
 import { routerFixture } from '../../test/router';
 jest.mock('../basket/BasketProvider', () => ({ useBasket: jest.fn() }));
 jest.mock('expo-router', () => ({ useRouter: jest.fn(), Stack: { Screen: () => null } }));
+beforeEach(() => jest.useFakeTimers());
+afterEach(async () => {
+  await act(async () => {
+    jest.runOnlyPendingTimers();
+  });
+  jest.useRealTimers();
+});
 function setup(patch: Parameters<typeof basketState>[0] = {}) {
   const state = basketState(patch);
   const router = routerFixture();
