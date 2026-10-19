@@ -154,3 +154,29 @@ it('keeps device cleanup retry accessible when no receipt owner can be construct
     f.cache.clear();
   }
 });
+
+it.each([403, 404])(
+  'withdraws previously loaded receipt details after latest read HTTP %s and restores only on success',
+  async (status) => {
+    const f = await fixture();
+    const view = render(<OrdersScreen />, { wrapper: f.Wrapper });
+    try {
+      fireEvent.press(await view.findByRole('button', { name: /Saved on this device/ }));
+      await view.findByText('Order 20261019-001');
+      f.fetcher.mockResolvedValue(response({}, status));
+      fireEvent.press(view.getByRole('button', { name: 'Check latest status' }));
+      await view.findByText('This receipt could not be loaded. Try again.');
+      expect(view.queryByText('Order 20261019-001')).toBeNull();
+      expect(view.queryByText('Preparing')).toBeNull();
+      expect(view.queryByText('Payment pending')).toBeNull();
+      expect(view.queryByText(/Current amount payable/)).toBeNull();
+      f.fetcher.mockResolvedValue(response({ success: true, data: receiptResponse() }));
+      fireEvent.press(view.getByRole('button', { name: 'Try again' }));
+      await view.findByText('Order 20261019-001');
+      expect(view.getByText('Payment pending')).toBeTruthy();
+    } finally {
+      view.unmount();
+      f.cache.clear();
+    }
+  },
+);

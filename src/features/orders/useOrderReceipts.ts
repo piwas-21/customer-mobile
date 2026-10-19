@@ -52,7 +52,6 @@ export default function useOrderReceipts() {
     try {
       reader = new OrderReceiptController(
         scope.context,
-        scope.client,
         deviceSessions,
         scope.sessions,
         scope.userId ? { kind: 'customer', id: scope.userId } : { kind: 'guest', id: 'basket' },
@@ -129,7 +128,7 @@ export default function useOrderReceipts() {
     actionFailed: Boolean(reader && failure === reader),
     selected,
     item,
-    receipt: item?.outcome === 'Applied' ? receipt.data : undefined,
+    receipt: item?.outcome === 'Applied' && !receipt.isError ? receipt.data : undefined,
     receiptLoading: item?.outcome === 'Applied' && receipt.isPending,
     receiptFailed: item?.outcome === 'Applied' && receipt.isError,
     select: (id: string) => {

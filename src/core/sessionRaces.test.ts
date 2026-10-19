@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { tenantA, tenantB, fixtureDirectory, memorySecrets } from '../test/fixtures';
 import { response } from '../test/transport';
-import { session, renewed, authResponse, dataResponse, sessionSetup } from '../test/sessions';
+import { session, renewed, authResponse, sessionSetup } from '../test/sessions';
 import { SessionController } from './sessionController';
 import { SessionRepository } from './sessionRepository';
 import { CustomerTransport, type Fetch } from './transport';
@@ -57,25 +57,16 @@ it('quarantines a failed refresh rollback and completes durable logout cleanup',
   const restarted = new SessionController(context, client, repository);
   expect(await restarted.initialize()).toBeNull();
 });
-it('rejects an A read started during B login if B becomes active before A responds', async () => {
+it('refuses an A read during B login before dispatch and does not expose B to that reader', async () => {
   const { controller, fetcher } = await sessionSetup();
   let enterLogin: () => void = () => {
-    throw new Error('Gate unavailable');
-  };
-  let enterRead: () => void = () => {
     throw new Error('Gate unavailable');
   };
   let finishLogin: (value: Response) => void = () => {
     throw new Error('Gate unavailable');
   };
-  let finishRead: (value: Response) => void = () => {
-    throw new Error('Gate unavailable');
-  };
   const loginStarted = new Promise<void>((resolve) => {
     enterLogin = resolve;
-  });
-  const readStarted = new Promise<void>((resolve) => {
-    enterRead = resolve;
   });
   fetcher.mockImplementation(
     (url) =>
@@ -84,18 +75,18 @@ it('rejects an A read started during B login if B becomes active before A respon
           finishLogin = resolve;
           enterLogin();
         } else {
-          finishRead = resolve;
-          enterRead();
+          throw new Error('Private read must not dispatch during login');
         }
       }),
   );
   const login = controller.login({ email: 'next@example.test', password: 'password' }, 'en');
   await loginStarted;
-  const read = controller.get(tenantA, '/api/User/profile', z.string());
-  await readStarted;
+  await expect(controller.get(tenantA, '/api/User/profile', z.string())).rejects.toMatchObject({
+    reason: 'refused',
+  });
+  expect(fetcher.mock.calls).toHaveLength(1);
   finishLogin(authResponse({ ...renewed, userId: tenantB }));
   await login;
   expect(controller.userId).toBe(tenantB);
-  finishRead(dataResponse());
-  await expect(read).rejects.toMatchObject({ reason: 'refused' });
+  expect(fetcher.mock.calls).toHaveLength(1);
 });

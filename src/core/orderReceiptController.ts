@@ -1,17 +1,15 @@
-import { readOrderReceipt } from '../api/orderReceipt';
 import { canonicalUuidSchema } from './identifiers';
 import { principalSchema, type Principal } from './credentials';
 import type { SessionController } from './sessionController';
 import type { SessionRepository } from './sessionRepository';
 import type { TenantContext } from './tenantContext';
-import { ApiFailure, type CustomerTransport } from './transport';
+import { ApiFailure } from './transport';
 export class OrderReceiptController {
   private readonly principal: Principal;
   private readonly owner: () => void;
   private disposed = false;
   constructor(
     private readonly context: TenantContext,
-    private readonly client: CustomerTransport,
     private readonly repository: SessionRepository,
     private readonly sessions: SessionController,
     principal: Principal,
@@ -65,7 +63,9 @@ export class OrderReceiptController {
       (value) => value.operationId === operationId && value.outcome === 'Applied',
     );
     if (!saved) throw new ApiFailure(404, 'refused');
-    return readOrderReceipt(this.client, this.context, saved, this.assertCurrent, locale);
+    const result = await this.sessions.receipt(saved, locale);
+    this.assertCurrent();
+    return result;
   }
   async forget(operationId: string) {
     canonicalUuidSchema.parse(operationId);

@@ -7,7 +7,7 @@ import { deferred } from '../test/deferred';
 import { SessionController } from './sessionController';
 import { session } from '../test/sessions';
 function controller(f: Awaited<ReturnType<typeof savedOrderFixture>>, sessions = f.sessions) {
-  return new OrderReceiptController(f.context, f.client, f.repository, sessions, f.principal);
+  return new OrderReceiptController(f.context, f.repository, sessions, f.principal);
 }
 it('lists minimal local descriptors and reads only the selected owned accepted proof', async () => {
   const f = await savedOrderFixture();

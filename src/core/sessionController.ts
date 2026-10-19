@@ -1,6 +1,9 @@
-import { readSession } from './sessionRead';
+import { renewStoredSession } from './sessionRenewal';
+import { readOrderReceipt } from '../api/orderReceipt';
+import { orderDecisionSchema, type OrderDecision } from './orderDecisions';
+import { readSession, retryAuthenticatedRead } from './sessionRead';
 import type { z } from 'zod';
-import { signIn, refreshSession, type LoginInput } from '../api/auth';
+import { signIn, type LoginInput } from '../api/auth';
 import { ApiFailure, type CustomerTransport } from './transport';
 import { principalSchema, type CustomerSession, type Principal } from './credentials';
 import type { TenantContext } from './tenantContext';
@@ -133,27 +136,30 @@ export class SessionController {
     this.pendingCleanup = null;
     this.publish(null);
   }
-  async get<T>(userId: string, path: string, schema: z.ZodType<T>): Promise<T> {
-    if (this.onlyRecoverOrders) throw new ApiFailure(401, 'refused');
+  get<T>(userId: string, path: string, schema: z.ZodType<T>): Promise<T> {
+    if (this.onlyRecoverOrders) return Promise.reject(new ApiFailure(401, 'refused'));
+    return this.readOwned(userId, (guard) =>
+      readSession(this.client, this.context, userId, path, schema, guard),
+    );
+  }
+  receipt(saved: OrderDecision, locale: string) {
+    const decision = orderDecisionSchema.parse(saved);
+    const read = (guard: () => void) =>
+      readOrderReceipt(this.client, this.context, decision, guard, locale);
+    if (decision.principal.kind === 'customer') return this.readOwned(decision.principal.id, read);
+    return read(this.captureRequestOwner(decision.principal));
+  }
+  private async readOwned<T>(userId: string, read: (guard: () => void) => Promise<T>): Promise<T> {
     const revision = this.revision;
     const captured = this.assertPrincipal(revision, userId);
-    let result: T;
-    try {
-      result = await readSession(this.client, this.context, userId, path, schema, () => {
-        this.assertPrincipal(revision, userId);
-      });
-    } catch (error) {
-      if (!(error instanceof ApiFailure) || error.status !== 401) throw error;
-      await this.tasks.run(async () => {
+    const guard = this.captureRequestOwner({ kind: 'customer', id: userId });
+    const renew = () =>
+      this.tasks.run(async () => {
+        guard();
         const current = this.assertPrincipal(revision, userId);
         if (current.accessToken === captured.accessToken) await this.refresh(revision);
       });
-      result = await readSession(this.client, this.context, userId, path, schema, () => {
-        this.assertPrincipal(revision, userId);
-      });
-    }
-    this.assertPrincipal(revision, userId);
-    return result;
+    return retryAuthenticatedRead(() => read(guard), renew, guard);
   }
   async put<T>(
     userId: string,
@@ -177,21 +183,16 @@ export class SessionController {
     return result;
   }
   private async refresh(revision: number): Promise<void> {
-    this.assertCurrent(revision);
     const captured = this.session;
     if (!captured) throw new ApiFailure(401, 'refused');
-    let next: CustomerSession;
-    try {
-      next = await refreshSession(this.client, this.context, captured);
-    } catch (error) {
-      this.assertCurrent(revision);
-      if (error instanceof ApiFailure && error.status === 401) {
-        await this.clearSession(captured);
-      }
-      throw error;
-    }
-    this.assertCurrent(revision);
-    await this.repository.activate(this.context, next, () => this.isCurrent(revision));
+    const next = await renewStoredSession(
+      this.context,
+      this.client,
+      this.repository,
+      captured,
+      () => this.isCurrent(revision),
+      () => this.clearSession(captured),
+    );
     this.assertCurrent(revision);
     this.publish(next);
   }
