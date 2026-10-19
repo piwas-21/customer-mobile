@@ -1,4 +1,5 @@
 import { addressesEnglish } from './translations/addresses.en';
+import { cacheEnglish } from './translations/cache.en';
 import { accountEnglish } from './translations/account.en';
 import { deletionEnglish } from './translations/deletion.en';
 import { ordersEnglish } from './translations/orders.en';
@@ -8,6 +9,7 @@ import { initReactI18next } from 'react-i18next';
 import { getLocales } from 'expo-localization';
 const i18n = createInstance();
 const en = {
+  ...cacheEnglish,
   appName: 'Sofra',
   chooseRestaurant: 'Find your restaurant',
   restaurantIntro: 'Your favourites, at your table or on the go.',

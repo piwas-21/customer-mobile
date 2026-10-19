@@ -8,6 +8,7 @@ import Field from '../../ui/Field';
 import Feedback from '../../ui/Feedback';
 import { spacing, typography, useTheme } from '../../ui/theme';
 import { useRestaurant } from './RestaurantProvider';
+import SavedMenusControl from '../menu/SavedMenusControl';
 export default function RestaurantScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -70,6 +71,7 @@ export default function RestaurantScreen() {
             retry={directory ? undefined : refresh}
           />
         }
+        ListFooterComponent={<SavedMenusControl directory={directory} />}
       />
       <Button secondary label={t('scanQr')} onPress={() => router.push('/scan')} />
     </Screen>
