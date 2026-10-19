@@ -62,6 +62,9 @@ export class CredentialVault {
   async removeSession(context: TenantContext, userId: string): Promise<void> {
     await this.store.remove(secretKey(context, 'session', { kind: 'customer', id: userId }));
   }
+  orderReceiptRecords(context: TenantContext, principal: Principal): Promise<string | null> {
+    return this.store.get(secretKey(context, 'order-decisions', principal));
+  }
   async capability(
     context: TenantContext,
     kind: Exclude<

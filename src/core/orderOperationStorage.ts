@@ -1,4 +1,4 @@
-import { orderDecisionsSchema, type OrderDecision } from './orderDecisions';
+import { scopedOrderDecisions, type OrderDecision } from './orderDecisions';
 import { checkoutIntentSchema, type CheckoutIntent } from '../api/checkoutIntent';
 import { secretKey, type Principal, type SecretStore } from './credentials';
 import {
@@ -78,13 +78,7 @@ export class OrderOperationStorage {
     const value = await this.store.get(secretKey(context, 'order-decisions', principal));
     this.check(context, assertCurrent);
     if (value === null) return [];
-    const decisions = orderDecisionsSchema.parse(JSON.parse(value));
-    for (const decision of decisions) {
-      assertOrderProofScope(context, decision);
-      if (decision.principal.kind !== principal.kind || decision.principal.id !== principal.id)
-        throw new Error('Saved order owner changed');
-    }
-    return decisions;
+    return scopedOrderDecisions(context, principal, JSON.parse(value));
   }
   async removeProof(context: TenantContext, principal: Principal, assertCurrent: () => void) {
     this.check(context, assertCurrent);

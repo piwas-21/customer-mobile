@@ -1,3 +1,4 @@
+import { savedOrderFixture } from '../test/orderReceipt';
 import { SessionController } from './sessionController';
 import { customerOrderFixture } from '../test/customerOrder';
 import { secretKey } from './credentials';
@@ -47,4 +48,32 @@ it('logout of an accounts-disabled recovered customer clears the original creden
   await restarted.initialize();
   expect(restarted.userId).toBeNull();
   expect(await f.repository.loadForOrderRecovery(f.context)).toBeNull();
+});
+
+it.each(['environment', 'tenantId', 'principal'] as const)(
+  'rejects substituted %s in accepted receipt history before reading a JWT',
+  async (field) => {
+    const f = await savedOrderFixture(true);
+    const key = secretKey(f.context, 'order-decisions', f.principal);
+    const value =
+      field === 'principal'
+        ? { kind: 'guest', id: 'basket' }
+        : field === 'environment'
+          ? 'production'
+          : '22222222-2222-4222-8222-222222222222';
+    await f.store.set(key, JSON.stringify([{ ...f.decision, [field]: value }]));
+    const read = jest.spyOn(f.repository.vault, 'session');
+    await expect(f.repository.loadForOrderRecovery(f.context)).rejects.toThrow();
+    expect(read).not.toHaveBeenCalled();
+  },
+);
+it('does not read a JWT for cancelled-only local history', async () => {
+  const f = await savedOrderFixture(true);
+  await f.store.set(
+    secretKey(f.context, 'order-decisions', f.principal),
+    JSON.stringify([{ ...f.decision, outcome: 'Cancelled', orderId: null }]),
+  );
+  const read = jest.spyOn(f.repository.vault, 'session');
+  expect(await f.repository.loadForOrderRecovery(f.context)).toBeNull();
+  expect(read).not.toHaveBeenCalled();
 });

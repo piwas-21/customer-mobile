@@ -1,3 +1,4 @@
+import { scopedOrderDecisions } from './orderDecisions';
 import { assertOrderProofScope, orderOperationProofSchema } from './orderOperationProof';
 import { OrderOperationRepository } from './orderOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
@@ -37,12 +38,21 @@ export class SessionRepository {
       if (id === null) return null;
       const principal = { kind: 'customer', id: z.uuid().parse(id) } as const;
       const raw = await this.store.get(secretKey(context, 'order-operation-proof', principal));
-      if (raw === null) return null;
-      const proof = orderOperationProofSchema.parse(JSON.parse(raw));
-      assertOrderProofScope(context, proof);
-      if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
-        throw new Error('Order recovery owner mismatch');
-      // Account-disabled browsing never reads a saved JWT unless its exact owner has a pending order.
+      if (raw !== null) {
+        const proof = orderOperationProofSchema.parse(JSON.parse(raw));
+        assertOrderProofScope(context, proof);
+        if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
+          throw new Error('Order recovery owner mismatch');
+      } else {
+        const saved = await this.store.get(secretKey(context, 'order-decisions', principal));
+        const records = scopedOrderDecisions(
+          context,
+          principal,
+          saved === null ? [] : JSON.parse(saved),
+        );
+        if (!records.some((record) => record.outcome === 'Applied')) return null;
+      }
+      // Account-disabled browsing reads a JWT only for its original pending/accepted order proof.
       return this.vault.session(context, principal.id);
     });
   }

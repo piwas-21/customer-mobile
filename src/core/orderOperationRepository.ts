@@ -126,6 +126,7 @@ export class OrderOperationRepository {
         ...proof,
         outcome: captured.outcome,
         orderId: captured.orderId,
+        recordedAt: new Date().toISOString(),
       });
       if (previous) {
         if (previous.outcome !== captured.outcome || previous.orderId !== captured.orderId)

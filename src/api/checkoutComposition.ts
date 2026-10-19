@@ -66,31 +66,36 @@ function withinCompositionBudget(value: unknown): boolean {
   }
   return true;
 }
-export const checkoutItemsSchema = z
+const compositionSchema = z
   .unknown()
   .refine(withinCompositionBudget)
-  .pipe(
-    z
-      .array(recursiveLine)
-      .min(1)
-      .superRefine((roots, context) => {
-        const ids = new Set<string>();
-        const stack = roots.map((row) => ({ row, root: true }));
-        while (stack.length) {
-          const { row, root } = stack.pop()!;
-          if (!row.productId && !row.menuId)
-            context.addIssue({
-              code: 'custom',
-              message: 'A quote line must identify a catalogue item',
-            });
-          if (root) {
-            if (!row.basketItemId || ids.has(row.basketItemId) || row.kind || row.unitPrice < 0)
-              context.addIssue({ code: 'custom', message: 'Invalid quote root' });
-            if (row.basketItemId) ids.add(row.basketItemId);
-          } else if (row.basketItemId || row.itemTotal !== 0 || !row.kind) {
-            context.addIssue({ code: 'custom', message: 'Invalid quote component' });
-          }
-          for (const child of row.children) stack.push({ row: child, root: false });
-        }
-      }),
-  );
+  .pipe(z.array(recursiveLine).min(1));
+function invalidRoot(kind: 'quote' | 'receipt', row: CheckoutLine, ids: ReadonlySet<string>) {
+  if (row.kind || row.unitPrice < 0) return true;
+  if (kind === 'receipt') return Boolean(row.basketItemId);
+  return !row.basketItemId || ids.has(row.basketItemId);
+}
+function checkedItems(kind: 'quote' | 'receipt') {
+  return compositionSchema.superRefine((roots, context) => {
+    const ids = new Set<string>();
+    const stack = roots.map((row) => ({ row, root: true }));
+    while (stack.length) {
+      const { row, root } = stack.pop()!;
+      if (kind === 'quote' && !row.productId && !row.menuId)
+        context.addIssue({
+          code: 'custom',
+          message: 'A quote line must identify a catalogue item',
+        });
+      if (root) {
+        if (invalidRoot(kind, row, ids))
+          context.addIssue({ code: 'custom', message: 'Invalid customer order root' });
+        if (row.basketItemId) ids.add(row.basketItemId);
+      } else if (row.basketItemId || row.itemTotal !== 0 || !row.kind) {
+        context.addIssue({ code: 'custom', message: 'Invalid customer order component' });
+      }
+      for (const child of row.children) stack.push({ row: child, root: false });
+    }
+  });
+}
+export const checkoutItemsSchema = checkedItems('quote');
+export const receiptItemsSchema = checkedItems('receipt');

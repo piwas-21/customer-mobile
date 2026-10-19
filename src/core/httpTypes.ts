@@ -14,7 +14,15 @@ export type Fetch = (
 export type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
-  credentials?: 'none' | 'customer' | 'guest' | 'table' | 'basket' | 'order';
+  credentials?:
+    | 'none'
+    | 'customer'
+    | 'guest'
+    | 'table'
+    | 'basket'
+    | 'order'
+    | 'order-receipt'
+    | 'receipt-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;

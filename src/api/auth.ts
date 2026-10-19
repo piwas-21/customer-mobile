@@ -1,3 +1,4 @@
+import type { OrderOperationProof } from '../core/orderOperationProof';
 import { z } from 'zod';
 import { ApiFailure, type CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
@@ -36,11 +37,26 @@ export async function refreshSession(
   client: CustomerTransport,
   context: TenantContext,
   session: CustomerSession,
+  assertCurrent?: () => void,
+  receiptProof?: OrderOperationProof,
 ): Promise<CustomerSession> {
   const captured = { ...session };
+  if (
+    receiptProof &&
+    (receiptProof.principal.kind !== 'customer' || receiptProof.principal.id !== captured.userId)
+  )
+    throw new ApiFailure(401, 'refused');
   const response = await client.request(context, '/api/Auth/refresh-token', authSchema, {
     method: 'POST',
     body: { accessToken: captured.accessToken, refreshToken: captured.refreshToken },
+    ...(assertCurrent ? { assertCurrent } : {}),
+    ...(receiptProof
+      ? {
+          credentials: 'receipt-renewal' as const,
+          principal: receiptProof.principal,
+          expectedOrderProof: receiptProof,
+        }
+      : {}),
   });
   if (response.userId !== captured.userId) throw new ApiFailure(200, 'contract');
   return {

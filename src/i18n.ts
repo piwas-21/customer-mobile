@@ -1,3 +1,4 @@
+import { ordersEnglish } from './translations/orders.en';
 import { checkoutEnglish } from './translations/checkout.en';
 import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -26,6 +27,7 @@ const en = {
   checkout: 'Checkout',
   reviewOrder: 'Review order',
   ...checkoutEnglish,
+  ...ordersEnglish,
   basket: 'Basket',
   basketCount: 'Basket · {{count}}',
   quantity: 'Quantity',
@@ -181,9 +183,7 @@ const en = {
   accountIntro: 'Your account belongs to the selected restaurant.',
   accountUnavailable:
     'Account access is being prepared for this restaurant. You can continue browsing the menu.',
-  ordersIntro: 'Order updates will appear here for this restaurant.',
   priceUnavailable: 'Price unavailable',
-  noOrders: 'Order history is not available yet. You can continue exploring the menu.',
   backToMenu: 'Explore the menu',
   itemDetails: 'Dish details',
   safeWeb: 'Continue on restaurant website',

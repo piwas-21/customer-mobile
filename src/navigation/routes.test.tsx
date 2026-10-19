@@ -1,11 +1,9 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import type { PropsWithChildren } from 'react';
 import RootLayout from '../../app/_layout';
 import RestaurantLayout from '../../app/(restaurant)/_layout';
 import OrdersRoute from '../../app/(restaurant)/orders';
 import AccountRoute from '../../app/(restaurant)/account';
-import { routerFixture } from '../test/router';
-import { useRouter } from 'expo-router';
 jest.mock('../features/restaurant/RestaurantProvider', () => ({
   __esModule: true,
   default: ({ children }: PropsWithChildren) => children,
@@ -20,6 +18,11 @@ jest.mock('../features/basket/BasketProvider', () => ({
   __esModule: true,
   default: ({ children }: PropsWithChildren) => children,
 }));
+jest.mock('../features/orders/OrdersScreen', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { __esModule: true, default: () => React.createElement(Text, null, 'Orders destination') };
+});
 jest.mock('../features/account/AccountScreen', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -53,12 +56,9 @@ it('composes the root and customer navigation destinations', () => {
   const tabs = render(<RestaurantLayout />);
   for (const name of ['menu', 'orders', 'account']) expect(tabs.getByText(name)).toBeTruthy();
 });
-it('offers the menu from empty orders and connects the account destination', () => {
-  const router = routerFixture();
-  jest.mocked(useRouter).mockReturnValue(router);
+it('connects the private orders and account destinations', () => {
   const orders = render(<OrdersRoute />);
-  fireEvent.press(orders.getByRole('button', { name: 'Explore the menu' }));
-  expect(router.replace).toHaveBeenCalledWith('/menu');
+  expect(orders.getByText('Orders destination')).toBeTruthy();
   orders.unmount();
   const account = render(<AccountRoute />);
   expect(account.getByText('Account destination')).toBeTruthy();
