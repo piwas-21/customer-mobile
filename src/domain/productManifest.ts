@@ -1,5 +1,6 @@
 import type { ProductDetail } from '../api/productDetail';
 import { validateProductScreens } from './productManifestScreens';
+import { completeManifestRows } from './manifestCompletion';
 import {
   defaultProductRows,
   isGlobalProductPicker,
@@ -16,7 +17,7 @@ export type ProductDecision = Readonly<{
   label: string | null;
   role: string;
 }>;
-const roles: Readonly<Record<ProductStepKind, readonly string[]>> = {
+export const productStepRoles: Readonly<Record<ProductStepKind, readonly string[]>> = {
   ProductVariation: ['Dish', 'RequiredChoice'],
   ProductIngredient: ['Ingredient', 'Extra'],
   ProductSauce: ['Sauce', 'Extra'],
@@ -43,7 +44,7 @@ export function productDecisions(product: ProductDetail): ProductDecision[] {
     if (
       !fallback ||
       !role ||
-      !roles[fallback.kind].includes(role) ||
+      !productStepRoles[fallback.kind].includes(role) ||
       !Number.isSafeInteger(step.presentationOrder) ||
       step.presentationOrder < 0 ||
       (step.presentationLabel && (role !== 'Dish' || step.presentationLabel.length > 120)) ||
@@ -66,7 +67,14 @@ export function productDecisions(product: ProductDetail): ProductDecision[] {
       label: step.presentationLabel ?? null,
     };
   });
-  completeRows(rows, defaults, seen);
+  completeManifestRows(
+    rows,
+    defaults,
+    productRowKey,
+    productScreenKey,
+    (row, first) =>
+      row.kind === first.kind && (isGlobalProductPicker(first.kind) || row.role === first.role),
+  );
   validateProductScreens(rows);
   const screens = new Map<string, ProductManifestRow[]>();
   for (const row of [...rows].sort(
@@ -87,38 +95,4 @@ export function productDecisions(product: ProductDetail): ProductDecision[] {
       role: first.role,
     };
   });
-}
-function completeRows(
-  rows: ProductManifestRow[],
-  defaults: readonly ProductManifestRow[],
-  seen: ReadonlySet<string>,
-): void {
-  const authored = [...rows];
-  let nextOrder = rows.reduce((max, row) => Math.max(max, row.order), -1) + 1;
-  const missingScreens = new Map<string, ProductManifestRow[]>();
-  for (const row of defaults) {
-    if (seen.has(productRowKey(row))) continue;
-    const key = productScreenKey(row);
-    const refs = missingScreens.get(key) ?? [];
-    refs.push(row);
-    missingScreens.set(key, refs);
-  }
-  for (const missing of missingScreens.values()) {
-    const first = missing[0]!;
-    const compatible = authored.filter(
-      (row) =>
-        row.kind === first.kind && (isGlobalProductPicker(first.kind) || row.role === first.role),
-    );
-    const screens = new Set(compatible.map(productScreenKey));
-    const target = screens.size === 1 ? compatible[0] : undefined;
-    const order = target?.order ?? nextOrder++;
-    rows.push(
-      ...missing.map((row) => ({
-        ...row,
-        order,
-        role: target?.role ?? row.role,
-        label: target?.label ?? null,
-      })),
-    );
-  }
 }

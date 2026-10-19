@@ -1,4 +1,4 @@
-import type { ProductDetail } from '../api/productDetail';
+import type { SelectionSource } from './selectionComposition';
 import { inDisplayOrder, stableChoiceId } from './catalogueChoices';
 
 export type ProductStepKind =
@@ -14,7 +14,7 @@ export type ProductManifestRow = Readonly<{
   order: number;
   label?: string | null;
 }>;
-export function defaultProductRows(product: ProductDetail): ProductManifestRow[] {
+export function defaultProductRows(product: SelectionSource): ProductManifestRow[] {
   const rows: ProductManifestRow[] = [];
   let order = 0;
   const append = (kind: ProductStepKind, ids: readonly (string | null)[], role: string) => {
