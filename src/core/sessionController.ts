@@ -100,7 +100,7 @@ export class SessionController {
     const captured = this.assertPrincipal(revision, userId);
     let result: T;
     try {
-      result = await this.read(userId, path, schema);
+      result = await this.read(revision, userId, path, schema);
     } catch (error) {
       if (!(error instanceof ApiFailure) || error.status !== 401) throw error;
       await this.tasks.run(async () => {
@@ -108,15 +108,23 @@ export class SessionController {
         // Another concurrent read may already have rotated this exact session.
         if (current.accessToken === captured.accessToken) await this.refresh(revision);
       });
-      result = await this.read(userId, path, schema);
+      result = await this.read(revision, userId, path, schema);
     }
     this.assertPrincipal(revision, userId);
     return result;
   }
-  private read<T>(userId: string, path: string, schema: z.ZodType<T>): Promise<T> {
+  private read<T>(
+    revision: number,
+    userId: string,
+    path: string,
+    schema: z.ZodType<T>,
+  ): Promise<T> {
     return this.client.request(this.context, path, schema, {
       credentials: 'customer',
       principal: { kind: 'customer', id: userId },
+      assertCurrent: () => {
+        this.assertPrincipal(revision, userId);
+      },
     });
   }
   private async refresh(revision: number): Promise<void> {

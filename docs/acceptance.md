@@ -68,3 +68,8 @@ guest's session without borrowing customer credentials. Canonical UUID sessions 
 bodies are checked before dispatch. This adapter creates no session and retries no write; durable
 operation persistence, principal lifecycle guards, native basket UI and server integration remain
 required before submission is available.
+
+Private reads now capture their login revision through credential loading and response decoding.
+Logout, disposal or a later login withdraws the captured owner before dispatch and rejects late
+responses. The shared transport exposes the same guard for future writes; it never retries them.
+Basket controller integration, durable operation proof and installed lifecycle acceptance remain open.

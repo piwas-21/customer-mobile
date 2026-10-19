@@ -16,4 +16,5 @@ export type RequestOptions = {
   credentials?: 'none' | 'customer' | 'guest' | 'table' | 'basket';
   principal?: Principal;
   locale?: string;
+  assertCurrent?: () => void;
 };
