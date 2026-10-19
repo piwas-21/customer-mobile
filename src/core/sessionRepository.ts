@@ -1,3 +1,4 @@
+import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
 import { CredentialVault, type CustomerSession, type SecretStore } from './credentials';
 import { SerialTasks } from './serialTasks';
@@ -12,9 +13,11 @@ const sameSession = (a: CustomerSession | null, b: CustomerSession) =>
 // Network requests do not hold this storage lock.
 export class SessionRepository {
   readonly vault: CredentialVault;
+  readonly baskets: BasketOperationRepository;
   private readonly writes = new SerialTasks();
   constructor(private readonly store: SecretStore) {
     this.vault = new CredentialVault(store);
+    this.baskets = new BasketOperationRepository(store, this.vault, this.writes);
   }
   load(context: TenantContext): Promise<CustomerSession | null> {
     return this.writes.run(async () => {
