@@ -2,28 +2,42 @@ import { z } from 'zod';
 import { ApiFailure } from '../core/transport';
 import type { SessionController } from '../core/sessionController';
 const addressId = z.uuid().transform((value) => value.toLowerCase());
+export const addressTextLimits = {
+  label: 50,
+  addressLine1: 200,
+  addressLine2: 200,
+  city: 100,
+  state: 100,
+  postalCode: 20,
+  country: 100,
+  phone: 20,
+  deliveryInstructions: 500,
+} as const;
 // PostgreSQL varchar limits count Unicode code points; JS length counts UTF-16 units.
 function databaseText(maxCharacters: number) {
   return z
     .string()
     .max(maxCharacters * 2)
     .refine(
-      (value) => value.length <= maxCharacters * 2 && Array.from(value).length <= maxCharacters,
+      (value) =>
+        value.length <= maxCharacters * 2 &&
+        Array.from(value).length <= maxCharacters &&
+        !value.includes('\0'),
     );
 }
 export const customerAddressSchema = z
   .object({
     id: addressId,
-    label: databaseText(50),
-    addressLine1: databaseText(200),
-    addressLine2: databaseText(200).nullable(),
-    city: databaseText(100),
-    state: databaseText(100).nullable(),
-    postalCode: databaseText(20),
-    country: databaseText(100),
-    phone: databaseText(20).nullable(),
+    label: databaseText(addressTextLimits.label),
+    addressLine1: databaseText(addressTextLimits.addressLine1),
+    addressLine2: databaseText(addressTextLimits.addressLine2).nullable(),
+    city: databaseText(addressTextLimits.city),
+    state: databaseText(addressTextLimits.state).nullable(),
+    postalCode: databaseText(addressTextLimits.postalCode),
+    country: databaseText(addressTextLimits.country),
+    phone: databaseText(addressTextLimits.phone).nullable(),
     isDefault: z.boolean(),
-    deliveryInstructions: databaseText(500).nullable(),
+    deliveryInstructions: databaseText(addressTextLimits.deliveryInstructions).nullable(),
   })
   .strict();
 export type CustomerAddress = z.infer<typeof customerAddressSchema>;

@@ -241,7 +241,7 @@ release precede dependent mobile publication. Scheduling is not immediate erasur
 proof. Existing web confirmation and cleanup remain authoritative. Apple/provider revocation, push
 subscription erasure, signed installed-device cleanup and the full deletion journey remain open.
 
-## Native saved-address reads
+## Native saved addresses
 
 The account screen can open a virtualized saved-address list using the new current-customer,
 versioned backend read contract. It loads one bounded page at a time and discards private query
@@ -250,6 +250,19 @@ customer. Unknown fields, contradictory continuation, duplicate/out-of-order IDs
 pages are refused. Character limits preserve valid Unicode database text.
 
 Failed refresh hides cached private rows; foreground return performs a new read. Owner/tenant
-switches and logout cannot publish a late result. This is a read-only source slice: create/edit/
-remove/default management, checkout selection, backend integration/readback and installed-device
-accessibility remain required plan work. It does not activate a tenant or claim a signed release.
+switches and logout cannot publish a late result.
+
+Native create/edit/remove/default controls use the same labelled fields, semantic tokens and shared
+modal/buttons. Required and Unicode storage validation runs before sending. Editing preserves null
+optional values and never sends coordinates or owner/policy fields. Default/remove require an
+address-specific confirmation; existing OrderAddress snapshots remain separate from saved addresses.
+A synchronous decision lock prevents duplicate presses and busy dismissal. Unknown responses block
+another submission and offer a return to a freshly read list for explicit checking. No write uses
+automatic retry, token refresh or an offline queue. Create is not idempotent: a fresh read cannot
+prove an earlier request will never arrive, and it must not automatically trigger another create.
+Private form state is discarded on dismissal or owner withdrawal.
+
+This consumes the pending versioned native mutation contract and shared backend address hardening.
+Backend acceptance/deployment must precede dependent app publication. Checkout address selection,
+complete locale/RTL coverage and installed keyboard/screen-reader/process-death acceptance remain
+required plan work. No tenant activation or signed release is claimed.
