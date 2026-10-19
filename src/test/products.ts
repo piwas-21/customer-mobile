@@ -162,7 +162,8 @@ export function bundleDetailFixture(): ProductDetail {
               ingredients: ['Sauce'],
               allergens: ['milk'],
               availability: { canOrder: false, allowedOrderTypes: ['Takeaway'] },
-              detailedIngredients: product.detailedIngredients,
+              detailedIngredients:
+                product.detailedIngredients?.map((ingredient) => ({ ...ingredient })) ?? null,
               variations: product.variations,
               customizationGroups: product.customizationGroups,
               hideBaseProduct: true,

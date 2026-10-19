@@ -48,3 +48,10 @@ sections count rows. Optional bundle minima follow the server rule. Unavailable/
 rules fail closed, defaults are bounded and deterministic, and projections perform no network writes.
 Legacy recipe/sauce interactions, manifest-driven step order, nested UI and full basket composition
 remain required before ordering acceptance.
+
+Legacy recipe projections retain complete fixed/included defaults, explicit removals and per-row
+quantity limits. Sauce minima count distinct answers; zero caps, no-answer markers and exclusion
+keys are preserved without guessing from labels. Missing bundle marker metadata or inconsistent
+base recipes block this projection. The additive server marker contract is backend PR #724 and
+must land before its dependent mobile source; deployment/readback remains separate. Full manifest
+composition, variation/side integration, native choice screens and basket writes remain required.

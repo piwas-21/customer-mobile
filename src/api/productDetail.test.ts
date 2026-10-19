@@ -49,7 +49,7 @@ it('reads the response bundle shape, retaining repeated choices and nested produ
       { id: productIds.sideLink, sideItemProductId: tenantA, availability: { canOrder: false } },
     ],
   });
-  expect(section?.items?.[0]?.detailedIngredients?.[0]).not.toHaveProperty('isNoneOption');
+  expect(section?.items?.[0]?.detailedIngredients?.[0]).toHaveProperty('isNoneOption', false);
   expect(section?.items?.[0]?.customizationGroups).toEqual(product.customizationGroups);
 });
 it('keeps future enum values and manifest versions visible for fail-closed ordering', () => {
@@ -164,4 +164,20 @@ it('preserves a zero sauce cap as no sauces allowed, distinct from an unlimited 
   });
   expect(product.sauceMax).toBe(0);
   expect(productDetailSchema.parse(productDetailFixture()).sauceMax).toBeNull();
+});
+
+it('preserves new bundle answer markers while leaving missing old metadata unknown', () => {
+  const wire = bundleDetailFixture();
+  const ingredient = wire.menuDefinition?.sections?.[0]?.items?.[0]?.detailedIngredients?.[0];
+  if (!ingredient) throw new Error('Missing ingredient fixture');
+  delete ingredient.isNoneOption;
+  expect(
+    productDetailSchema.parse(wire).menuDefinition?.sections?.[0]?.items?.[0]
+      ?.detailedIngredients?.[0],
+  ).not.toHaveProperty('isNoneOption');
+  ingredient.isNoneOption = true;
+  expect(
+    productDetailSchema.parse(wire).menuDefinition?.sections?.[0]?.items?.[0]
+      ?.detailedIngredients?.[0],
+  ).toHaveProperty('isNoneOption', true);
 });
