@@ -263,6 +263,15 @@ prove an earlier request will never arrive, and it must not automatically trigge
 Private form state is discarded on dismissal or owner withdrawal.
 
 This consumes the pending versioned native mutation contract and shared backend address hardening.
-Backend acceptance/deployment must precede dependent app publication. Checkout address selection,
-complete locale/RTL coverage and installed keyboard/screen-reader/process-death acceptance remain
+Backend acceptance/deployment must precede dependent app publication. Delivery checkout offers an
+explicit saved-address picker with the same bounded private list and read-failure withdrawal.
+It replaces the checkout modal while open; cancellation retains manually entered details.
+Selection fills the draft only and does not mutate addresses, quote or submit an order. Apartment
+and region are combined into visible street/locality fields without truncation; overlong combined
+values remain visible and block review until corrected. Optional absent phone retains the entered
+contact phone. Explicit selection never replaces name/email/tip, and closing removes private query
+resources. The current session guard rejects withdrawn-owner callbacks. Existing server quote and
+order contracts remain authoritative after the customer reviews the selected details.
+
+Complete locale/RTL coverage and installed keyboard/screen-reader/process-death acceptance remain
 required plan work. No tenant activation or signed release is claimed.

@@ -10,6 +10,10 @@ import CheckoutControl from './CheckoutControl';
 import useCheckoutFields from './useCheckoutFields';
 import type { CustomerOrderResolution } from '../../api/customerOrderOperation';
 import type { CheckoutQuote } from '../../api/checkoutQuoteResponse';
+jest.mock('./useCheckoutSavedAddress', () => ({
+  __esModule: true,
+  default: () => ({ available: false, current: undefined }),
+}));
 jest.mock('./useCheckoutFields', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock(
   'react-native-safe-area-context',

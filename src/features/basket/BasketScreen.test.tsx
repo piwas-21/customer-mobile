@@ -24,6 +24,10 @@ jest.mock(
     ).default,
 );
 jest.mock('./useCheckoutFields', () => ({ __esModule: true, default: jest.fn() }));
+jest.mock('./useCheckoutSavedAddress', () => ({
+  __esModule: true,
+  default: () => ({ available: false, current: undefined }),
+}));
 jest.mock('./useOrderTypes', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('./BasketProvider', () => ({ useBasket: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));

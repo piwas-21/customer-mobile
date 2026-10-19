@@ -52,6 +52,7 @@ export default function CheckoutFields({
           maxLength={checkoutInputLimits[field.key]}
           autoFocus={field.key === 'name'}
           editable={!flow.busy}
+          multiline={field.key === 'street' || field.key === 'additionalInfo'}
           {...inputOptions(field.key)}
           {...(flow.invalid(field.key) ? { error: t('checkoutFieldInvalid') } : {})}
         />

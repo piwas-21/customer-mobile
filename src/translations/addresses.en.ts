@@ -1,5 +1,7 @@
 export const addressesEnglish = {
   savedAddresses: 'Saved addresses',
+  chooseSavedAddress: 'Choose a saved delivery address',
+  useSavedAddress: 'Use {{label}} address',
   addAddress: 'Add address',
   editAddress: 'Edit address',
   saveAddress: 'Save address',

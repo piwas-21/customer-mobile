@@ -18,6 +18,7 @@ type Props = Readonly<{
   userId: string;
   ownerVersion: string;
   onClose: () => void;
+  onSelect?: (address: CustomerAddress) => void;
 }>;
 type AddressView =
   { kind: 'create' } | { kind: 'edit' | 'remove' | 'default'; address: CustomerAddress };
@@ -27,6 +28,7 @@ export default function SavedAddressesModal({
   userId,
   ownerVersion,
   onClose,
+  onSelect,
 }: Props) {
   const { t } = useTranslation();
   const addresses = useSavedAddresses(context, controller, userId, ownerVersion);
@@ -75,34 +77,45 @@ export default function SavedAddressesModal({
         ListHeaderComponent={
           <View style={styles.actions}>
             {saved ? <Feedback message={t('addressSaved')} /> : null}
-            <Button
-              label={t('addAddress')}
-              disabled={addresses.loading || addresses.failed}
-              onPress={() => open({ kind: 'create' })}
-            />
+            {!onSelect ? (
+              <Button
+                label={t('addAddress')}
+                disabled={addresses.loading || addresses.failed}
+                onPress={() => open({ kind: 'create' })}
+              />
+            ) : null}
           </View>
         }
         renderItem={({ item }) => (
           <View style={styles.actions}>
             <SavedAddressRow address={item} />
-            <Button
-              label={t('editSavedAddress', { label: item.label })}
-              secondary
-              onPress={() => open({ kind: 'edit', address: item })}
-            />
-            {!item.isDefault ? (
+            {onSelect ? (
               <Button
-                label={t('setSavedAddressDefault', { label: item.label })}
-                secondary
-                onPress={() => open({ kind: 'default', address: item })}
+                label={t('useSavedAddress', { label: item.label })}
+                onPress={() => onSelect(item)}
               />
-            ) : null}
-            <Button
-              label={t('removeSavedAddress', { label: item.label })}
-              destructive
-              secondary
-              onPress={() => open({ kind: 'remove', address: item })}
-            />
+            ) : (
+              <>
+                <Button
+                  label={t('editSavedAddress', { label: item.label })}
+                  secondary
+                  onPress={() => open({ kind: 'edit', address: item })}
+                />
+                {!item.isDefault ? (
+                  <Button
+                    label={t('setSavedAddressDefault', { label: item.label })}
+                    secondary
+                    onPress={() => open({ kind: 'default', address: item })}
+                  />
+                ) : null}
+                <Button
+                  label={t('removeSavedAddress', { label: item.label })}
+                  destructive
+                  secondary
+                  onPress={() => open({ kind: 'remove', address: item })}
+                />
+              </>
+            )}
           </View>
         )}
         ListEmptyComponent={
