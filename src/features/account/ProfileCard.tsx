@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
 import { spacing, typography, useTheme } from '../../ui/theme';
 import type { AccountState } from './useAccount';
+import ProfileEditor from './ProfileEditor';
 function ProfileDetails({ profile }: Readonly<Pick<AccountState, 'profile'>>) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -38,11 +40,44 @@ export default function ProfileCard({
   profile,
   busy,
   logout,
-}: Readonly<Pick<AccountState, 'profile' | 'busy' | 'logout'>>) {
+  session,
+  profileQueryKey,
+}: Readonly<Pick<AccountState, 'profile' | 'busy' | 'logout' | 'session' | 'profileQueryKey'>>) {
   const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(false);
   return (
     <View style={styles.section}>
       <ProfileDetails profile={profile} />
+      {saved ? <Feedback message={t('profileSaved')} /> : null}
+      {profile.data && !profile.isError && session.controller ? (
+        <>
+          <Button
+            label={t('editProfile')}
+            disabled={busy}
+            secondary
+            onPress={() => {
+              setSaved(false);
+              setEditing(true);
+            }}
+          />
+          {editing ? (
+            <ProfileEditor
+              profile={profile.data}
+              controller={session.controller}
+              queryKey={profileQueryKey}
+              onSaved={() => {
+                setEditing(false);
+                setSaved(true);
+              }}
+              onCancel={() => {
+                setEditing(false);
+                void profile.refetch();
+              }}
+            />
+          ) : null}
+        </>
+      ) : null}
       <Button
         label={t('signOut')}
         onPress={() => {

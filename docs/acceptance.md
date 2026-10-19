@@ -21,7 +21,7 @@ Never enable a tenant from fixture/demo data. No production channels are availab
 
 Restaurant-gated sign-in/restore, owned profile reads and durable local logout merged through PR #2.
 Registration and recovery request forms merged through PR #3 with validation and generic email
-instructions. Verification/reset-link integration, social sign-in, profile editing,
+instructions. Verification/reset-link integration, social sign-in, profile-editing acceptance,
 saved addresses, server revocation, deletion and device-wide logout remain required.
 
 Source evidence includes mobile unit/component tests, adversarial hook controls, backend policy/HTTP
@@ -119,3 +119,11 @@ active choices are completed without merging default dessert/accompaniment scree
 stale/duplicate/wrong-owner references and conflicting global pickers block the final projection.
 All 337 tests pass locally with independent review. This pure source slice supplies no prices or
 network writes; bundle composition, native choice screens and installed ordering acceptance remain open.
+
+Owned profile editing is implemented in source: explicit name/phone changes, empty-string phone
+removal, server-result confirmation and a guarded PUT with no automatic refresh/retry. The editor
+uses the shared native sheet, keyboard-safe fields, labelled errors, busy Save/Cancel controls and
+Android/VoiceOver dismissal callbacks. Drafts are scoped to the current principal; late completion
+cannot restore private cache data after unmount or logout during cache cancellation. All 364 tests
+pass locally with independent review. CI/publication, backend #723 deployment, native keyboard,
+modal focus and screen-reader/device acceptance remain open.

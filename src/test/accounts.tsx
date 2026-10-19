@@ -58,16 +58,7 @@ export const accountBootstrap = {
   }),
   isPending: false,
 };
-export const customerProfile = {
-  id: tenantA,
-  email: 'alex@example.test',
-  firstName: 'Alex',
-  lastName: 'Guest',
-  phoneNumber: null,
-  role: 'Customer' as const,
-  isDeleted: false as const,
-  isEmailConfirmed: true,
-};
+export { customerProfile } from './customerProfile';
 
 export function prepareAccountFixture() {
   const fixture = accountFixture();

@@ -14,14 +14,15 @@ export default function useAccount() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<'input' | 'login' | 'logout'>();
+  const profileQueryKey = [
+    context?.environment,
+    context?.tenant.id,
+    `customer:${session.userId}`,
+    'profile',
+    context?.generation,
+  ] as const;
   const profile = useQuery({
-    queryKey: [
-      context?.environment,
-      context?.tenant.id,
-      `customer:${session.userId}`,
-      'profile',
-      context?.generation,
-    ],
+    queryKey: profileQueryKey,
     queryFn: () => {
       if (!session.controller || !session.userId) throw new Error('Customer session is required');
       return readProfile(session.controller, session.userId);
@@ -65,7 +66,19 @@ export default function useAccount() {
       setBusy(false);
     }
   }
-  return { session, email, setEmail, password, setPassword, login, logout, busy, failure, profile };
+  return {
+    session,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    login,
+    logout,
+    busy,
+    failure,
+    profile,
+    profileQueryKey,
+  };
 }
 
 export type AccountState = ReturnType<typeof useAccount>;

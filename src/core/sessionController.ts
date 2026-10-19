@@ -150,6 +150,26 @@ export class SessionController {
       },
     });
   }
+  async put<T>(
+    userId: string,
+    path: string,
+    body: unknown,
+    schema: z.ZodType<T>,
+    locale: string,
+  ): Promise<T> {
+    const principal = { kind: 'customer', id: userId } as const;
+    const assertCurrent = this.captureRequestOwner(principal);
+    const result = await this.client.request(this.context, path, schema, {
+      method: 'PUT',
+      body,
+      credentials: 'customer',
+      principal,
+      assertCurrent,
+      locale,
+    });
+    assertCurrent();
+    return result;
+  }
   private async refresh(revision: number): Promise<void> {
     this.assertCurrent(revision);
     const captured = this.session;
