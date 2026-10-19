@@ -27,27 +27,32 @@ export default function RestaurantScreen() {
   let emptyMessage = directory ? t('noRestaurants') : t('unavailable');
   if (loading) emptyMessage = t('loading');
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text accessibilityRole="header" style={[styles.brand, { color: theme.accent }]}>
-          {t('appName')}
-        </Text>
-        <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>
-          {t('chooseRestaurant')}
-        </Text>
-        <Text style={[styles.intro, { color: theme.secondary }]}>{t('restaurantIntro')}</Text>
-      </View>
-      <Field
-        label={t('searchRestaurants')}
-        value={search}
-        onChangeText={setSearch}
-        autoCapitalize="none"
-        returnKeyType="search"
-      />
+    <Screen bottom>
       <FlatList
+        ListHeaderComponent={
+          <View style={styles.entryHeader}>
+            <View style={styles.header}>
+              <Text accessibilityRole="header" style={[styles.brand, { color: theme.accent }]}>
+                {t('appName')}
+              </Text>
+              <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>
+                {t('chooseRestaurant')}
+              </Text>
+              <Text style={[styles.intro, { color: theme.secondary }]}>{t('restaurantIntro')}</Text>
+            </View>
+            <Field
+              label={t('searchRestaurants')}
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              returnKeyType="search"
+            />
+          </View>
+        }
         data={tenants}
         keyExtractor={(tenant) => tenant.id}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <Button
@@ -71,6 +76,7 @@ export default function RestaurantScreen() {
   );
 }
 const styles = StyleSheet.create({
+  entryHeader: { gap: spacing.lg },
   header: { gap: spacing.sm, paddingTop: spacing.xl },
   brand: { fontSize: typography.heading, fontWeight: '700' },
   title: { fontSize: typography.title, fontWeight: '700' },

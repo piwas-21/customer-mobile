@@ -13,12 +13,12 @@ export default function ProductScreen() {
   const { product, loading, unavailable } = useProduct(id);
   if (!product)
     return (
-      <Screen>
+      <Screen bottom>
         <Feedback loading={loading} message={unavailable ? t('menuUnavailable') : t('loading')} />
       </Screen>
     );
   return (
-    <Screen>
+    <Screen bottom>
       <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" style={[styles.title, { color: theme.text }]}>
           {customerName(product, i18n.language)}

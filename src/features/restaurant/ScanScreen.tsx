@@ -18,7 +18,7 @@ export default function ScanScreen() {
   const { directory, select } = useRestaurant();
   if (!permission?.granted)
     return (
-      <Screen>
+      <Screen bottom>
         <Feedback message={t('cameraPermission')} />
         <Button
           label={t('allowCamera')}
@@ -29,7 +29,7 @@ export default function ScanScreen() {
       </Screen>
     );
   return (
-    <Screen>
+    <Screen bottom>
       <CameraView
         style={styles.camera}
         barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
