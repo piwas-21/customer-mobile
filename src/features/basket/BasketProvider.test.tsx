@@ -109,3 +109,32 @@ it('holds writes when restoring the secure operation journal fails', async () =>
     f.cache.clear();
   }
 });
+it('clears a no-dispatch failure only after explicit secure-journal and basket refresh succeed', async () => {
+  const f = await setup();
+  const preparation = jest
+    .spyOn(f.repository.baskets, 'prepareRequest')
+    .mockRejectedValueOnce(
+      new Error('Secure write unavailable before any record or HTTP dispatch'),
+    );
+  try {
+    const posts = () => f.fetcher.mock.calls.filter(([, request]) => request.method === 'POST');
+    await act(async () => {
+      await expect(f.hook.result.current.add(basketInput)).rejects.toThrow(
+        'Secure write unavailable',
+      );
+    });
+    expect(f.hook.result.current.failed).toBe(true);
+    expect(f.hook.result.current.hasPending).toBe(false);
+    expect(posts()).toHaveLength(0);
+    act(() => {
+      void f.hook.result.current.refresh();
+    });
+    await waitFor(() => expect(f.hook.result.current.failed).toBe(false));
+    expect(f.hook.result.current.basket).toBeNull();
+    expect(f.hook.result.current.canAdd).toBe(true);
+    expect(posts()).toHaveLength(0);
+  } finally {
+    preparation.mockRestore();
+    f.close();
+  }
+});

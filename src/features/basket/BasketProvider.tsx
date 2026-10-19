@@ -133,8 +133,17 @@ function useBasketState() {
     recover: () => submit({ kind: 'recover' }),
     cancel: () => submit({ kind: 'cancel' }),
     refresh: async () => {
-      await pending.refetch();
-      if (ordering) await basket.refetch();
+      const owner = workspace;
+      if (!owner) return;
+      try {
+        if ((await pending.refetch()).isError) return;
+        if (ordering && (await basket.refetch()).isError) return;
+        owner.assertCurrent();
+        if (mounted.current)
+          setFailureScope((previous) => (previous === owner ? undefined : previous));
+      } catch {
+        // A withdrawn owner cannot clear another workspace's error.
+      }
     },
   };
 }
