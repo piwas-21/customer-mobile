@@ -50,7 +50,8 @@ Backend #724 provides the explicit no-answer marker; deployment/readback remains
 
 Standalone UI starts with quantity, follows authored variation/recipe/explicit/sides decisions, offers
 Next at intermediate steps and one final Add to basket. Full source rules remain available when a
-screen shows only a subset, so exclusions also clear hidden choices. Back retains edits. Changed menu
+screen shows only a subset, so exclusions also clear hidden choices. Back retains edits within the same owner. Login/controller revisions discard private drafts; failed
+product refreshes withdraw ordering even when a cached detail remains. Changed menu
 metadata resets to fresh defaults and asks for review. Required sides need current orderable details;
 shared product cache keys and at most four concurrent side reads avoid duplicate/per-row requests.
 Final projection revalidates every rule and sends identities/quantities/instructions without prices.

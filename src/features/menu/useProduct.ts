@@ -24,7 +24,7 @@ export default function useProduct(id: string, orderType?: OrderType) {
     retry: 1,
   });
   return {
-    product: allowed ? query.data : undefined,
+    product: allowed && !query.isError ? query.data : undefined,
     loading: (bootstrap.isPending || query.isFetching) && validId,
     unavailable: query.isError || bootstrap.isError || !allowed || !validId,
   };
