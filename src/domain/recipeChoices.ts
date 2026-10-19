@@ -12,7 +12,7 @@ type Ingredient = Omit<
   NonNullable<ProductDetail['detailedIngredients']>[number],
   'isNoneOption'
 > & {
-  isNoneOption?: boolean;
+  isNoneOption?: boolean | undefined;
 };
 export type Recipe = Readonly<{
   detailedIngredients: readonly Ingredient[] | null;

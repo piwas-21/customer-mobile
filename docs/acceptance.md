@@ -127,3 +127,12 @@ Android/VoiceOver dismissal callbacks. Drafts are scoped to the current principa
 cannot restore private cache data after unmount or logout during cache cancellation. All 364 tests
 pass locally with independent review. CI/publication, backend #723 deployment, native keyboard,
 modal focus and screen-reader/device acceptance remain open.
+
+Bundle composition preserves section-row/product identities, per-bundle portions, fixed row variations
+and separately selected component variations. Components reuse the standalone recipe/group/side rules;
+no price or multiplied child quantity is supplied. Authored component references, screen order, labels
+and section dependencies are validated before the final request. Optional inactive dependent sections
+can be omitted; required minima still follow the server rule and block when their parent is unselected.
+Unsupported root customization/variation contracts and missing authoritative recipe metadata fail closed.
+Independent payload/rejection fixtures cover nested choices; native guided screens, deployed server
+revalidation and installed-device ordering remain open.
