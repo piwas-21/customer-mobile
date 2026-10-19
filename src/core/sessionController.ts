@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import { signIn, refreshSession, type LoginInput } from '../api/auth';
 import { ApiFailure, type CustomerTransport } from './transport';
-import type { CustomerSession } from './credentials';
+import { principalSchema, type CustomerSession, type Principal } from './credentials';
 import type { TenantContext } from './tenantContext';
 import type { SessionRepository } from './sessionRepository';
 import { SerialTasks } from './serialTasks';
@@ -14,6 +14,8 @@ export class SessionController {
   private disposed = false;
   private session: CustomerSession | null = null;
   private pendingCleanup: CustomerSession | null = null;
+  private initialized = false;
+  private signingIn = false;
   constructor(
     private readonly context: TenantContext,
     private readonly client: CustomerTransport,
@@ -46,6 +48,19 @@ export class SessionController {
     if (this.session?.userId !== userId) throw new ApiFailure(401, 'refused');
     return this.session;
   }
+  captureRequestOwner(principal: Principal): () => void {
+    const owner = principalSchema.parse(principal);
+    const revision = this.revision;
+    const check = () => {
+      this.assertCurrent(revision);
+      if (!this.initialized || this.signingIn || this.pendingCleanup)
+        throw new ApiFailure(401, 'refused');
+      if (owner.kind === 'customer') this.assertPrincipal(revision, owner.id);
+      else if (this.session) throw new ApiFailure(401, 'refused');
+    };
+    check();
+    return check;
+  }
   dispose(): void {
     this.disposed = true;
     ++this.revision;
@@ -57,6 +72,7 @@ export class SessionController {
       this.assertCurrent(revision);
       const session = await this.repository.load(this.context);
       this.assertCurrent(revision);
+      this.initialized = true;
       this.publish(session);
       return this.userId;
     });
@@ -64,20 +80,27 @@ export class SessionController {
   login(input: LoginInput, locale: string): Promise<string> {
     if (this.pendingCleanup) return Promise.reject(new ApiFailure(401, 'refused'));
     const revision = ++this.revision;
+    this.signingIn = true;
     const captured = { ...input };
-    return this.tasks.run(async () => {
-      this.assertCurrent(revision);
-      const session = await signIn(this.client, this.context, captured, locale);
-      this.assertCurrent(revision);
-      await this.repository.activate(this.context, session, () => this.isCurrent(revision));
-      this.assertCurrent(revision);
-      this.publish(session);
-      return session.userId;
-    });
+    return this.tasks
+      .run(async () => {
+        this.assertCurrent(revision);
+        const session = await signIn(this.client, this.context, captured, locale);
+        this.assertCurrent(revision);
+        await this.repository.activate(this.context, session, () => this.isCurrent(revision));
+        this.assertCurrent(revision);
+        this.initialized = true;
+        this.publish(session);
+        return session.userId;
+      })
+      .finally(() => {
+        if (this.isCurrent(revision)) this.signingIn = false;
+      });
   }
   async logout(): Promise<void> {
     if (this.disposed) throw new ApiFailure(401, 'refused');
     ++this.revision;
+    this.signingIn = false;
     const captured = this.pendingCleanup ?? this.session;
     this.pendingCleanup = captured;
     this.publish(null);

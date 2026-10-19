@@ -93,7 +93,17 @@ the dependent server contract and must land before native submission is connecte
 The native basket adapter uses only `/api/customer-mobile/basket/items`, whose server contract
 requires a durable operation ID. It binds dispatch to the journal's exact basket session, validates
 server totals and nested line shapes, and refuses wrong-owner/empty proof. It retains the journal
-on every result; the controller must acknowledge only a validated success. No legacy fallback,
-write retry, native submission UI or installed ordering acceptance is introduced. Backend PR #725
+on every result; the controller acknowledges only a validated success. No legacy fallback,
+automatic write retry, native submission UI or installed ordering acceptance is introduced. Backend PR #725
 and the pending-operation/lifecycle sources must land before this adapter is released.
+
+Basket operation controllers capture an initialized account/guest owner and its login revision.
+New adds refuse any pending operation, recheck ordering capability, persist before dispatch and
+coalesce concurrent identical taps. The storage queue also refuses create-only claims that race
+with another controller; a later Add action cannot silently replay an earlier operation.
+Explicit recovery reads the original operation after a recreated repository/session/controller,
+without generating new IDs. Rejections, unknown outcomes and invalid proof retain that operation.
+A lost cleanup acknowledgement blocks new adds and finishes cleanup without another POST.
+Logout, tenant switching and disposal refuse late proof. These are controlled source fixtures;
+full composition, basket UI/refresh, checkout, deployment and physical process-death checks remain open.
 
