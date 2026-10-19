@@ -79,3 +79,17 @@ resolves wrapper findings to advisory roots. Only roots repaired in every instal
 lockfile/version/source/behavior evidence can be marked source-remediated. New findings, unknown
 sources, missing copies, audit process/report errors and stale patches block. Registry-clean and
 source-remediated are separate evidence states; neither can be claimed from a filtered audit count.
+
+## Refreshing deployed customer contracts
+
+Read the served backend and frontend versions independently before capturing the full backend OpenAPI
+JSON over verified HTTPS. Keep the capture local and record the complete source revisions. Review
+`contracts/customer-operations.json` explicitly: it selects methods as well as paths, so a shared
+customer/admin route cannot silently import a new staff operation. The subset is not authorization.
+
+Run `node scripts/capture-contracts.mjs <local-json> <backend-sha> <frontend-sha> <YYYY-MM-DD>`, then
+`npm run contracts:generate`. Capture records the exact source byte hash, full inventory counts and
+reachable customer schemas. It rejects missing operations, unresolved/external references and
+unsupported document versions. Review generated diffs against deployed handlers; a source-only
+endpoint must not enter the deployed snapshot. Commit the allowlist, baseline, subset and generated
+types together. Existing CI checks generation drift without accessing a live service.

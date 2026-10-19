@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/Auth/login": {
+    "/api/Auth/apple-login": {
         parameters: {
             query?: never;
             header?: never;
@@ -22,9 +22,9 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["LoginCommand"];
-                    "text/json": components["schemas"]["LoginCommand"];
-                    "application/*+json": components["schemas"]["LoginCommand"];
+                    "application/json": components["schemas"]["AppleLoginCommand"];
+                    "text/json": components["schemas"]["AppleLoginCommand"];
+                    "application/*+json": components["schemas"]["AppleLoginCommand"];
                 };
             };
             responses: {
@@ -37,6 +37,92 @@ export interface paths {
                         "text/plain": components["schemas"]["ApiResponseOfAuthResponse"];
                         "application/json": components["schemas"]["ApiResponseOfAuthResponse"];
                         "text/json": components["schemas"]["ApiResponseOfAuthResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ChangePasswordCommand"];
+                    "text/json": components["schemas"]["ChangePasswordCommand"];
+                    "application/*+json": components["schemas"]["ChangePasswordCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfString"];
+                        "application/json": components["schemas"]["ApiResponseOfString"];
+                        "text/json": components["schemas"]["ApiResponseOfString"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ForgotPasswordCommand"];
+                    "text/json": components["schemas"]["ForgotPasswordCommand"];
+                    "application/*+json": components["schemas"]["ForgotPasswordCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfString"];
+                        "application/json": components["schemas"]["ApiResponseOfString"];
+                        "text/json": components["schemas"]["ApiResponseOfString"];
                     };
                 };
             };
@@ -90,7 +176,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Auth/apple-login": {
+    "/api/Auth/has-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBoolean"];
+                        "application/json": components["schemas"]["ApiResponseOfBoolean"];
+                        "text/json": components["schemas"]["ApiResponseOfBoolean"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Auth/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -108,9 +231,9 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["AppleLoginCommand"];
-                    "text/json": components["schemas"]["AppleLoginCommand"];
-                    "application/*+json": components["schemas"]["AppleLoginCommand"];
+                    "application/json": components["schemas"]["LoginCommand"];
+                    "text/json": components["schemas"]["LoginCommand"];
+                    "application/*+json": components["schemas"]["LoginCommand"];
                 };
             };
             responses: {
@@ -176,49 +299,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Auth/forgot-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ForgotPasswordCommand"];
-                    "text/json": components["schemas"]["ForgotPasswordCommand"];
-                    "application/*+json": components["schemas"]["ForgotPasswordCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfString"];
-                        "application/json": components["schemas"]["ApiResponseOfString"];
-                        "text/json": components["schemas"]["ApiResponseOfString"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/Auth/reset-password": {
         parameters: {
             query?: never;
@@ -262,7 +342,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Auth/change-password": {
+    "/api/Auth/send-email-verification": {
         parameters: {
             query?: never;
             header?: never;
@@ -280,9 +360,9 @@ export interface paths {
             };
             requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["ChangePasswordCommand"];
-                    "text/json": components["schemas"]["ChangePasswordCommand"];
-                    "application/*+json": components["schemas"]["ChangePasswordCommand"];
+                    "application/json": components["schemas"]["SendEmailVerificationCommand"];
+                    "text/json": components["schemas"]["SendEmailVerificationCommand"];
+                    "application/*+json": components["schemas"]["SendEmailVerificationCommand"];
                 };
             };
             responses: {
@@ -299,43 +379,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/Auth/has-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfBoolean"];
-                        "application/json": components["schemas"]["ApiResponseOfBoolean"];
-                        "text/json": components["schemas"]["ApiResponseOfBoolean"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -363,49 +406,6 @@ export interface paths {
                     "application/json": components["schemas"]["SetPasswordCommand"];
                     "text/json": components["schemas"]["SetPasswordCommand"];
                     "application/*+json": components["schemas"]["SetPasswordCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfString"];
-                        "application/json": components["schemas"]["ApiResponseOfString"];
-                        "text/json": components["schemas"]["ApiResponseOfString"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/Auth/send-email-verification": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["SendEmailVerificationCommand"];
-                    "text/json": components["schemas"]["SendEmailVerificationCommand"];
-                    "application/*+json": components["schemas"]["SendEmailVerificationCommand"];
                 };
             };
             responses: {
@@ -498,45 +498,6 @@ export interface paths {
                         "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
                         "application/json": components["schemas"]["ApiResponseOfBasketDto"];
                         "text/json": components["schemas"]["ApiResponseOfBasketDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/Basket/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Session-Id"?: string;
-                };
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfBasketSummaryDto"];
-                        "application/json": components["schemas"]["ApiResponseOfBasketSummaryDto"];
-                        "text/json": components["schemas"]["ApiResponseOfBasketSummaryDto"];
                     };
                 };
             };
@@ -666,74 +627,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Basket/promo-code": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Session-Id"?: string;
-                };
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ApplyPromoCodeRequest"];
-                    "text/json": components["schemas"]["ApplyPromoCodeRequest"];
-                    "application/*+json": components["schemas"]["ApplyPromoCodeRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
-                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
-                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
-                    };
-                };
-            };
-        };
-        delete: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Session-Id"?: string;
-                };
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
-                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
-                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/Basket/order-type": {
         parameters: {
             query?: never;
@@ -802,6 +695,113 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Basket/promo-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ApplyPromoCodeRequest"];
+                    "text/json": components["schemas"]["ApplyPromoCodeRequest"];
+                    "application/*+json": components["schemas"]["ApplyPromoCodeRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
+                    };
+                };
+            };
+        };
+        delete: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Basket/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketSummaryDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketSummaryDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketSummaryDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Categories": {
         parameters: {
             query?: never;
@@ -834,444 +834,6 @@ export interface paths {
                         "text/plain": components["schemas"]["ApiResponseOfPagedResultOfCategoryDto"];
                         "application/json": components["schemas"]["ApiResponseOfPagedResultOfCategoryDto"];
                         "text/json": components["schemas"]["ApiResponseOfPagedResultOfCategoryDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/checkout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                    "X-Account-Payment-Receipt"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["StartAccountCheckoutRequest"];
-                    "text/json": components["schemas"]["StartAccountCheckoutRequest"];
-                    "application/*+json": components["schemas"]["StartAccountCheckoutRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/checkout/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["StartAccountCheckoutRequest"];
-                    "text/json": components["schemas"]["StartAccountCheckoutRequest"];
-                    "application/*+json": components["schemas"]["StartAccountCheckoutRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentAccountDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentAccountDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentAccountDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/quotes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["CreateAccountPaymentQuoteRequest"];
-                    "text/json": components["schemas"]["CreateAccountPaymentQuoteRequest"];
-                    "application/*+json": components["schemas"]["CreateAccountPaymentQuoteRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/equal-share-plans": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["CreateAccountEqualSharePlanRequest"];
-                    "text/json": components["schemas"]["CreateAccountEqualSharePlanRequest"];
-                    "application/*+json": components["schemas"]["CreateAccountEqualSharePlanRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/reserve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ReserveAccountPaymentRequest"];
-                    "text/json": components["schemas"]["ReserveAccountPaymentRequest"];
-                    "application/*+json": components["schemas"]["ReserveAccountPaymentRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/release": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ReleaseAccountPaymentRequest"];
-                    "text/json": components["schemas"]["ReleaseAccountPaymentRequest"];
-                    "application/*+json": components["schemas"]["ReleaseAccountPaymentRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/table-guest-visits/{serviceSessionId}/account-payments/equal-share-plans/operations/{operationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: {
-                    "X-Table-Participant"?: string;
-                };
-                path: {
-                    serviceSessionId: string;
-                    operationId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
-                        "application/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
-                        "text/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
                     };
                 };
             };
@@ -1369,46 +931,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/orders/guest-status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    orderId?: string;
-                    token?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfGuestOrderStatusDto"];
-                        "application/json": components["schemas"]["ApiResponseOfGuestOrderStatusDto"];
-                        "text/json": components["schemas"]["ApiResponseOfGuestOrderStatusDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/Orders/from-basket": {
         parameters: {
             query?: never;
@@ -1491,45 +1013,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Payments/checkout-status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    sessionId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfCheckoutSettlementDto"];
-                        "application/json": components["schemas"]["ApiResponseOfCheckoutSettlementDto"];
-                        "text/json": components["schemas"]["ApiResponseOfCheckoutSettlementDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/Payments/checkout-session": {
         parameters: {
             query?: never;
@@ -1567,6 +1050,45 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Payments/checkout-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    sessionId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCheckoutSettlementDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCheckoutSettlementDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCheckoutSettlementDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1706,6 +1228,732 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/User/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfUserDto"];
+                        "application/json": components["schemas"]["ApiResponseOfUserDto"];
+                        "text/json": components["schemas"]["ApiResponseOfUserDto"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserProfileCommand"];
+                    "text/json": components["schemas"]["UpdateUserProfileCommand"];
+                    "application/*+json": components["schemas"]["UpdateUserProfileCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfUserDto"];
+                        "application/json": components["schemas"]["ApiResponseOfUserDto"];
+                        "text/json": components["schemas"]["ApiResponseOfUserDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/User/register/customer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["RegisterCustomerCommand"];
+                    "text/json": components["schemas"]["RegisterCustomerCommand"];
+                    "application/*+json": components["schemas"]["RegisterCustomerCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAuthResponse"];
+                        "application/json": components["schemas"]["ApiResponseOfAuthResponse"];
+                        "text/json": components["schemas"]["ApiResponseOfAuthResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerBasketChannelDto"];
+                    "text/json": components["schemas"]["CustomerBasketChannelDto"];
+                    "application/*+json": components["schemas"]["CustomerBasketChannelDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/channel-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    orderType?: components["schemas"]["OrderType"];
+                };
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerBasketChannelPreviewDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerBasketChannelPreviewDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerBasketChannelPreviewDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/channel/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerBasketChannelDto"];
+                    "text/json": components["schemas"]["CustomerBasketChannelDto"];
+                    "application/*+json": components["schemas"]["CustomerBasketChannelDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AddToBasketDto"];
+                    "text/json": components["schemas"]["AddToBasketDto"];
+                    "application/*+json": components["schemas"]["AddToBasketDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/items/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["AddToBasketDto"];
+                    "text/json": components["schemas"]["AddToBasketDto"];
+                    "application/*+json": components["schemas"]["AddToBasketDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/items/{basketItemId}/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path: {
+                    basketItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerBasketItemMutationDto"];
+                    "text/json": components["schemas"]["CustomerBasketItemMutationDto"];
+                    "application/*+json": components["schemas"]["CustomerBasketItemMutationDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfBasketDto"];
+                        "application/json": components["schemas"]["ApiResponseOfBasketDto"];
+                        "text/json": components["schemas"]["ApiResponseOfBasketDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/basket/items/{basketItemId}/operations/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path: {
+                    basketItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerBasketItemMutationDto"];
+                    "text/json": components["schemas"]["CustomerBasketItemMutationDto"];
+                    "application/*+json": components["schemas"]["CustomerBasketItemMutationDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerBasketOperationResolutionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/checkout/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderRecoveryDto"];
+                    "text/json": components["schemas"]["CustomerOrderRecoveryDto"];
+                    "application/*+json": components["schemas"]["CustomerOrderRecoveryDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/checkout/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerCheckoutIntentDto"];
+                    "text/json": components["schemas"]["CustomerCheckoutIntentDto"];
+                    "application/*+json": components["schemas"]["CustomerCheckoutIntentDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerCheckoutPreparationDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerCheckoutPreparationDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerCheckoutPreparationDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/checkout/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerCheckoutReviewDto"];
+                    "text/json": components["schemas"]["CustomerCheckoutReviewDto"];
+                    "application/*+json": components["schemas"]["CustomerCheckoutReviewDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerCheckoutQuoteDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerCheckoutQuoteDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerCheckoutQuoteDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/checkout/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderRecoveryDto"];
+                    "text/json": components["schemas"]["CustomerOrderRecoveryDto"];
+                    "application/*+json": components["schemas"]["CustomerOrderRecoveryDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-mobile/checkout/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Session-Id"?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CustomerCheckoutSubmissionDto"];
+                    "text/json": components["schemas"]["CustomerCheckoutSubmissionDto"];
+                    "application/*+json": components["schemas"]["CustomerCheckoutSubmissionDto"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerOrderResolutionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/guest-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    orderId?: string;
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfGuestOrderStatusDto"];
+                        "application/json": components["schemas"]["ApiResponseOfGuestOrderStatusDto"];
+                        "text/json": components["schemas"]["ApiResponseOfGuestOrderStatusDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/restaurant-info": {
         parameters: {
             query?: never;
@@ -1827,6 +2075,444 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentAccountDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentAccountDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentAccountDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/equal-share-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateAccountEqualSharePlanRequest"];
+                    "text/json": components["schemas"]["CreateAccountEqualSharePlanRequest"];
+                    "application/*+json": components["schemas"]["CreateAccountEqualSharePlanRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/equal-share-plans/operations/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountEqualSharePlanDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                    "X-Account-Payment-Receipt"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["StartAccountCheckoutRequest"];
+                    "text/json": components["schemas"]["StartAccountCheckoutRequest"];
+                    "application/*+json": components["schemas"]["StartAccountCheckoutRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/checkout/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["StartAccountCheckoutRequest"];
+                    "text/json": components["schemas"]["StartAccountCheckoutRequest"];
+                    "application/*+json": components["schemas"]["StartAccountCheckoutRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountCheckoutStartDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ReleaseAccountPaymentRequest"];
+                    "text/json": components["schemas"]["ReleaseAccountPaymentRequest"];
+                    "application/*+json": components["schemas"]["ReleaseAccountPaymentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/operations/{operationId}/reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                    operationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ReserveAccountPaymentRequest"];
+                    "text/json": components["schemas"]["ReserveAccountPaymentRequest"];
+                    "application/*+json": components["schemas"]["ReserveAccountPaymentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/table-guest-visits/{serviceSessionId}/account-payments/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Table-Participant"?: string;
+                };
+                path: {
+                    serviceSessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateAccountPaymentQuoteRequest"];
+                    "text/json": components["schemas"]["CreateAccountPaymentQuoteRequest"];
+                    "application/*+json": components["schemas"]["CreateAccountPaymentQuoteRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "application/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                        "text/json": components["schemas"]["ApiResponseOfAccountPaymentOperationDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/table-guest-visits/{serviceSessionId}/rounds": {
         parameters: {
             query?: never;
@@ -1900,6 +2586,45 @@ export interface paths {
                         "text/plain": components["schemas"]["ApiResponseOfTenantFeaturesDto"];
                         "application/json": components["schemas"]["ApiResponseOfTenantFeaturesDto"];
                         "text/json": components["schemas"]["ApiResponseOfTenantFeaturesDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tenant/mobile/bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    contractVersion?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponseOfCustomerMobileBootstrapDto"];
+                        "application/json": components["schemas"]["ApiResponseOfCustomerMobileBootstrapDto"];
+                        "text/json": components["schemas"]["ApiResponseOfCustomerMobileBootstrapDto"];
                     };
                 };
             };
@@ -2017,113 +2742,6 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/User/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfUserDto"];
-                        "application/json": components["schemas"]["ApiResponseOfUserDto"];
-                        "text/json": components["schemas"]["ApiResponseOfUserDto"];
-                    };
-                };
-            };
-        };
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["UpdateUserProfileCommand"];
-                    "text/json": components["schemas"]["UpdateUserProfileCommand"];
-                    "application/*+json": components["schemas"]["UpdateUserProfileCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfUserDto"];
-                        "application/json": components["schemas"]["ApiResponseOfUserDto"];
-                        "text/json": components["schemas"]["ApiResponseOfUserDto"];
-                    };
-                };
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/User/register/customer": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RegisterCustomerCommand"];
-                    "text/json": components["schemas"]["RegisterCustomerCommand"];
-                    "application/*+json": components["schemas"]["RegisterCustomerCommand"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ApiResponseOfAuthResponse"];
-                        "application/json": components["schemas"]["ApiResponseOfAuthResponse"];
-                        "text/json": components["schemas"]["ApiResponseOfAuthResponse"];
-                    };
-                };
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2317,6 +2935,8 @@ export interface components {
         };
         AddToBasketDto: {
             /** Format: uuid */
+            operationId?: string | null;
+            /** Format: uuid */
             productId?: string;
             /** Format: uuid */
             productVariationId?: string | null;
@@ -2415,6 +3035,48 @@ export interface components {
             success?: boolean;
             message?: string | null;
             data?: components["schemas"]["CheckoutSettlementDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfCustomerBasketChannelPreviewDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["CustomerBasketChannelPreviewDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfCustomerBasketOperationResolutionDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["CustomerBasketOperationResolutionDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfCustomerCheckoutPreparationDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["CustomerCheckoutPreparationDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfCustomerCheckoutQuoteDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["CustomerCheckoutQuoteDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfCustomerMobileBootstrapDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["CustomerMobileBootstrapDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfCustomerOrderResolutionDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["CustomerOrderResolutionDto"];
             errors?: string[] | null;
             errorCode?: string | null;
         };
@@ -2527,6 +3189,13 @@ export interface components {
             success?: boolean;
             message?: string | null;
             data?: components["schemas"]["TenantTodayDto"];
+            errors?: string[] | null;
+            errorCode?: string | null;
+        };
+        ApiResponseOfUserDto: {
+            success?: boolean;
+            message?: string | null;
+            data?: components["schemas"]["UserDto"];
             errors?: string[] | null;
             errorCode?: string | null;
         };
@@ -2861,6 +3530,202 @@ export interface components {
             amount?: number;
             paymentNotes?: string | null;
         };
+        CustomerBasketChannelDto: {
+            /** Format: uuid */
+            operationId: string;
+            /** Format: uuid */
+            expectedBasketId: string;
+            expectedPurchaseFingerprint: string | null;
+            orderType: components["schemas"]["OrderType"];
+            confirmedConflictItemIds: string[] | null;
+        };
+        CustomerBasketChannelPreviewDto: {
+            /** Format: uuid */
+            basketId?: string;
+            purchaseFingerprint?: string | null;
+            orderType?: components["schemas"]["OrderType"];
+            conflicts?: components["schemas"]["BasketChannelConflictDto"][] | null;
+        };
+        /** @enum {string} */
+        CustomerBasketItemAction: "Update" | "Remove";
+        CustomerBasketItemMutationDto: {
+            /** Format: uuid */
+            operationId: string;
+            /** Format: uuid */
+            expectedBasketId: string;
+            expectedPurchaseFingerprint: string | null;
+            action: components["schemas"]["CustomerBasketItemAction"];
+            /** Format: int32 */
+            quantity?: number | null;
+            specialInstructions?: string | null;
+        };
+        /** @enum {string} */
+        CustomerBasketOperationOutcome: "Applied" | "Cancelled";
+        CustomerBasketOperationResolutionDto: {
+            /** Format: uuid */
+            operationId?: string;
+            outcome?: components["schemas"]["CustomerBasketOperationOutcome"];
+            basket?: components["schemas"]["BasketDto"];
+        };
+        CustomerCheckoutAddressDto: {
+            street: string | null;
+            city: string | null;
+            postalCode: string | null;
+            country?: string | null;
+            additionalInfo?: string | null;
+        };
+        CustomerCheckoutContactDto: {
+            name: string | null;
+            email: string | null;
+            phone: string | null;
+        };
+        CustomerCheckoutIngredientDto: {
+            /** Format: uuid */
+            ingredientId?: string;
+            name?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            isRemoved?: boolean;
+            isAddOn?: boolean;
+            quantityBasis?: components["schemas"]["QuantityBasis"];
+            configurationScope?: components["schemas"]["ConfigurationScope"];
+            compositionRole?: components["schemas"]["CompositionRole"];
+            /** Format: int32 */
+            presentationOrder?: number | null;
+        };
+        CustomerCheckoutIntentDto: {
+            review: components["schemas"]["CustomerCheckoutReviewDto"];
+            expectedQuoteFingerprint: string | null;
+            contact: components["schemas"]["CustomerCheckoutContactDto"];
+            paymentMethod: components["schemas"]["PaymentMethod"];
+            address?: components["schemas"]["CustomerCheckoutAddressDto"];
+            notes?: string | null;
+        };
+        CustomerCheckoutLineDto: {
+            /** Format: uuid */
+            basketItemId?: string | null;
+            /** Format: uuid */
+            productId?: string | null;
+            /** Format: uuid */
+            menuId?: string | null;
+            /** Format: uuid */
+            productVariationId?: string | null;
+            name?: string | null;
+            variationName?: string | null;
+            /** Format: int32 */
+            quantity?: number;
+            /** Format: double */
+            unitPrice?: number;
+            /** Format: double */
+            itemTotal?: number;
+            specialInstructions?: string | null;
+            kind?: components["schemas"]["OrderItemKind"];
+            quantityBasis?: components["schemas"]["QuantityBasis"];
+            configurationScope?: components["schemas"]["ConfigurationScope"];
+            compositionRole?: components["schemas"]["CompositionRole"];
+            presentationLabel?: string | null;
+            /** Format: int32 */
+            presentationOrder?: number | null;
+            ingredients?: components["schemas"]["CustomerCheckoutIngredientDto"][] | null;
+            children?: components["schemas"]["CustomerCheckoutLineDto"][] | null;
+        };
+        CustomerCheckoutMoneyDto: {
+            /** Format: double */
+            subTotal?: number;
+            /** Format: double */
+            tax?: number;
+            /** Format: double */
+            deliveryFee?: number;
+            /** Format: double */
+            discount?: number;
+            /** Format: double */
+            customerDiscount?: number;
+            /** Format: double */
+            pointsDiscount?: number;
+            /** Format: int32 */
+            pointsRedeemed?: number;
+            /** Format: double */
+            tip?: number;
+            /** Format: double */
+            total?: number;
+        };
+        CustomerCheckoutPreparationDto: {
+            /** Format: int32 */
+            schemaVersion?: number;
+            payloadHash?: string | null;
+            quote?: components["schemas"]["CustomerCheckoutQuoteDto"];
+        };
+        CustomerCheckoutQuoteDto: {
+            /** Format: int32 */
+            schemaVersion?: number;
+            /** Format: uuid */
+            basketId?: string;
+            purchaseFingerprint?: string | null;
+            quoteFingerprint?: string | null;
+            type?: components["schemas"]["OrderType"];
+            currency?: string | null;
+            priceChanged?: boolean;
+            money?: components["schemas"]["CustomerCheckoutMoneyDto"];
+            items?: components["schemas"]["CustomerCheckoutLineDto"][] | null;
+            availablePaymentMethods?: components["schemas"]["PaymentMethod"][] | null;
+        };
+        CustomerCheckoutReviewDto: {
+            /** Format: int32 */
+            schemaVersion: number;
+            /** Format: uuid */
+            expectedBasketId: string;
+            expectedPurchaseFingerprint: string | null;
+            type: components["schemas"]["OrderType"];
+            /** Format: int32 */
+            pointsToRedeem: number;
+            /** Format: double */
+            tip: number;
+        };
+        CustomerCheckoutSubmissionDto: {
+            /** Format: int32 */
+            schemaVersion: number;
+            /** Format: uuid */
+            operationId: string;
+            payloadHash: string | null;
+            intent: components["schemas"]["CustomerCheckoutIntentDto"];
+        };
+        CustomerMobileBootstrapDto: {
+            /** Format: int32 */
+            schemaVersion?: number;
+            /** Format: uuid */
+            tenantId?: string;
+            currency?: string | null;
+            locale?: string | null;
+            timezone?: string | null;
+            lifecycle?: string | null;
+            compatibility?: string | null;
+            modules?: string[] | null;
+            modulesEnforced?: boolean;
+            flags?: {
+                [key: string]: boolean;
+            } | null;
+            capabilities?: {
+                [key: string]: string;
+            } | null;
+        };
+        /** @enum {string} */
+        CustomerOrderOperationOutcome: "Unseen" | "Applied" | "Cancelled";
+        CustomerOrderRecoveryDto: {
+            /** Format: int32 */
+            schemaVersion: number;
+            /** Format: uuid */
+            operationId: string;
+            payloadHash: string | null;
+        };
+        CustomerOrderResolutionDto: {
+            /** Format: int32 */
+            schemaVersion?: number;
+            /** Format: uuid */
+            operationId?: string;
+            outcome?: components["schemas"]["CustomerOrderOperationOutcome"];
+            /** Format: uuid */
+            orderId?: string | null;
+        };
         /** @enum {string} */
         CustomerStepKind: "ProductVariation" | "ProductIngredient" | "ProductCustomizationGroup" | "ProductSauce" | "ProductSuggestedSide" | "BundleSection" | "BundleComponentVariation" | "BundleComponentIngredient" | "BundleComponentCustomizationGroup" | "BundleComponentSauce" | "BundleComponentSide";
         CustomerStepManifestDto: {
@@ -3061,6 +3926,7 @@ export interface components {
             /** Format: int32 */
             maxQuantity?: number;
             kind?: components["schemas"]["IngredientKind"];
+            isNoneOption?: boolean;
             exclusionGroup?: string | null;
             content?: {
                 [key: string]: components["schemas"]["MenuBundleIngredientContentDto"];
@@ -3162,6 +4028,11 @@ export interface components {
             payableTotal?: number | null;
             /** Format: double */
             billingCreditAmount?: number;
+            isTableBill?: boolean;
+            /** Format: double */
+            cashierBillRefundedAmount?: number;
+            /** Format: double */
+            cashierBillCredit?: number;
             /** Format: uuid */
             id?: string;
             orderNumber?: string | null;
@@ -3645,6 +4516,13 @@ export interface components {
             accessToken?: string | null;
             refreshToken?: string | null;
         };
+        RegisterCustomerCommand: {
+            firstName?: string | null;
+            lastName?: string | null;
+            email?: string | null;
+            password?: string | null;
+            confirmPassword?: string | null;
+        };
         ReleaseAccountPaymentRequest: {
             /** Format: int32 */
             expectedVersion: number;
@@ -3954,25 +4832,14 @@ export interface components {
             quantity?: number;
             specialInstructions?: string | null;
         };
-        /** @enum {string} */
-        UserRole: "Customer" | "Admin" | "Cashier" | "KitchenStaff" | "Server";
-        VerifyEmailCommand: {
-            email?: string | null;
-            token?: string | null;
-        };
-        RegisterCustomerCommand: {
+        UpdateUserProfileCommand: {
             firstName?: string | null;
             lastName?: string | null;
-            email?: string | null;
-            password?: string | null;
-            confirmPassword?: string | null;
-        };
-        ApiResponseOfUserDto: {
-            success?: boolean;
-            message?: string | null;
-            data?: components["schemas"]["UserDto"];
-            errors?: string[] | null;
-            errorCode?: string | null;
+            phoneNumber?: string | null;
+            metadata?: {
+                [key: string]: string;
+            } | null;
+            preferredLanguage?: string | null;
         };
         UserDto: {
             /** Format: uuid */
@@ -4001,14 +4868,11 @@ export interface components {
             isDiscountActive?: boolean;
             preferredLanguage?: string | null;
         };
-        UpdateUserProfileCommand: {
-            firstName?: string | null;
-            lastName?: string | null;
-            phoneNumber?: string | null;
-            metadata?: {
-                [key: string]: string;
-            } | null;
-            preferredLanguage?: string | null;
+        /** @enum {string} */
+        UserRole: "Customer" | "Admin" | "Cashier" | "KitchenStaff" | "Server";
+        VerifyEmailCommand: {
+            email?: string | null;
+            token?: string | null;
         };
     };
     responses: never;
