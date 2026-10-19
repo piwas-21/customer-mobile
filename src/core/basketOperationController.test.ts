@@ -82,7 +82,7 @@ it('recovers an unknown outcome after controller restart with the original opera
   expect(await restarted.pending()).toBeNull();
 });
 
-it.each([401, 404, 409, 503])(
+it.each([401, 404, 409, 429, 503])(
   'retains a refused operation on HTTP %s; recovery never manufactures a new add',
   async (status) => {
     const { subject, fetcher, bootstrap } = await basketControllerFixture();

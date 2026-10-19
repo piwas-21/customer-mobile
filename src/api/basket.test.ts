@@ -94,7 +94,7 @@ it('rejects another customer even with the expected session', async () => {
   ).rejects.toMatchObject({ reason: 'contract' });
 });
 
-it.each([401, 404, 409, 503])(
+it.each([401, 404, 409, 429, 503])(
   'keeps the exact operation on HTTP %s without a legacy fallback',
   async (status) => {
     const { client, context, pending, fetcher } = await basketApiFixture();
