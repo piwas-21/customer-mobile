@@ -1,9 +1,11 @@
+import type { BasketChannelInput } from '../../api/basketChannel';
 import type { BasketAddInput } from '../../api/basketRequest';
 import type { BasketItemMutation } from '../../api/basketItemMutation';
 import type { BasketWorkspace } from '../../core/basketWorkspace';
 export type BasketCommand =
   | { kind: 'add'; input: BasketAddInput }
   | { kind: 'mutate'; input: BasketItemMutation }
+  | { kind: 'channel'; input: BasketChannelInput }
   | { kind: 'recover' }
   | { kind: 'cancel' };
 export async function runBasketCommand(
@@ -18,6 +20,8 @@ export async function runBasketCommand(
       return { basket: await workspace.add(command.input, locale), outcome: null };
     case 'mutate':
       return { basket: await workspace.mutate(command.input, locale), outcome: null };
+    case 'channel':
+      return { basket: await workspace.changeChannel(command.input, locale), outcome: null };
     case 'recover':
       return { basket: await workspace.recover(locale), outcome: null };
   }

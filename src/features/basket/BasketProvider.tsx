@@ -1,6 +1,8 @@
 import { createContext, type PropsWithChildren, useContext, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import type { BasketChannelInput } from '../../api/basketChannel';
+import type { OrderType } from '../../api/orderType';
 import type { BasketItemMutation } from '../../api/basketItemMutation';
 import { runBasketCommand, type BasketCommand } from './basketCommands';
 import type { BasketAddInput } from '../../api/basketRequest';
@@ -42,6 +44,14 @@ function useBasketState() {
     retry: false,
     staleTime: 30_000,
   });
+  const ready = Boolean(
+    workspace &&
+    ordering &&
+    pending.isSuccess &&
+    pending.data === null &&
+    basket.isSuccess &&
+    !busy,
+  );
   async function restoreAfterFailure(owner: BasketWorkspace): Promise<void> {
     try {
       const unresolved = await owner.pendingChange();
@@ -64,13 +74,14 @@ function useBasketState() {
     }
   }
   async function submit(command: BasketCommand): Promise<void> {
-    const creates = command.kind === 'add' || command.kind === 'mutate';
+    const creates =
+      command.kind === 'add' || command.kind === 'mutate' || command.kind === 'channel';
     const unresolved = pending.data !== null && pending.data !== undefined;
     if (
       !workspace ||
       active.current === workspace ||
       !pending.isSuccess ||
-      (creates && (!ordering || unresolved || !basket.isSuccess)) ||
+      (creates && !ready) ||
       (!creates && !unresolved) ||
       (command.kind === 'recover' && pending.data?.cancelling)
     )
@@ -118,18 +129,17 @@ function useBasketState() {
     hasPending: pending.isSuccess && pending.data !== null,
     cancelling: pending.data?.cancelling === true,
     resolution: resolution && resolution.owner === workspace ? resolution.outcome : null,
-    canAdd: Boolean(
-      workspace &&
-      ordering &&
-      pending.isSuccess &&
-      pending.data === null &&
-      basket.isSuccess &&
-      !busy,
-    ),
+    canAdd: ready,
     failed: failure || pending.isError || basket.isError,
     busy,
     add: (input: BasketAddInput) => submit({ kind: 'add', input }),
     mutate: (input: BasketItemMutation) => submit({ kind: 'mutate', input }),
+    changeChannel: (input: BasketChannelInput) => submit({ kind: 'channel', input }),
+    previewChannel: async (orderType: OrderType) => {
+      if (!workspace || !ready || active.current === workspace)
+        throw new ApiFailure(409, 'refused');
+      return workspace.previewChannel(basket.data ?? null, orderType, locale);
+    },
     recover: () => submit({ kind: 'recover' }),
     cancel: () => submit({ kind: 'cancel' }),
     refresh: async () => {

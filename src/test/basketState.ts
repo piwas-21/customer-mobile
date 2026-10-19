@@ -1,3 +1,4 @@
+import { emptyUuid } from '../core/identifiers';
 import type { useBasket } from '../features/basket/BasketProvider';
 export function basketState(
   patch: Partial<ReturnType<typeof useBasket>> = {},
@@ -15,6 +16,13 @@ export function basketState(
     busy: false,
     add: jest.fn(async () => undefined),
     mutate: jest.fn(async () => undefined),
+    changeChannel: jest.fn(async () => undefined),
+    previewChannel: jest.fn(async (orderType) => ({
+      basketId: emptyUuid,
+      purchaseFingerprint: '',
+      orderType,
+      conflicts: [],
+    })),
     cancel: jest.fn(async () => undefined),
     recover: jest.fn(async () => undefined),
     refresh: jest.fn(async () => undefined),
