@@ -1,4 +1,5 @@
 import type { ProductDetail } from '../api/productDetail';
+import { validateProductScreens } from './productManifestScreens';
 import {
   defaultProductRows,
   isGlobalProductPicker,
@@ -66,7 +67,7 @@ export function productDecisions(product: ProductDetail): ProductDecision[] {
     };
   });
   completeRows(rows, defaults, seen);
-  validateScreens(rows);
+  validateProductScreens(rows);
   const screens = new Map<string, ProductManifestRow[]>();
   for (const row of [...rows].sort(
     (a, b) => a.order - b.order || productRowKey(a).localeCompare(productRowKey(b)),
@@ -119,30 +120,5 @@ function completeRows(
         label: target?.label ?? null,
       })),
     );
-  }
-}
-function validateScreens(rows: readonly ProductManifestRow[]): void {
-  const byOrder = new Map<number, string>();
-  const pickers = new Map<ProductStepKind, string>();
-  const labels = new Map<string, string | null>();
-  const lastRequired = rows.reduce(
-    (max, row) => (row.role === 'RequiredChoice' ? Math.max(max, row.order) : max),
-    -1,
-  );
-  for (const row of rows) {
-    const key = productScreenKey(row);
-    if (byOrder.has(row.order) && byOrder.get(row.order) !== key)
-      throw new Error('Conflicting customer screens');
-    byOrder.set(row.order, key);
-    if (isGlobalProductPicker(row.kind)) {
-      if (pickers.has(row.kind) && pickers.get(row.kind) !== key)
-        throw new Error('Split global picker');
-      pickers.set(row.kind, key);
-    }
-    if (row.role === 'Extra' && lastRequired >= row.order)
-      throw new Error('Required choices must precede extras');
-    if (labels.has(key) && labels.get(key) !== (row.label ?? null))
-      throw new Error('Conflicting customer screen labels');
-    labels.set(key, row.label ?? null);
   }
 }
