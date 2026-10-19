@@ -75,17 +75,26 @@ Nil-ID empty responses must have zero totals, no items/owner/discount label, and
 Durable adds require the dedicated native POST and backend #725's transactional operation receipt.
 The exact request and operation/session IDs are verified in SecureStore before dispatch. Identical
 active taps coalesce at the controller; UI rejects a competing tap. Unknown/rejected outcomes retain
-the journal and block further adds. An ordinary basket GET never acknowledges it. Explicit recovery
+the journal and block further changes. An ordinary basket GET never acknowledges it. Explicit recovery
 replays the original identity; success plus verified secure cleanup releases it. No legacy fallback,
 automatic write retry, silent discard or implicit recovery is allowed. Backend #726 provides strict
 native GET authentication; its rejection/privacy regression controls distinguish expired JWTs from
 empty owned baskets. These backend changes require deployment and the #725 migration before release.
 
+Root quantity/instruction edits and removal have strict typed native adapters and a versioned secure
+journal. Old add records restore unchanged. Edits require an existing canonical session, the exact
+reviewed basket ID/fingerprint and an explicit absolute quantity with preserved instructions. Add,
+update and removal cannot borrow or overwrite one another's pending identity. Unknown and stale
+refusals retain the journal; validated readback must still match the expected basket. Logout, late
+responses, process/controller restart and storage failures use the same owner/cleanup guards. This
+source does not expose edit controls yet: backend publication and durable cancellation/sealing are
+required before an unresolved edit can be safely abandoned. No error or GET permits silent discard.
+
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes
 explicit pending-add recovery. Failed reads hide stale totals; unsupported depth/row counts refuse
 presentation rather than silently truncating. Persistent menu access returns to the selected basket.
-Editing/removal/channel selection, checkout, order/payment idempotency and provider settlement are
-still required. No source helper authorizes automatic order/payment retries or an offline write queue.
+Connected editing/removal, channel selection, checkout, order/payment idempotency and provider
+settlement are still required. No source helper authorizes automatic order/payment retries or an offline write queue.
 
 ## Native and device evidence
 

@@ -1,4 +1,4 @@
-import { basketAddInputSchema, type BasketAddInput } from '../api/basketRequest';
+import { type BasketAddInput } from '../api/basketRequest';
 import { canonicalUuidSchema } from './identifiers';
 import {
   principalSchema,
@@ -9,6 +9,8 @@ import {
 } from './credentials';
 import {
   basketOperationRecordSchema,
+  basketOperationIntentSchema,
+  type BasketOperationIntent,
   immutableBasketOperation,
   type BasketOperationRecord,
   type PendingBasketOperation,
@@ -34,22 +36,46 @@ export class BasketOperationRepository {
     assertCurrent: AssertCurrent,
     policy: 'recover-or-create' | 'create-only' = 'recover-or-create',
   ): Promise<PendingBasketOperation> {
+    return this.prepareRequest(
+      context,
+      principal,
+      { schemaVersion: 1, request: input },
+      createId,
+      assertCurrent,
+      policy,
+    );
+  }
+
+  prepareRequest(
+    context: TenantContext,
+    principal: Principal,
+    input: BasketOperationIntent,
+    createId: () => string,
+    assertCurrent: AssertCurrent,
+    policy: 'recover-or-create' | 'create-only' = 'recover-or-create',
+  ): Promise<PendingBasketOperation> {
     const owner = principalSchema.parse(principal);
-    const request = basketAddInputSchema.parse(input);
+    const intent = basketOperationIntentSchema.parse(input);
+    const request = intent.request;
     return this.tasks.run(async () => {
       this.check(context, assertCurrent);
       const previous = await this.read(context, owner, assertCurrent);
       if (previous) {
         if (policy === 'create-only')
-          throw new Error('Recover the pending basket add before preparing another.');
-        if (JSON.stringify(previous.request) !== JSON.stringify(request))
-          throw new Error('Recover the pending basket add before preparing another.');
+          throw new Error('Recover the pending basket change before preparing another.');
+        if (
+          previous.schemaVersion !== intent.schemaVersion ||
+          JSON.stringify(previous.request) !== JSON.stringify(request)
+        )
+          throw new Error('Recover the pending basket change before preparing another.');
         return immutableBasketOperation(previous);
       }
       const existingSession = await this.vault.capability(context, 'guest-session', owner);
       this.check(context, assertCurrent);
+      if (intent.schemaVersion === 2 && existingSession === null)
+        throw new Error('A reviewed basket session is required for an edit.');
       const record = basketOperationRecordSchema.parse({
-        schemaVersion: 1,
+        ...intent,
         environment: context.environment,
         tenantId: context.tenant.id,
         principal: owner,
