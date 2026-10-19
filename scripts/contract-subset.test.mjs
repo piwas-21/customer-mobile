@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { customerSubset } from './contract-subset.mjs';
+import { readFileSync } from 'node:fs';
 const reference = (name) => ({ $ref: `#/components/schemas/${name}` });
 function fixture() {
   return {
@@ -92,3 +93,9 @@ for (const [name, operations] of [
   ['non-array methods', { '/api/menu': 'get' }],
 ])
   test(`rejects ${name}`, () => assert.throws(() => customerSubset(fixture(), operations)));
+
+test('committed snapshot contains exactly the allowlisted operations and reachable components', () => {
+  const snapshot = JSON.parse(readFileSync('contracts/customer.openapi.json', 'utf8'));
+  const operations = JSON.parse(readFileSync('contracts/customer-operations.json', 'utf8'));
+  assert.deepEqual(JSON.parse(JSON.stringify(customerSubset(snapshot, operations))), snapshot);
+});
