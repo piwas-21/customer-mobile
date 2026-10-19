@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import type { CustomerAddress } from '../../api/customerAddresses';
+import AddressEditor from './AddressEditor';
+import AddressActionConfirmation from './AddressActionConfirmation';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { SessionController } from '../../core/sessionController';
@@ -15,6 +19,8 @@ type Props = Readonly<{
   ownerVersion: string;
   onClose: () => void;
 }>;
+type AddressView =
+  { kind: 'create' } | { kind: 'edit' | 'remove' | 'default'; address: CustomerAddress };
 export default function SavedAddressesModal({
   context,
   controller,
@@ -24,13 +30,81 @@ export default function SavedAddressesModal({
 }: Props) {
   const { t } = useTranslation();
   const addresses = useSavedAddresses(context, controller, userId, ownerVersion);
+  const [view, setView] = useState<AddressView>();
+  const [saved, setSaved] = useState(false);
+  function back() {
+    setView(undefined);
+    addresses.refresh();
+  }
+  function complete() {
+    setSaved(true);
+    back();
+  }
+  const open = (view: AddressView) => {
+    setSaved(false);
+    setView(view);
+  };
+  if (view?.kind === 'create' || view?.kind === 'edit')
+    return (
+      <AddressEditor
+        controller={controller}
+        userId={userId}
+        {...(view.kind === 'edit' ? { address: view.address } : {})}
+        onSaved={complete}
+        onCancel={back}
+      />
+    );
+  if (view)
+    return (
+      <AddressActionConfirmation
+        controller={controller}
+        userId={userId}
+        address={view.address}
+        action={view.kind}
+        onSaved={complete}
+        onCancel={back}
+      />
+    );
+
   const emptyMessage = t(addresses.failed ? 'savedAddressesUnavailable' : 'noSavedAddresses');
   return (
     <BaseModal title={t('savedAddresses')} onClose={onClose} scroll={false}>
       <FlatList
         data={addresses.items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <SavedAddressRow address={item} />}
+        ListHeaderComponent={
+          <View style={styles.actions}>
+            {saved ? <Feedback message={t('addressSaved')} /> : null}
+            <Button
+              label={t('addAddress')}
+              disabled={addresses.loading || addresses.failed}
+              onPress={() => open({ kind: 'create' })}
+            />
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.actions}>
+            <SavedAddressRow address={item} />
+            <Button
+              label={t('editSavedAddress', { label: item.label })}
+              secondary
+              onPress={() => open({ kind: 'edit', address: item })}
+            />
+            {!item.isDefault ? (
+              <Button
+                label={t('setSavedAddressDefault', { label: item.label })}
+                secondary
+                onPress={() => open({ kind: 'default', address: item })}
+              />
+            ) : null}
+            <Button
+              label={t('removeSavedAddress', { label: item.label })}
+              destructive
+              secondary
+              onPress={() => open({ kind: 'remove', address: item })}
+            />
+          </View>
+        )}
         ListEmptyComponent={
           addresses.loading ? (
             <Feedback message={t('loading')} loading />
