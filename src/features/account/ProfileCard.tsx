@@ -6,6 +6,8 @@ import Feedback from '../../ui/Feedback';
 import { spacing, typography, useTheme } from '../../ui/theme';
 import type { AccountState } from './useAccount';
 import ProfileEditor from './ProfileEditor';
+import AccountDeletionModal from './AccountDeletionModal';
+import { useRestaurant } from '../restaurant/RestaurantProvider';
 function ProfileDetails({ profile }: Readonly<Pick<AccountState, 'profile'>>) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -44,6 +46,8 @@ export default function ProfileCard({
   profileQueryKey,
 }: Readonly<Pick<AccountState, 'profile' | 'busy' | 'logout' | 'session' | 'profileQueryKey'>>) {
   const { t } = useTranslation();
+  const { context } = useRestaurant();
+  const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   return (
@@ -74,6 +78,26 @@ export default function ProfileCard({
                 setEditing(false);
                 void profile.refetch();
               }}
+            />
+          ) : null}
+        </>
+      ) : null}
+      {profile.data && !profile.isError && session.controller && context ? (
+        <>
+          <Button
+            label={t('deleteAccount')}
+            disabled={busy}
+            destructive
+            onPress={() => setDeleting(true)}
+          />
+          {deleting ? (
+            <AccountDeletionModal
+              key={session.ownerVersion}
+              profile={profile.data}
+              controller={session.controller}
+              restaurant={context.tenant.name}
+              onClose={() => setDeleting(false)}
+              logout={logout}
             />
           ) : null}
         </>

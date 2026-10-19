@@ -165,18 +165,19 @@ export class SessionController {
       });
     return retryAuthenticatedRead(() => read(guard), renew, guard);
   }
-  async put<T>(
+  async write<T>(
     userId: string,
     path: string,
     body: unknown,
     schema: z.ZodType<T>,
     locale: string,
+    method: 'POST' | 'PUT' = 'PUT',
   ): Promise<T> {
     if (this.onlyRecoverOrders) throw new ApiFailure(401, 'refused');
     return writeSession(
       this.client,
       this.context,
-      { userId, path, body, schema, locale },
+      { userId, path, body, schema, locale, method },
       this.captureRequestOwner({ kind: 'customer', id: userId }),
     );
   }
