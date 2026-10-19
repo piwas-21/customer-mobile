@@ -62,7 +62,7 @@ function validateDependency(
   if (!row.parentComponentId) return;
   const owner = owners.get(row.parentComponentId);
   const parent = owner ? sections.get(owner) : undefined;
-  if (!parent || parent.role !== 'Dish' || parent.order >= row.order)
+  if (parent?.role !== 'Dish' || parent.order >= row.order)
     throw new Error('Invalid bundle dependency');
 }
 function ownerKey(row: BundleManifestRow): string {
