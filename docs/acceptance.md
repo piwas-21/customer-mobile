@@ -268,7 +268,9 @@ explicit saved-address picker with the same bounded private list and read-failur
 It replaces the checkout modal while open; cancellation retains manually entered details.
 Selection fills the draft only and does not mutate addresses, quote or submit an order. Apartment
 and region are combined into visible street/locality fields without truncation; overlong combined
-values remain visible and block review until corrected. Optional absent phone retains the entered
+values remain visible and block review until corrected. Populated imported country/instructions
+remain editable even when those optional fields are hidden in the restaurant form policy. Checkout
+wire bounds explicitly match server UTF-16 validation; saved-address storage bounds count code points. Optional absent phone retains the entered
 contact phone. Explicit selection never replaces name/email/tip, and closing removes private query
 resources. The current session guard rejects withdrawn-owner callbacks. Existing server quote and
 order contracts remain authoritative after the customer reviews the selected details.

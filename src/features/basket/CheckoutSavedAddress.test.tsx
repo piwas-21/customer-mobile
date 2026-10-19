@@ -25,7 +25,11 @@ jest.mock(
       'react-native-safe-area-context/jest/mock',
     ).default,
 );
-async function setup(address = savedAddress(), type: 'Delivery' | 'Takeaway' = 'Delivery') {
+async function setup(
+  address = savedAddress(),
+  type: 'Delivery' | 'Takeaway' = 'Delivery',
+  hidden: readonly string[] = [],
+) {
   const f = await sessionSetup();
   jest.mocked(useSession).mockReturnValue({
     controller: f.controller,
@@ -46,8 +50,14 @@ async function setup(address = savedAddress(), type: 'Delivery' | 'Takeaway' = '
     clear: jest.fn(),
     refresh: jest.fn(),
   });
+  const forms = customerForms().map((form) => ({
+    ...form,
+    fields: form.fields.map((field) =>
+      hidden.includes(field.fieldKey) ? { ...field, isVisible: false, isRequired: false } : field,
+    ),
+  }));
   jest.mocked(useCheckoutFields).mockReturnValue({
-    fields: checkoutFields(customerForms(), type),
+    fields: checkoutFields(forms, type),
     isPending: false,
     refetch: jest.fn(),
   } as unknown as ReturnType<typeof useCheckoutFields>);
@@ -175,3 +185,36 @@ it('takeaway retains manual contact without offering address reads', async () =>
     f.dispose();
   }
 });
+
+it.each([
+  {
+    key: 'additionalInfo',
+    label: 'Delivery instructions (optional)',
+    patch: { deliveryInstructions: '🍜'.repeat(500) },
+  },
+  { key: 'country', label: 'Country (optional)', patch: { country: '🍜'.repeat(100) } },
+])(
+  'reveals hidden imported $key for non-truncating Unicode correction before review',
+  async ({ key, label, patch }) => {
+    const f = await setup(savedAddress(1, patch), 'Delivery', [key]);
+    try {
+      expect(f.screen.queryByLabelText(label)).toBeNull();
+      await f.pick();
+      fireEvent.press(f.screen.getByRole('button', { name: 'Use Home address' }));
+      const text = key === 'country' ? patch.country : patch.deliveryInstructions;
+      expect(f.screen.getByLabelText(label)).toHaveProp('value', text);
+      expect(f.screen.getByText('Check this field before continuing.')).toBeTruthy();
+      await act(async () =>
+        fireEvent.press(f.screen.getByRole('button', { name: 'Review order' })),
+      );
+      expect(f.basket.quote).not.toHaveBeenCalled();
+      fireEvent.changeText(f.screen.getByLabelText(label), '');
+      await act(async () =>
+        fireEvent.press(f.screen.getByRole('button', { name: 'Review order' })),
+      );
+      expect(f.basket.quote).toHaveBeenCalledTimes(1);
+    } finally {
+      f.dispose();
+    }
+  },
+);

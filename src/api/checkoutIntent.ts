@@ -14,17 +14,24 @@ export const checkoutInputLimits = {
   tip: 11,
   notes: 1000,
 } as const;
+// FluentValidation bounds checkout strings in UTF-16 units, unlike current Zod's
+// code-point string max. Keep this wire limit explicit after normalization.
+function checkoutText(schema: z.ZodType<string>, maximum: number) {
+  return schema.refine((value) => value.length <= maximum);
+}
 export const checkoutContactSchema = z.strictObject({
-  name: z.string().trim().min(1).max(checkoutInputLimits.name),
-  email: z.email().max(checkoutInputLimits.email),
-  phone: z.string().trim().min(1).max(checkoutInputLimits.phone),
+  name: checkoutText(z.string().trim().min(1), checkoutInputLimits.name),
+  email: checkoutText(z.email(), checkoutInputLimits.email),
+  phone: checkoutText(z.string().trim().min(1), checkoutInputLimits.phone),
 });
 export const checkoutAddressSchema = z.strictObject({
-  street: z.string().trim().min(1).max(checkoutInputLimits.street),
-  city: z.string().trim().min(1).max(checkoutInputLimits.city),
-  postalCode: z.string().trim().min(1).max(checkoutInputLimits.postalCode),
-  country: z.string().max(checkoutInputLimits.country),
-  additionalInfo: z.string().max(checkoutInputLimits.additionalInfo).nullable().optional(),
+  street: checkoutText(z.string().trim().min(1), checkoutInputLimits.street),
+  city: checkoutText(z.string().trim().min(1), checkoutInputLimits.city),
+  postalCode: checkoutText(z.string().trim().min(1), checkoutInputLimits.postalCode),
+  country: checkoutText(z.string(), checkoutInputLimits.country),
+  additionalInfo: checkoutText(z.string(), checkoutInputLimits.additionalInfo)
+    .nullable()
+    .optional(),
 });
 export const checkoutIntentSchema = z
   .strictObject({
@@ -33,7 +40,7 @@ export const checkoutIntentSchema = z
     contact: checkoutContactSchema,
     paymentMethod: z.enum(['Cash', 'CreditCard', 'OnlinePayment']),
     address: checkoutAddressSchema.nullable().optional(),
-    notes: z.string().max(checkoutInputLimits.notes).nullable().optional(),
+    notes: checkoutText(z.string(), checkoutInputLimits.notes).nullable().optional(),
   })
   .refine((intent) => (intent.review.type === 'Delivery') === (intent.address != null))
   .refine((intent) => intent.review.type !== 'Delivery' || intent.paymentMethod !== 'CreditCard');

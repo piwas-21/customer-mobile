@@ -3,6 +3,7 @@ import { Text, StyleSheet, type TextInputProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type useCheckoutFlow from './useCheckoutFlow';
 import type { CheckoutDraft } from '../../domain/checkoutDraft';
+import { checkoutDraftFields } from '../../domain/checkoutSavedAddress';
 import Field from '../../ui/Field';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
@@ -43,7 +44,7 @@ export default function CheckoutFields({
   return (
     <>
       <Text style={[styles.hint, { color: theme.secondary }]}>{t('checkoutContactHint')}</Text>
-      {[...fields.contact, ...fields.address].map((field) => (
+      {[...fields.contact, ...checkoutDraftFields(fields, flow.draft).address].map((field) => (
         <Field
           key={field.key}
           label={t('checkoutField.' + field.key) + (field.required ? '' : t('optionalSuffix'))}
