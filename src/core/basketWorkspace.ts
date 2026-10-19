@@ -1,6 +1,6 @@
 import { readBasket } from '../api/basket';
 import type { BasketAddInput } from '../api/basketRequest';
-import type { Principal } from './credentials';
+import { principalSchema, type Principal } from './credentials';
 import { BasketOperationController } from './basketOperationController';
 import type { SessionController } from './sessionController';
 import type { SessionRepository } from './sessionRepository';
@@ -9,6 +9,7 @@ import { ApiFailure, type CustomerTransport } from './transport';
 // A workspace lives for exactly one initialized owner revision, including same-user re-login.
 export class BasketWorkspace {
   private readonly operations: BasketOperationController;
+  private readonly principal: Principal;
   private readonly assertOwner: () => void;
   private disposed = false;
   constructor(
@@ -16,16 +17,17 @@ export class BasketWorkspace {
     private readonly client: CustomerTransport,
     private readonly repository: SessionRepository,
     sessions: SessionController,
-    private readonly principal: Principal,
+    principal: Principal,
     createId: () => string,
   ) {
-    this.assertOwner = sessions.captureRequestOwner(principal);
+    this.principal = Object.freeze(principalSchema.parse(principal));
+    this.assertOwner = sessions.captureRequestOwner(this.principal);
     this.operations = new BasketOperationController(
       context,
       client,
       repository.baskets,
       sessions,
-      principal,
+      this.principal,
       createId,
     );
   }

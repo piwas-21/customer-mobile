@@ -4,6 +4,7 @@ import { basketInput, basketSessionId } from '../test/basketOperations';
 import { response } from '../test/transport';
 import { basketResponse } from '../test/basketApi';
 import { session } from '../test/sessions';
+import { tenantB } from '../test/fixtures';
 async function fixture(customer = false) {
   const f = await basketControllerFixture(customer);
   const make = () =>
@@ -122,4 +123,45 @@ it('announces failed same-user login ownership transitions so the old workspace 
   expect(f.sessions.ownerVersion).not.toBe(before);
   await expect(f.workspace.read('en')).rejects.toMatchObject({ status: 401 });
   await expect(f.make().read('en')).resolves.toBeNull();
+});
+
+it('snapshots the caller principal before choosing any stored credentials', async () => {
+  const f = await fixture(true);
+  const caller = { kind: 'customer' as const, id: session.userId };
+  const other = {
+    ...session,
+    userId: tenantB,
+    accessToken: 'other-access',
+    refreshToken: 'other-refresh',
+  };
+  await f.repository.vault.saveSession(f.context, other);
+  await f.repository.vault.saveCapability(f.context, 'guest-session', caller, basketSessionId);
+  await f.repository.vault.saveCapability(
+    f.context,
+    'guest-session',
+    { kind: 'customer', id: tenantB },
+    tenantB,
+  );
+  expect(await f.repository.vault.session(f.context, tenantB)).toEqual(other);
+  const workspace = new BasketWorkspace(
+    f.context,
+    f.client,
+    f.repository,
+    f.sessions,
+    caller,
+    f.createId,
+  );
+  caller.id = tenantB;
+  f.fetcher.mockImplementation(async (_url, request) =>
+    response({
+      success: true,
+      data: basketResponse(
+        request.headers?.Authorization === 'Bearer other-access' ? tenantB : session.userId,
+      ),
+    }),
+  );
+  await expect(workspace.read('en')).resolves.toMatchObject({ userId: session.userId });
+  const headers = f.fetcher.mock.calls[0]![1].headers;
+  expect(headers?.Authorization).toBe(`Bearer ${session.accessToken}`);
+  expect(headers?.['X-Session-Id']).toBe(basketSessionId);
 });
