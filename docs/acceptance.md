@@ -94,7 +94,7 @@ Cancelled proof seals late execution; Applied proof explains the effect already 
 its original basket was erased. It never claims to undo that effect. Contradictory/substituted proof,
 storage failures and network errors retain the journal. Lost cleanup acknowledgement can finish from
 validated memory proof without another POST. Owner disposal/logout guards both dispatch and cleanup.
-Backend publication, cancellation migration/deployment and connected controls remain required.
+Backend #728 supplies the accepted cancellation contract. Its migration/deployment and connected controls remain required.
 No error or GET permits silent discard.
 
 Basket UI renders server totals and nested composition, retains removals/instructions and exposes

@@ -123,8 +123,7 @@ export class BasketOperationRepository {
     return this.tasks.run(async () => {
       this.storage.check(context, assertCurrent);
       const previous = await this.storage.read(context, owner, assertCurrent);
-      if (!previous || previous.operationId !== operationId)
-        throw new Error('Basket operation changed');
+      if (previous?.operationId !== operationId) throw new Error('Basket operation changed');
       if (previous.cancellationRequested) return immutableBasketOperation(previous);
       const cancelling = { ...previous, cancellationRequested: true as const };
       await this.storage.save(context, owner, cancelling, assertCurrent);
