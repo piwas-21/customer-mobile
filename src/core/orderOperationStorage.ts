@@ -1,3 +1,4 @@
+import { saveAcknowledgedSecret, removeAcknowledgedSecret } from './acknowledgedSecret';
 import { scopedOrderDecisions, type OrderDecision } from './orderDecisions';
 import { checkoutIntentSchema, type CheckoutIntent } from '../api/checkoutIntent';
 import { secretKey, type Principal, type SecretStore } from './credentials';
@@ -66,8 +67,7 @@ export class OrderOperationStorage {
     this.check(context, assertCurrent);
     const key = secretKey(context, kind, principal);
     const wire = JSON.stringify(value);
-    await this.store.set(key, wire);
-    if ((await this.store.get(key)) !== wire) throw new Error('Secure order save incomplete');
+    await saveAcknowledgedSecret(this.store, key, wire);
     this.check(context, assertCurrent);
   }
   async decisions(
@@ -83,15 +83,13 @@ export class OrderOperationStorage {
   async removeProof(context: TenantContext, principal: Principal, assertCurrent: () => void) {
     this.check(context, assertCurrent);
     const key = secretKey(context, 'order-operation-proof', principal);
-    await this.store.remove(key);
-    if ((await this.store.get(key)) !== null) throw new Error('Secure order removal incomplete');
+    await removeAcknowledgedSecret(this.store, key);
     this.check(context, assertCurrent);
   }
   async removeContact(context: TenantContext, principal: Principal, assertCurrent: () => void) {
     this.check(context, assertCurrent);
     const key = secretKey(context, 'order-contact', principal);
-    await this.store.remove(key);
-    if ((await this.store.get(key)) !== null) throw new Error('Secure contact removal incomplete');
+    await removeAcknowledgedSecret(this.store, key);
     this.check(context, assertCurrent);
   }
 }

@@ -1,9 +1,15 @@
 import { z } from 'zod';
 import { bootstrapSchema } from '../core/capabilities';
 import { canonicalUuidSchema } from '../core/identifiers';
-import { ApiFailure } from '../core/transport';
+import { ApiFailure } from '../core/apiFailure';
 import { availabilityInputSchema, reservationSlotSchema } from './reservationAvailability';
 
+export const reservationContactLimits = {
+  customerName: 100,
+  customerEmail: 255,
+  customerPhone: 20,
+  specialRequests: 1000,
+} as const;
 // Full contact input is private intent; it never belongs in a minimal recovery proof.
 export const reservationDraftSchema = availabilityInputSchema
   .extend({
@@ -14,16 +20,22 @@ export const reservationDraftSchema = availabilityInputSchema
     ...reservationSlotSchema.shape,
     customerName: z
       .string()
-      .max(100)
+      .max(reservationContactLimits.customerName)
       .refine((name) => name.trim().length > 0),
-    customerEmail: z.email().max(255),
-    customerPhone: z.string().max(20).nullable(),
-    specialRequests: z.string().max(1000).nullable(),
+    customerEmail: z.email().max(reservationContactLimits.customerEmail),
+    customerPhone: z.string().max(reservationContactLimits.customerPhone).nullable(),
+    specialRequests: z.string().max(reservationContactLimits.specialRequests).nullable(),
   })
-  .refine((draft) => reservationSlotSchema.safeParse(draftSlot(draft)).success);
-function draftSlot(draft: { startTime: string; endTime: string }) {
-  return { startTime: draft.startTime, endTime: draft.endTime };
+  .refine(validSlot);
+function validSlot(draft: { startTime: string; endTime: string }) {
+  return reservationSlotSchema.safeParse({ startTime: draft.startTime, endTime: draft.endTime })
+    .success;
 }
+export const reservationBookingInputSchema = z
+  .strictObject(reservationDraftSchema.shape)
+  .omit({ schemaVersion: true, operationId: true, tenantId: true })
+  .refine(validSlot);
+export type ReservationBookingInput = z.infer<typeof reservationBookingInputSchema>;
 export type ReservationDraft = z.infer<typeof reservationDraftSchema>;
 export const reservationCreateProofSchema = z.strictObject({
   schemaVersion: z.literal(1),

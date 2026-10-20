@@ -1,31 +1,14 @@
+import { customerInputOptions } from '../../ui/customerInputOptions';
 import { checkoutInputLimits } from '../../api/checkoutIntent';
-import { Text, StyleSheet, type TextInputProps } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type useCheckoutFlow from './useCheckoutFlow';
-import type { CheckoutDraft } from '../../domain/checkoutDraft';
 import { checkoutDraftFields } from '../../domain/checkoutSavedAddress';
 import Field from '../../ui/Field';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
 import { typography, useTheme } from '../../ui/theme';
 type Flow = ReturnType<typeof useCheckoutFlow>;
-function inputOptions(key: keyof CheckoutDraft): TextInputProps {
-  if (key === 'email')
-    return {
-      keyboardType: 'email-address',
-      autoComplete: 'email',
-      textContentType: 'emailAddress',
-      autoCapitalize: 'none',
-    };
-  if (key === 'phone')
-    return { keyboardType: 'phone-pad', autoComplete: 'tel', textContentType: 'telephoneNumber' };
-  if (key === 'postalCode') return { autoComplete: 'postal-code', textContentType: 'postalCode' };
-  if (key === 'street')
-    return { autoComplete: 'street-address', textContentType: 'fullStreetAddress' };
-  if (key === 'name')
-    return { autoComplete: 'name', textContentType: 'name', autoCapitalize: 'words' };
-  return {};
-}
 export default function CheckoutFields({
   flow,
   currency,
@@ -54,7 +37,7 @@ export default function CheckoutFields({
           autoFocus={field.key === 'name'}
           editable={!flow.busy}
           multiline={field.key === 'street' || field.key === 'additionalInfo'}
-          {...inputOptions(field.key)}
+          {...customerInputOptions(field.key)}
           {...(flow.invalid(field.key) ? { error: t('checkoutFieldInvalid') } : {})}
         />
       ))}

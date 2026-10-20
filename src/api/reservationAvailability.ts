@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { bootstrapSchema } from '../core/capabilities';
 import type { TenantContext } from '../core/tenantContext';
-import { ApiFailure, type CustomerTransport } from '../core/transport';
+import { ApiFailure } from '../core/apiFailure';
+import type { CustomerTransport } from '../core/transport';
 import { compareReservationTimes } from './reservationTime';
 
 // Matches the backend ReservationWriteDto party-size contract.

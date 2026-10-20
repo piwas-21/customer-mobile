@@ -31,7 +31,10 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   const bootstrap = useBootstrap();
   const queryClient = useQueryClient();
   const accountsAvailable = canUse(bootstrap.data, 'accounts');
-  const available = accountsAvailable || canUse(bootstrap.data, 'ordering');
+  const available =
+    accountsAvailable ||
+    canUse(bootstrap.data, 'ordering') ||
+    canUse(bootstrap.data, 'reservations');
   const recoveryAvailable =
     bootstrap.data?.compatibility === 'supported' && bootstrap.data.lifecycle !== 'disabled';
   const [attempt, setAttempt] = useState(0);

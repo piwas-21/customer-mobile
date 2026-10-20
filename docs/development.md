@@ -123,7 +123,7 @@ the query cache. A withdrawn modal requires a new explicit open action after cap
 These handwritten adapters target the additive backend source contract. They do not alter the
 captured deployed OpenAPI fixture. Backend acceptance, deployed tenant availability, signed device
 checks, all supported locales/RTL and installed accessibility remain release gates. Availability,
-creation, edits and cancellation are separate reservation implementation; this source adds reads.
+creation uses the separate durable contract below. Owned edits and cancellation remain open.
 
 ## Native reservation availability
 
@@ -148,7 +148,7 @@ explicit check and recomputes the restaurant day, including an overnight resume 
 The package is SDK-pinned and MIT licensed ([upstream](https://github.com/react-native-datetimepicker/datetimepicker)).
 Native generation, both exports, dependency audit and installed iOS/Android date-picker, accessibility,
 large text and RTL checks remain independent gates. Source/JavaScript export does not prove a rebuilt
-native client or device behavior. Full localization and booking creation/changes remain open.
+native client or device behavior. Full localization, owned changes and installed creation acceptance remain open.
 
 ## Native loyalty reads
 
@@ -164,3 +164,28 @@ capability, timezone and currency changes withdraw the modal; failed refresh hid
 Closing removes both private queries. Ledger rows are virtualized, points are localized and event
 timestamps use the restaurant timezone. English fallback is available; full locale/RTL review,
 backend acceptance/deployment, installed accessibility and redemption/discount journeys remain open.
+
+## Durable reservation creation
+
+`CustomerReservationController` owns the native `/api/customer-mobile/reservations/create` family.
+Preparation sends the full contact draft but creates no booking. The server returns an operation,
+tenant, payload hash and protected owner proof. `ReservationOperationRepository` serializes on the
+installation SessionRepository queue and acknowledges contact storage before the separate proof.
+Only then may transport dispatch the exact saved full input, original session and optional customer JWT.
+The queue never spans network I/O. A rejected customer token never becomes a guest request.
+
+`/recover` and `/cancel-attempt` use only the original minimal proof. Unseen is observation, never a
+release. The durable cancellation flag is acknowledged before contact purge and cannot permit later
+full-body retry. Applied/Cancelled decisions are acknowledged before cleanup; dismissal requires the
+same terminal operation and verified removals. Logout keeps proof and purges private contact. Runtime
+transport refuses unbound routes, bodies, owner revisions and cross-tenant/session changes.
+
+`ReservationProvider` supplies one shared scoped actor to Bookings and Orders. Query holds only its
+non-secret attempt view; private drafts live in the form and temporary scoped SecureStore contact
+record. Backgrounding, changed selection, capability/account/tenant withdrawal and unmount discard
+unsubmitted contact. Foreground restores local recovery state without automatically sending a write.
+Fresh public form configuration uses the shared customer-field policy and native input options.
+
+The additive contract has strict handwritten adapters; the captured deployed OpenAPI stays unchanged
+until deployment. No booking change/cancellation, notification delivery or server migration deployment
+is implied by source acceptance. Full locale/RTL and installed native acceptance remain required.

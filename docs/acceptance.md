@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                                                                               | Remaining acceptance                                                                                                        |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                                                                           | Two approved pilot tenants, company publisher accounts and EAS ownership                                                    |
-| P1    | Menu, guided choices, owned basket operations, hosted payment recovery, QR and switching foundations                                                         | Installed payment return, notification tap and physical iPhone/Android journeys                                             |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation                                                            | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                                   |
-| P3    | Email accounts and protected email-link completion, profile/deletion, durable ordering/payment recovery, owned receipts/reorder and eligible delay rejection | Social sign-in and installed account-link, rejection, reorder/payment recovery                                              |
-| P4    | Scoped reservation history/detail plus public availability adapters, account views and native calendar controls                                              | Backend deployment and installed reservation reads; creation/changes, loyalty, table rounds/payments and transactional push |
-| P5    | Source build and privacy foundations                                                                                                                         | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                                          |
-| P6    | Runtime directory/configuration foundations                                                                                                                  | Third-tenant activation, rollback and support/offboarding proof                                                             |
+| Phase | Current source                                                                                                                                               | Remaining acceptance                                                                                              |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                                                                           | Two approved pilot tenants, company publisher accounts and EAS ownership                                          |
+| P1    | Menu, guided choices, owned basket operations, hosted payment recovery, QR and switching foundations                                                         | Installed payment return, notification tap and physical iPhone/Android journeys                                   |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation                                                            | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                         |
+| P3    | Email accounts and protected email-link completion, profile/deletion, durable ordering/payment recovery, owned receipts/reorder and eligible delay rejection | Social sign-in and installed account-link, rejection, reorder/payment recovery                                    |
+| P4    | Scoped reservation history/detail, native calendar and durable reservation request/recovery                                                                  | Backend deployment and installed booking journeys; changes, loyalty, table rounds/payments and transactional push |
+| P5    | Source build and privacy foundations                                                                                                                         | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                                |
+| P6    | Runtime directory/configuration foundations                                                                                                                  | Third-tenant activation, rollback and support/offboarding proof                                                   |
 
 ## Workflow and dependency gates
 
@@ -38,8 +38,8 @@ Email sign-in/restore, registration/recovery request forms and owned profile rea
 backend contracts. Profile updates send only names/phone; phone removal depends on backend #723.
 Secure account writes serialize, logout persists cleanup, and stale/same-user login responses cannot
 publish private data. Account-disabled ordering initializes a guest without reading a saved customer's
-credentials unless the exact active customer has a scoped pending or accepted order proof. That customer session
-is restored only for order recovery/receipts; account actions and new purchases stay blocked. Publisher
+credentials unless the exact active customer has scoped original order or reservation recovery authority. That customer session
+is restored only for original recovery/receipts; account actions and new purchases stay blocked. Publisher
 identities, social audiences, provider-token revocation and installed deletion/keyboard/SecureStore
 acceptance remain open.
 
@@ -82,7 +82,7 @@ Capability, principal, controller revision, tenant and timezone changes dismiss 
 refresh hides retained data; closing removes private queries. A late response cannot reopen a
 withdrawn view. Component/API/date fixtures and three behavioral controls cover these boundaries;
 they do not establish backend deployment, actual native accessibility or installed device behavior.
-Availability, creation, changes/cancellation and all-locale acceptance remain open.
+Availability and durable creation have separate source coverage below. Owned changes/cancellation and all-locale acceptance remain open.
 
 ## Menu, choices and basket
 
@@ -547,3 +547,29 @@ capability, timezone and currency changes withdraw the modal; failed refresh hid
 Closing removes both private queries. Ledger rows are virtualized, points are localized and event
 timestamps use the restaurant timezone. English fallback is available; full locale/RTL review,
 backend acceptance/deployment, installed accessibility and redemption/discount journeys remain open.
+
+## Native reservation requests
+
+Guests and customers can select an advisory time and request a reservation using current restaurant
+contact requirements. Required name/email floors and configured phone/instructions are validated before
+preparation. The native write contract prepares an original operation, durably acknowledges separate
+private contact and minimal recovery records, refreshes capability/timezone/currency, then sends once.
+Received means the restaurant received the request; restaurant confirmation remains a separate status.
+
+A lost response retains the exact operation. Check sends only the protected original proof. Unseen
+cannot release the attempt or allow a replacement. Explicit confirmed retry uses the original saved
+input and session; explicit stopping permanently withdraws full-body retry before sealing an unreceived
+attempt. An already received booking keeps its canonical result. Known decisions persist before
+contact cleanup and require explicit acknowledged dismissal. SecureStore promise resolution alone
+does not prove either an exact save or deletion; journal operations read back both.
+
+The shared provider restores only local minimal state on navigation or foreground. Orders exposes
+pending recovery even when Bookings is hidden. Current tenant/account/controller and lifecycle guards
+withdraw forms and late callbacks; contact input never enters routing or Query caches. Logout purges
+contact with acknowledged deletion while retaining minimal proof. Original customer recovery can
+restore its JWT when accounts are disabled, without enabling a new request or account actions.
+
+Source tests exercise guest/customer requests, required contact fields, response loss/restart, exact
+explicit retry, Unseen, cancellation races, secure storage failure, background/foreground and logout.
+Full ten-locale/RTL, installed SecureStore/keyboard/back/accessibility, API deployment, persisted server
+protection keys and real restaurant confirmation/mail remain separate acceptance gates.

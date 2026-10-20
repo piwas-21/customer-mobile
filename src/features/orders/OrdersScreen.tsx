@@ -1,3 +1,4 @@
+import ReservationAttemptNotice from '../reservations/ReservationAttemptNotice';
 import CancellationNotice from './CancellationNotice';
 import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
@@ -40,6 +41,7 @@ export default function OrdersScreen() {
             <PaymentAttentionNotice />
             <PaymentNotice />
             <CancellationNotice />
+            <ReservationAttemptNotice />
             {cleanup ? (
               <Feedback
                 message={t('accountFailure.logout')}

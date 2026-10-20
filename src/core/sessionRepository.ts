@@ -1,3 +1,5 @@
+import { ReservationOperationStorage } from './reservationOperationStorage';
+import { ReservationOperationRepository } from './reservationOperationRepository';
 import { CancellationOperationRepository } from './cancellationOperationRepository';
 import { CancellationOperationStorage } from './cancellationOperationStorage';
 import { PaymentAttentionStorage } from './paymentAttentionStorage';
@@ -25,6 +27,7 @@ export class SessionRepository {
   readonly orders: OrderOperationRepository;
   readonly payments: PaymentOperationRepository;
   readonly cancellations: CancellationOperationRepository;
+  readonly reservations: ReservationOperationRepository;
   private readonly writes = new SerialTasks();
   private readonly attention: PaymentAttentionStorage;
   constructor(private readonly store: SecretStore) {
@@ -34,6 +37,7 @@ export class SessionRepository {
     this.orders = new OrderOperationRepository(store, this.vault, this.writes);
     this.payments = new PaymentOperationRepository(store, this.writes);
     this.cancellations = new CancellationOperationRepository(store, this.writes);
+    this.reservations = new ReservationOperationRepository(store, this.writes);
   }
   loadPaymentAttention(context: TenantContext): Promise<string | null> {
     return this.writes.run(() => this.attention.load(context));
@@ -70,14 +74,22 @@ export class SessionRepository {
         if (!records.some((record) => record.outcome === 'Applied')) {
           const payment = await this.store.get(secretKey(context, 'payment', principal));
           if (payment !== null) scopedPaymentRecord(context, principal, JSON.parse(payment));
-          else if (
-            (await new CancellationOperationStorage(this.store).read(context, principal, () => {}))
-              ?.resolution !== null
-          )
-            return null;
+          else {
+            const cancellation = await new CancellationOperationStorage(this.store).read(
+              context,
+              principal,
+              () => {},
+            );
+            const reservation = await new ReservationOperationStorage(this.store).read(
+              context,
+              principal,
+              () => {},
+            );
+            if (cancellation?.resolution !== null && !reservation) return null;
+          }
         }
       }
-      // Account-disabled browsing reads a JWT only for its original pending/accepted order proof.
+      // Account-disabled browsing reads a JWT only for its original order or reservation recovery.
       return this.vault.session(context, principal.id);
     });
   }

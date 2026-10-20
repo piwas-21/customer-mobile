@@ -1,9 +1,9 @@
-type RestorableOrderController = {
+type RestorablePrivateController = {
   saved: () => Promise<unknown>;
   dispose: () => void;
 };
-// The effect owns this controller. Late secure-store reads cannot publish after withdrawal.
-export function restoreOrderController(controller: RestorableOrderController, ready: () => void) {
+// The effect owns this private operation controller. Late secure-store reads cannot publish after withdrawal.
+export function restoreOrderController(controller: RestorablePrivateController, ready: () => void) {
   let active = true;
   void controller
     .saved()
