@@ -59,6 +59,10 @@ Build ordering follows https://docs.expo.dev/custom-builds/schema/.
 Restaurant content leads: readable menu rows, clear prices, persistent basket access, explicit
 restaurant switching. Menu / Orders / Account are primary navigation. Quantity comes first;
 required choices explain the remaining count; intermediate steps say Next, final step Add to basket.
+Receipt reorder fetches current product and side details outside the ordinary fresh public cache.
+Only historical quantity and kitchen notes seed the current guided choices; current basket writes and
+checkout quotes remain authoritative for price/availability. Reorder query keys retain the original
+restaurant/principal/revision and expire on dismissal. Never replay a historical recipe or amount.
 Use semantic tokens with measured AA contrast, visible focus on web previews, text scaling and RTL.
 Avoid unbounded lists, nested virtual lists, per-row network calls and speculative write retries.
 Public caches are dated and size bounded; private data never enters AsyncStorage or query persistence.

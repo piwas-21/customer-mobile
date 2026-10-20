@@ -7,6 +7,8 @@ import { receiptResponse } from '../../test/orderReceipt';
 import { sessionSetup } from '../../test/sessions';
 import { response } from '../../test/transport';
 import { deferred } from '../../test/deferred';
+// Receipt rendering is tested independently of the provider-backed reorder entry.
+jest.mock('./ReorderEntry', () => ({ __esModule: true, default: () => null }));
 jest.mock(
   'react-native-safe-area-context',
   () =>

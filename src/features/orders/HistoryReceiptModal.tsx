@@ -1,6 +1,9 @@
+import { useState } from 'react';
+import ReorderEntry from './ReorderEntry';
+import ReorderModal from './ReorderModal';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { readHistoryReceipt } from '../../api/historyReceipt';
+import { type HistoryReceipt, readHistoryReceipt } from '../../api/historyReceipt';
 import type { SessionController } from '../../core/sessionController';
 import type { TenantContext } from '../../core/tenantContext';
 import usePrivatePages from '../../core/usePrivatePages';
@@ -26,6 +29,15 @@ export default function HistoryReceiptModal(props: Props) {
     () => readHistoryReceipt(props.controller, props.userId, props.orderId),
     () => null,
   );
+  const [reorder, setReorder] = useState<HistoryReceipt>();
+  if (reorder === page.data && page.data && !page.loading && !page.failed)
+    return (
+      <ReorderModal
+        receipt={page.data}
+        onBack={() => setReorder(undefined)}
+        onClose={props.onClose}
+      />
+    );
   return (
     <BaseModal title={t('savedOrder')} onClose={props.onClose} scroll={false}>
       <ReceiptContent
@@ -35,6 +47,9 @@ export default function HistoryReceiptModal(props: Props) {
         retry={page.refresh}
         footer={
           <View>
+            {page.data && !page.loading && !page.failed ? (
+              <ReorderEntry onPress={() => setReorder(page.data)} />
+            ) : null}
             <Button label={t('refreshReceipt')} disabled={page.loading} onPress={page.refresh} />
             <Button label={t('backToOrderHistory')} secondary onPress={props.onBack} />
           </View>

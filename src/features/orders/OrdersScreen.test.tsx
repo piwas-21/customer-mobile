@@ -13,6 +13,8 @@ import { response } from '../../test/transport';
 import type { SessionRepository } from '../../core/sessionRepository';
 import { basketOperationId } from '../../test/basketOperations';
 import { deferred } from '../../test/deferred';
+// Receipt rendering is tested independently of the provider-backed reorder entry.
+jest.mock('./ReorderEntry', () => ({ __esModule: true, default: () => null }));
 let mockRepository: SessionRepository;
 jest.mock('../../storage/sessions', () => ({
   get deviceSessions() {

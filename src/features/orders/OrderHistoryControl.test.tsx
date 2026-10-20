@@ -9,6 +9,7 @@ import { sessionSetup } from '../../test/sessions';
 import { response } from '../../test/transport';
 import { deferred } from '../../test/deferred';
 import { receiptResponse } from '../../test/orderReceipt';
+jest.mock('./ReorderEntry', () => ({ __esModule: true, default: () => null }));
 jest.mock('../account/SessionProvider', () => ({ useSession: jest.fn() }));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 jest.mock(

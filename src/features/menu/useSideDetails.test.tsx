@@ -9,8 +9,9 @@ import { productIds } from '../../test/products';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import useSideDetails from './useSideDetails';
 import productQueryKey from './productQueryKey';
+import { deferred } from '../../test/deferred';
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
-function sideHook(cached = false, fail = false) {
+function sideHook(cached = false, fail = false, fresh = false, pending?: Promise<Response>) {
   const { context, client, fetcher } = setup();
   const product = compositionProduct();
   product.suggestedSideItems = [
@@ -38,10 +39,12 @@ function sideHook(cached = false, fail = false) {
     capabilities: { menu: 'enabled' },
   };
   fetcher.mockImplementation(async (url) =>
-    response(
-      { success: true, data: url.includes('bootstrap') ? bootstrap : side },
-      !url.includes('bootstrap') && fail ? 503 : 200,
-    ),
+    !url.includes('bootstrap') && pending
+      ? pending
+      : response(
+          { success: true, data: url.includes('bootstrap') ? bootstrap : side },
+          !url.includes('bootstrap') && fail ? 503 : 200,
+        ),
   );
   const cache = new QueryClient({
     defaultOptions: { queries: { gcTime: Infinity, retryDelay: 0 } },
@@ -59,7 +62,15 @@ function sideHook(cached = false, fail = false) {
   const wrapper = ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={cache}>{children}</QueryClientProvider>
   );
-  const hook = renderHook(() => useSideDetails(product), { wrapper });
+  const hook = renderHook(
+    () =>
+      useSideDetails(
+        product,
+        undefined,
+        fresh ? ['customer:fixture', 'revision', 'fresh-request'] : undefined,
+      ),
+    { wrapper },
+  );
   return { hook, cache, context, fetcher, product, side, bootstrap };
 }
 afterEach(() => {
@@ -124,6 +135,47 @@ it('withholds side metadata when a required detail cannot be read', async () => 
     expect(fetcher.mock.calls.filter(([url]) => url.includes('/Products/'))).toHaveLength(2);
   } finally {
     hook.unmount();
+    cache.clear();
+  }
+});
+
+it('revalidates reorder side choices directly instead of accepting a fresh public cache', async () => {
+  const { hook, cache, side, fetcher } = sideHook(true, false, true);
+  try {
+    await waitFor(() => expect(hook.result.current.data?.get(tenantB)).toEqual(side));
+    expect(fetcher.mock.calls.filter(([url]) => url.includes('/Products/'))).toHaveLength(1);
+    const query = cache
+      .getQueryCache()
+      .findAll()
+      .find((q) => q.queryKey.includes('side-details'))!;
+    expect(query.queryKey[2]).toBe('customer:fixture');
+    expect(query.options.gcTime).toBe(0);
+  } finally {
+    hook.unmount();
+    cache.clear();
+  }
+});
+
+it('removes an in-flight private side query immediately on dismissal and ignores its late result', async () => {
+  const pending = deferred<Response>();
+  const { hook, cache, side, fetcher } = sideHook(false, false, true, pending.promise);
+  const privateQueries = () =>
+    cache
+      .getQueryCache()
+      .findAll()
+      .filter((q) => q.queryKey[2] === 'customer:fixture');
+  try {
+    await waitFor(() =>
+      expect(fetcher.mock.calls.filter(([url]) => url.includes('/Products/'))).toHaveLength(1),
+    );
+    expect(privateQueries()).toHaveLength(1);
+    expect(hook.result.current.isFetching).toBe(true);
+    hook.unmount();
+    expect(privateQueries()).toHaveLength(0);
+    await act(async () => pending.resolve(response({ success: true, data: side })));
+    expect(privateQueries()).toHaveLength(0);
+  } finally {
+    pending.resolve(response({}, 503));
     cache.clear();
   }
 });

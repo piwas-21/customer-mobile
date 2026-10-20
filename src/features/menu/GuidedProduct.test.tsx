@@ -19,14 +19,25 @@ afterEach(async () => {
   });
   jest.useRealTimers();
 });
-function setup(patch: Parameters<typeof basketState>[0] = {}) {
+function setup(
+  patch: Parameters<typeof basketState>[0] = {},
+  seed?: { quantity: number; instructions: string },
+  onBasketNavigation?: () => void,
+) {
   const state = basketState(patch);
   const router = routerFixture();
   jest.mocked(useRouter).mockReturnValue(router);
   jest.mocked(useBasket).mockReturnValue(state);
   const product = compositionProduct();
   const details = new Map<string, ProductDetail>();
-  const screen = render(<GuidedProduct product={product} details={details} />);
+  const screen = render(
+    <GuidedProduct
+      product={product}
+      details={details}
+      seed={seed}
+      onBasketNavigation={onBasketNavigation}
+    />,
+  );
   const review = () => {
     let next = screen.queryByRole('button', { name: 'Next' });
     let steps = 0;
@@ -113,4 +124,56 @@ it('does not redirect from an unmounted configuration after acceptance', async (
     await accepted;
   });
   expect(router.replace).not.toHaveBeenCalled();
+});
+
+it('seeds only quantity and notes while requiring current recipe review', async () => {
+  const added = jest.fn();
+  const { screen, state, router, review } = setup(
+    {},
+    { quantity: 3, instructions: 'Old kitchen note' },
+    added,
+  );
+  expect(state.add).not.toHaveBeenCalled();
+  review();
+  expect(screen.getByText('Review your dish')).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Add to basket' }));
+  await waitFor(() => expect(added).toHaveBeenCalledTimes(1));
+  expect(state.add).toHaveBeenCalledWith(
+    expect.objectContaining({
+      quantity: 3,
+      specialInstructions: 'Old kitchen note',
+      productVariationId: productIds.variation,
+      selectedIngredients: [recipeIds.fixed, recipeIds.included],
+    }),
+  );
+  expect(router.replace).not.toHaveBeenCalled();
+});
+it('does not repeat an accepted add when navigation fails or the button is pressed again', async () => {
+  const added = jest.fn(() => {
+    throw new Error('Navigation unavailable');
+  });
+  const { screen, state, review } = setup({}, undefined, added);
+  review();
+  fireEvent.press(screen.getByRole('button', { name: 'Add to basket' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Add to basket' })).toBeDisabled());
+  fireEvent.press(screen.getByRole('button', { name: 'Add to basket' }));
+  expect(state.add).toHaveBeenCalledTimes(1);
+  expect(added).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('button', { name: 'Open basket' })).toBeTruthy();
+});
+it('coalesces rapid presses before the basket publishes its busy state', async () => {
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const { screen, state, review } = setup({ add: jest.fn(() => pending) });
+  review();
+  const button = screen.getByRole('button', { name: 'Add to basket' });
+  fireEvent.press(button);
+  fireEvent.press(button);
+  expect(state.add).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    release();
+    await pending;
+  });
 });

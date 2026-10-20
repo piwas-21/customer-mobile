@@ -1,4 +1,20 @@
 export const ordersEnglish = {
+  reorder: {
+    title: 'Order these dishes again',
+    explanation:
+      'Choose a dish to configure again using today’s menu. Sizes, ingredients, options, availability and prices may have changed. Review all choices before adding it to your basket.',
+    choose: 'Configure {{name}} again',
+    previous: 'Previously: {{quantity}} × {{name}}',
+    previousInstructions: 'Kitchen note: {{instructions}}',
+    unavailable:
+      'This saved dish cannot be repeated with its recorded details. Choose it again from the current menu or ask the restaurant.',
+    blocked:
+      'Open your basket to check availability or resolve an earlier order before adding dishes.',
+    back: 'Back to the saved order',
+    backToDishes: 'Back to saved dishes',
+    added: 'Added to your basket.',
+    openBasketAfterAdded: 'The dish was added. Open your basket to continue.',
+  },
   paymentAttention: {
     message:
       'Your sign-in expired while an order or payment was unresolved. Sign in to the same restaurant account to check it before placing another order. You can still browse the menu.',
