@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { environmentSchema, parseDirectory, type Directory } from '../core/directory';
+import {
+  DIRECTORY_CLOCK_SKEW_MS,
+  environmentSchema,
+  parseDirectory,
+  type Directory,
+} from '../core/directory';
 export const publicMenuRetentionSchema = z
   .strictObject({
     environment: environmentSchema,
@@ -8,6 +13,9 @@ export const publicMenuRetentionSchema = z
   })
   .refine((value) => new Set(value.tenantIds).size === value.tenantIds.length);
 export type PublicMenuRetention = z.infer<typeof publicMenuRetentionSchema>;
+export function menuRetentionHasValidDate(policy: PublicMenuRetention, now: number) {
+  return Date.parse(policy.publishedAt) <= now + DIRECTORY_CLOCK_SKEW_MS;
+}
 export function menuRetentionFromDirectory(directory: Directory, now: number): PublicMenuRetention {
   const current = parseDirectory(directory, directory.environment, now);
   return {

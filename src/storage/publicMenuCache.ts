@@ -3,6 +3,7 @@ import { environmentSchema, type Directory, type Environment } from '../core/dir
 import {
   latestMenuRetention,
   menuIsRetained,
+  menuRetentionHasValidDate,
   menuRetentionFromDirectory,
   type PublicMenuRetention,
 } from '../domain/publicMenuRetention';
@@ -27,14 +28,19 @@ export class PublicMenuCache {
   private readonly pending = new Map<Environment, Promise<void>>();
   private readonly retention = new Map<Environment, PublicMenuRetention>();
   constructor(private readonly storage: Storage) {}
-  private remember(environment: Environment, policy: PublicMenuRetention | undefined) {
-    const current = latestMenuRetention(this.retention.get(environment), policy);
+  private remember(environment: Environment, policy: PublicMenuRetention | undefined, now: number) {
+    const previous = this.retention.get(environment);
+    const current = latestMenuRetention(
+      previous && menuRetentionHasValidDate(previous, now) ? previous : undefined,
+      policy,
+    );
     if (current) this.retention.set(environment, current);
+    else this.retention.delete(environment);
     return current;
   }
   private async load(environment: Environment, now: number) {
     const state = decodePublicMenus(await this.storage.getItem(key(environment)), environment, now);
-    const retention = this.remember(environment, state.retention);
+    const retention = this.remember(environment, state.retention, now);
     return {
       ...state,
       retention,
@@ -101,7 +107,7 @@ export class PublicMenuCache {
     // Install the in-memory fence synchronously, including while an older disk write is pending.
     const observed = menuRetentionFromDirectory(directory, now);
     const environment = observed.environment;
-    this.remember(environment, observed);
+    this.remember(environment, observed, now);
     return this.update(environment, async () => {
       const state = await this.load(environment, now);
       await this.write(environment, state, true);

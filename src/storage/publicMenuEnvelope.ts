@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import type { Environment } from '../core/directory';
-import { publicMenuRetentionSchema } from '../domain/publicMenuRetention';
+import {
+  menuRetentionHasValidDate,
+  publicMenuRetentionSchema,
+} from '../domain/publicMenuRetention';
 import {
   menuSnapshotIsFresh,
   publicMenuSnapshotSchema,
@@ -27,7 +30,12 @@ export function decodePublicMenus(
   if (!raw || raw.length > PUBLIC_MENU_MAX_TEXT_UNITS) return empty;
   try {
     const value = schema.parse(JSON.parse(raw));
-    if (value.retention && value.retention.environment !== environment) return empty;
+    if (
+      value.retention &&
+      (value.retention.environment !== environment ||
+        !menuRetentionHasValidDate(value.retention, now))
+    )
+      return empty;
     return {
       ...value,
       snapshots: value.snapshots.filter((snapshot) => menuSnapshotIsFresh(snapshot, now)),
