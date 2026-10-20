@@ -104,9 +104,14 @@ export class CustomerReservationController {
     return this.actions.run('retry/' + id, async () => {
       this.cancellations.invalidate();
       const record = await this.scope.load();
-      if (record?.proof.operationId !== id || record.cancellationRequested || record.resolution)
+      if (
+        record?.proof.operationId !== id ||
+        record.cancellation ||
+        record.cancellationRequested ||
+        record.resolution
+      )
         throw new ApiFailure(409, 'refused');
-      return this.scope.dispatch(record, record.cancellation ? 'submit' : 'create', locale);
+      return this.scope.dispatch(record, 'create', locale);
     });
   }
   cancelAttempt(operationId: string, locale: string) {

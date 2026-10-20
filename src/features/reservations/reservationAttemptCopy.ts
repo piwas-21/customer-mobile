@@ -17,11 +17,9 @@ export function reservationAttemptCopy(value: ReservationAttemptView | null | un
     message = 'reservationCancellationChanged';
   return {
     message,
-    retryLabel: cancellation ? 'reservationCancellationRetry' : 'reservationRetryOriginal',
+    retryLabel: 'reservationRetryOriginal',
     stopLabel: cancellation ? 'reservationCancellationStop' : 'reservationStopAttempt',
-    retryExplanation: cancellation
-      ? 'reservationCancellationRetryExplanation'
-      : 'reservationRetryOriginalExplanation',
+    retryExplanation: 'reservationRetryOriginalExplanation',
     stopExplanation: cancellation
       ? 'reservationCancellationStopExplanation'
       : 'reservationStopAttemptExplanation',

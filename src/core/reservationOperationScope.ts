@@ -14,6 +14,7 @@ import type { SessionController } from './sessionController';
 import type { TenantContext } from './tenantContext';
 import { ApiFailure, type CustomerTransport } from './transport';
 export class ReservationOperationScope {
+  private refusedCancellation: string | undefined;
   readonly owner: CustomerOperationOwner;
   readonly configuration: Bootstrap;
   constructor(
@@ -99,22 +100,32 @@ export class ReservationOperationScope {
         locale,
       );
     } catch (error) {
-      if (error instanceof ApiFailure && error.status === 409 && error.reason === 'http')
-        await this.repository.reservations.blockCancellationRetry(
-          this.context,
-          record,
-          this.assertCurrent,
-        );
+      if (error instanceof ApiFailure && error.status === 409 && error.reason === 'http') {
+        this.refusedCancellation = record.proof.operationId;
+        try {
+          await this.repository.reservations.blockCancellationRetry(
+            this.context,
+            record,
+            this.assertCurrent,
+          );
+        } catch {
+          // Pending cancellations are recovery-only even if this diagnostic cannot persist.
+        }
+      }
       throw error;
     }
   }
-  view(record: ReservationOperationRecord) {
-    return reservationAttemptView(
+  async view(record: ReservationOperationRecord) {
+    const value = await reservationAttemptView(
       this.context,
       this.repository,
       record,
       this.assertCurrent,
       this.configuration,
     );
+    if (record.proof.operationId !== this.refusedCancellation) return value;
+    if (!record.resolution) return { ...value, retryBlocked: true as const };
+    this.refusedCancellation = undefined;
+    return value;
   }
 }

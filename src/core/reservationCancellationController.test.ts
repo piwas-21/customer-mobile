@@ -35,7 +35,7 @@ it('requires a fresh read and explicit confirmation, then persists only minimal 
   expect(await f.repository.reservations.intent(f.context, f.principal, f.guard)).toBeNull();
   expect(await f.controller().saved()).toMatchObject({ cancellation: true, outcome: 'Applied' });
 });
-it('lost submission retains the original action without minting another and explicit retry preserves its exact proof', async () => {
+it('lost submission retains the original action without minting another and allows only original checking or stopping', async () => {
   const f = await fixture();
   const actor = f.controller();
   const normal = f.fetcher.getMockImplementation()!;
@@ -49,7 +49,7 @@ it('lost submission retains the original action without minting another and expl
   expect(await actor.saved()).toMatchObject({
     cancellation: true,
     outcome: 'Pending',
-    canRetry: true,
+    canRetry: false,
   });
   await expect(actor.prepareCancellation(f.applied.reservationId, 'en')).rejects.toThrow();
   await expect(actor.create(f.input, 'en')).rejects.toThrow();
@@ -61,13 +61,13 @@ it('lost submission retains the original action without minting another and expl
   );
   expect(await actor.recover('en')).toMatchObject({ outcome: 'Pending' });
   await expect(actor.acknowledge(review.operationId)).rejects.toThrow();
-  expect(await actor.retryOriginal(review.operationId, 'en')).toMatchObject({
+  await expect(actor.retryOriginal(review.operationId, 'en')).rejects.toThrow();
+  expect(await actor.cancelAttempt(review.operationId, 'en')).toMatchObject({
     cancellation: true,
     outcome: 'Applied',
   });
   const submits = f.fetcher.mock.calls.filter(([url]) => new URL(url).pathname.endsWith('/submit'));
-  expect(submits).toHaveLength(2);
-  expect(submits[0]![1].body).toEqual(submits[1]![1].body);
+  expect(submits).toHaveLength(1);
   expect(
     f.fetcher.mock.calls.filter(([url]) => new URL(url).pathname.endsWith('/prepare')),
   ).toHaveLength(1);
@@ -159,3 +159,27 @@ it.each(['capability', 'accounts', 'currency', 'timezone', 'lifecycle'])(
     ).toHaveLength(0);
   },
 );
+
+it('dismissing the exact candidate during the confirmation configuration wait prevents persistence and submission', async () => {
+  const f = await fixture();
+  const actor = f.controller();
+  const review = await actor.prepareCancellation(f.applied.reservationId, 'en');
+  const entered = deferred<void>();
+  const release = deferred<Response>();
+  const normal = f.fetcher.getMockImplementation()!;
+  f.fetcher.mockImplementation((url, options) => {
+    if (new URL(url).pathname.endsWith('/bootstrap')) {
+      entered.resolve();
+      return release.promise;
+    }
+    return normal(url, options);
+  });
+  const pending = actor.confirmCancellation(review.operationId, 'en');
+  const rejected = expect(pending).rejects.toThrow();
+  await entered.promise;
+  actor.dismissCancellation(review.operationId);
+  release.resolve(f.reply(f.bootstrap));
+  await rejected;
+  expect(await actor.saved()).toBeNull();
+  expect(f.fetcher.mock.calls.some(([url]) => url.endsWith('/submit'))).toBe(false);
+});

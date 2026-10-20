@@ -71,11 +71,18 @@ export default function ReservationProvider({ children }: Readonly<PropsWithChil
         controller.assertCurrent();
         if (!mounted.current) return value;
         cache.setQueryData(key, value);
-        if (value?.outcome === 'Applied')
-          void cache.invalidateQueries({
+        if (value?.outcome === 'Applied') {
+          await cache.invalidateQueries({
             queryKey: key.slice(0, 3),
-            predicate: (entry) => entry.queryKey.includes('reservation-history'),
+            predicate: (entry) =>
+              entry.queryKey.includes('reservation-history') ||
+              Boolean(
+                value.cancellation &&
+                entry.queryKey.includes('reservation-detail/' + value.reservationId),
+              ),
           });
+          controller.assertCurrent();
+        }
         return value;
       } catch (error) {
         try {

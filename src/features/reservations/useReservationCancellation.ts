@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReservationCancellationReview } from '../../core/reservationCancellationActions';
 import { useReservation } from './ReservationProvider';
-export default function useReservationCancellation(reservationId: string, refresh: () => void) {
+export default function useReservationCancellation(reservationId: string) {
   const operations = useReservation();
   const controller = operations?.controller;
   const { i18n } = useTranslation();
@@ -75,7 +75,6 @@ export default function useReservationCancellation(reservationId: string, refres
       await operations.confirmCancellation(value.operationId);
       if (current()) {
         controller?.assertCurrent();
-        refresh();
       }
     } catch {
       // The durable original attempt is displayed by the shared provider, including ambiguity.

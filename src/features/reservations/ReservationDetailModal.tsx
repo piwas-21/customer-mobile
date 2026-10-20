@@ -30,7 +30,7 @@ export default function ReservationDetailModal(props: Props) {
     () => readReservation(props.controller, props.userId, props.reservationId),
     () => null,
   );
-  const cancellation = useReservationCancellation(props.reservationId, result.refresh);
+  const cancellation = useReservationCancellation(props.reservationId);
   const review = cancellation.review;
   return (
     <BaseModal

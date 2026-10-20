@@ -13,10 +13,7 @@ export const reservationsEnglish = {
     'This cancellation completed. Refresh the booking to see its current status, including any later restaurant changes.',
   reservationCancellationStopped:
     'This cancellation attempt was stopped. Stopping an attempt does not cancel the booking.',
-  reservationCancellationRetry: 'Retry original cancellation',
   reservationCancellationStop: 'Stop cancellation attempt',
-  reservationCancellationRetryExplanation:
-    'Send the same reviewed cancellation again. An existing result is returned without cancelling a later booking change.',
   reservationCancellationStopExplanation:
     'Stop only an unreceived cancellation attempt. This does not cancel the booking or undo a completed cancellation.',
   reservationAttemptPending:

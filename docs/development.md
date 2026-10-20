@@ -208,8 +208,11 @@ target lifetime are checked before installation. No proof or review snapshot ent
 state. A stale confirmation cannot submit or discard a newer candidate.
 
 Confirmed cancellation persists minimal proof/session plus booking ID/zone metadata in acknowledged
-SecureStore, without contact input. Only this exact original can submit, recover or stop. A known
-HTTP409 marks the original review as unsuitable for retry across restart; check/stop remain available.
+SecureStore, without contact input. Only the explicitly confirmed candidate submits once. Persisted cancellation attempts are recovery/stop-only,
+including across restart; they never offer another submit. A known
+HTTP409 records a diagnostic when secure storage permits; a failed diagnostic save keeps the current
+refusal visible and cannot enable retry. After restart without that diagnostic, the original remains
+uncertain and recovery-only. Check/stop remain available before a fresh review.
 Unseen never releases it. Stopping an unseen attempt does not cancel the booking; Applied records
 this cancellation's completion rather than the booking's later staff-controlled status. Detail is
 refreshed separately. The existing native modal contains review and recovery confirmations.

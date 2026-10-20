@@ -38,8 +38,8 @@ export async function reservationAttemptView(
     canRetry:
       !record.resolution &&
       !record.cancellationRequested &&
-      !record.cancellation?.retryBlocked &&
-      (record.cancellation !== undefined || draft !== null) &&
+      !record.cancellation &&
+      draft !== null &&
       canStartReservation(context, bootstrap, record.principal),
   };
 }
