@@ -9,6 +9,7 @@ import ProfileEditor from './ProfileEditor';
 import AccountDeletionModal from './AccountDeletionModal';
 import SavedAddressesModal from './SavedAddressesModal';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
+import ReservationHistoryControl from '../reservations/ReservationHistoryControl';
 function ProfileDetails({ profile }: Readonly<Pick<AccountState, 'profile'>>) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -56,6 +57,7 @@ export default function ProfileCard({
     <View style={styles.section}>
       <ProfileDetails profile={profile} />
       {saved ? <Feedback message={t('profileSaved')} /> : null}
+      <ReservationHistoryControl />
       {profile.data && !profile.isError && session.controller ? (
         <>
           <Button

@@ -105,3 +105,22 @@ reachable customer schemas. It rejects missing operations, unresolved/external r
 unsupported document versions. Review generated diffs against deployed handlers; a source-only
 endpoint must not enter the deployed snapshot. Commit the allowlist, baseline, subset and generated
 types together. Existing CI checks generation drift without accessing a live service.
+
+## Native reservation read foundation
+
+The additive schemaVersion1 `/api/customer-mobile/reservations` history/detail adapters use the
+original Customer session authority and refuse mismatched detail identities. History retains exact
+UTC/TimeSpan/ID cursor strings, including database fractional precision and legacy non-midnight
+values. Displayed booking days remain calendar dates; wall times are not converted through a device
+or restaurant offset. Unknown statuses and legacy non-wall-clock durations have explicit fallbacks.
+
+Account entry requires an enabled Reservations capability from the current bootstrap observer and
+an active customer. Private pages and details are ephemeral, scoped to tenant/environment/principal/
+controller revision and modal
+instance. Logout, context/capability/zone withdrawal and failed refresh hide data; dismissal removes
+the query cache. A withdrawn modal requires a new explicit open action after capability returns.
+
+These handwritten adapters target the additive backend source contract. They do not alter the
+captured deployed OpenAPI fixture. Backend acceptance, deployed tenant availability, signed device
+checks, all supported locales/RTL and installed accessibility remain release gates. Availability,
+creation, edits and cancellation are separate reservation implementation; this source adds reads.
