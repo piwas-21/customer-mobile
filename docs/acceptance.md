@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                             | Remaining acceptance                                                                             |
-| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                         |
-| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys                     |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds        |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, accepted-order cancellation, installed reorder/payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                              |
-| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance               |
-| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                                  |
+| Phase | Current source                                                                                                                                               | Remaining acceptance                                                                                                                     |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                                                                           | Two approved pilot tenants, company publisher accounts and EAS ownership                                                                 |
+| P1    | Menu, guided choices, owned basket operations, hosted payment recovery, QR and switching foundations                                                         | Installed payment return, notification tap and physical iPhone/Android journeys                                                          |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation                                                            | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                                                |
+| P3    | Email accounts and protected email-link completion, profile/deletion, durable ordering/payment recovery, owned receipts/reorder and eligible delay rejection | Social sign-in and installed account-link, rejection, reorder/payment recovery                                                           |
+| P4    | Scoped reservation history/detail adapters and account views; customer contract inventory and capability boundaries                                          | Backend deployment and installed reservation reads; availability/creation/changes, loyalty, table rounds/payments and transactional push |
+| P5    | Source build and privacy foundations                                                                                                                         | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                                                       |
+| P6    | Runtime directory/configuration foundations                                                                                                                  | Third-tenant activation, rollback and support/offboarding proof                                                                          |
 
 ## Workflow and dependency gates
 
@@ -70,6 +70,19 @@ restaurant-generation changes. Existing login and profile journeys retain their 
 These source fixtures do not establish signed OS association, actual email delivery, rollout,
 provider-token revocation, installed keyboard/back/RTL behavior or store acceptance. Native gates
 remain disabled until separate deployment and signed-device acceptance.
+
+## Native reservation reads
+
+Account history and fresh detail use the additive native reservation contract. Responses are bounded,
+strictly decoded and scoped to the current customer; they exclude contacts, staff notes, table/floor
+identities and action tokens. UTC cursor timestamps retain database fractional precision and legacy
+non-midnight sort values. Booking days remain calendar dates and times remain restaurant wall times.
+
+Capability, principal, controller revision, tenant and timezone changes dismiss private views. Failed
+refresh hides retained data; closing removes private queries. A late response cannot reopen a
+withdrawn view. Component/API/date fixtures and three behavioral controls cover these boundaries;
+they do not establish backend deployment, actual native accessibility or installed device behavior.
+Availability, creation, changes/cancellation and all-locale acceptance remain open.
 
 ## Menu, choices and basket
 
