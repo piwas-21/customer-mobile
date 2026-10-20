@@ -138,28 +138,7 @@ export async function reservationRequestHeaders(
     assertReservationScope(context, principal, prepared);
     sessionId = prepared.sessionId;
   } else {
-    const expected = scopedReservationRecord(context, principal, options.expectedReservationRecord);
-    const raw = await vault.capability(context, 'reservation-operation', principal);
-    if (raw === null) throw new ApiFailure(401, 'refused');
-    const saved = scopedReservationRecord(context, principal, JSON.parse(raw));
-    if (saved.resolution || JSON.stringify(saved) !== JSON.stringify(expected))
-      throw new ApiFailure(401, 'refused');
-    if (fullBodySchema.safeParse(options.body).success) {
-      const contactRaw = await vault.reservationContactRecord(context, principal);
-      if (contactRaw === null || saved.cancellationRequested) throw new ApiFailure(401, 'refused');
-      const contact = reservationContactSchema.parse(JSON.parse(contactRaw));
-      const wire = fullBodySchema.parse({
-        ...contact.draft,
-        payloadHash: saved.proof.payloadHash,
-        ownerProof: saved.proof.ownerProof,
-      });
-      if (
-        contact.operationId !== saved.proof.operationId ||
-        JSON.stringify(wire) !== JSON.stringify(options.body)
-      )
-        throw new ApiFailure(401, 'refused');
-    }
-    sessionId = saved.sessionId;
+    sessionId = await originalReservationSession(context, vault, principal, options);
   }
   const headers: Record<string, string> = { 'X-Session-Id': sessionId };
   if (principal.kind === 'customer') {
@@ -173,4 +152,34 @@ export async function reservationRequestHeaders(
   }
   options.assertCurrent();
   return headers;
+}
+
+async function originalReservationSession(
+  context: TenantContext,
+  vault: CredentialVault,
+  principal: Principal,
+  options: RequestOptions,
+) {
+  const expected = scopedReservationRecord(context, principal, options.expectedReservationRecord);
+  const raw = await vault.capability(context, 'reservation-operation', principal);
+  if (raw === null) throw new ApiFailure(401, 'refused');
+  const saved = scopedReservationRecord(context, principal, JSON.parse(raw));
+  if (saved.resolution || JSON.stringify(saved) !== JSON.stringify(expected))
+    throw new ApiFailure(401, 'refused');
+  if (fullBodySchema.safeParse(options.body).success) {
+    const contactRaw = await vault.reservationContactRecord(context, principal);
+    if (contactRaw === null || saved.cancellationRequested) throw new ApiFailure(401, 'refused');
+    const contact = reservationContactSchema.parse(JSON.parse(contactRaw));
+    const wire = fullBodySchema.parse({
+      ...contact.draft,
+      payloadHash: saved.proof.payloadHash,
+      ownerProof: saved.proof.ownerProof,
+    });
+    if (
+      contact.operationId !== saved.proof.operationId ||
+      JSON.stringify(wire) !== JSON.stringify(options.body)
+    )
+      throw new ApiFailure(401, 'refused');
+  }
+  return saved.sessionId;
 }

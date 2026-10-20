@@ -85,12 +85,7 @@ export class CustomerReservationController {
     const id = canonicalUuidSchema.parse(operationId);
     return this.actions.run('retry/' + id, async () => {
       const record = await this.load();
-      if (
-        !record ||
-        record.proof.operationId !== id ||
-        record.cancellationRequested ||
-        record.resolution
-      )
+      if (record?.proof.operationId !== id || record.cancellationRequested || record.resolution)
         throw new ApiFailure(409, 'refused');
       return this.dispatch(record, 'create', locale);
     });
@@ -152,20 +147,18 @@ export class CustomerReservationController {
   ) {
     this.assertCurrent();
     let result = record.resolution;
-    if (!result) {
-      result =
-        phase === 'create'
-          ? await dispatchReservationCreation(
-              this.context,
-              this.client,
-              this.repository,
-              this.configuration,
-              record,
-              this.assertCurrent,
-              locale,
-            )
-          : await this.sessions.recovery.reservation(record, phase, locale, this.assertCurrent);
-    }
+    result ??=
+      phase === 'create'
+        ? await dispatchReservationCreation(
+            this.context,
+            this.client,
+            this.repository,
+            this.configuration,
+            record,
+            this.assertCurrent,
+            locale,
+          )
+        : await this.sessions.recovery.reservation(record, phase, locale, this.assertCurrent);
     const final = await this.repository.reservations.finish(
       this.context,
       this.owner.principal,

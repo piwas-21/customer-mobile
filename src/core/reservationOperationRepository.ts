@@ -73,7 +73,7 @@ export class ReservationOperationRepository {
     const expectedId = canonicalUuidSchema.parse(operationId);
     return this.tasks.run(async () => {
       const record = await this.storage.read(context, owner, assertCurrent);
-      if (!record || record.proof.operationId !== expectedId)
+      if (record?.proof.operationId !== expectedId)
         throw new Error('Original reservation attempt unavailable');
       if (record.resolution || record.cancellationRequested) return record;
       const cancelling = { ...record, cancellationRequested: true };
@@ -93,7 +93,7 @@ export class ReservationOperationRepository {
     const result = reservationCreateResolutionSchema.parse(input);
     return this.tasks.run(async () => {
       const record = await this.storage.read(context, owner, assertCurrent);
-      if (!record || record.proof.operationId !== result.operationId)
+      if (record?.proof.operationId !== result.operationId)
         throw new Error('Original reservation attempt changed');
       if (result.outcome === 'Unseen') {
         if (record.resolution) throw new Error('A known reservation decision cannot become unseen');

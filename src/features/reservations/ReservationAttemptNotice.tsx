@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
+import ReservationAttemptActions from './ReservationAttemptActions';
 import { useReservation } from './ReservationProvider';
 export default function ReservationAttemptNotice() {
   const { t } = useTranslation();
@@ -43,47 +44,26 @@ export default function ReservationAttemptNotice() {
       {value ? (
         <>
           <Feedback message={t(message)} />
-          {value.outcome === 'Pending' ? (
-            <>
-              <Button
-                label={t('reservationCheckRequest')}
-                disabled={busy}
-                onPress={() => void operations.check().catch(() => undefined)}
-              />
-              {value.canRetry ? (
-                <Button
-                  secondary
-                  label={t('reservationRetryOriginal')}
-                  disabled={busy}
-                  onPress={() =>
-                    setConfirm({
-                      controller: operations.controller,
-                      operationId: value.operationId,
-                      kind: 'retry',
-                    })
-                  }
-                />
-              ) : null}
-              <Button
-                secondary
-                label={t(value.cancelling ? 'reservationFinishStopping' : 'reservationStopAttempt')}
-                disabled={busy}
-                onPress={() =>
-                  setConfirm({
-                    controller: operations.controller,
-                    operationId: value.operationId,
-                    kind: 'cancel',
-                  })
-                }
-              />
-            </>
-          ) : (
-            <Button
-              label={t('reservationRequestDone')}
-              disabled={busy}
-              onPress={() => void operations.acknowledge(value.operationId).catch(() => undefined)}
-            />
-          )}
+          <ReservationAttemptActions
+            value={value}
+            busy={busy}
+            onCheck={() => void operations.check().catch(() => undefined)}
+            onRetry={() =>
+              setConfirm({
+                controller: operations.controller,
+                operationId: value.operationId,
+                kind: 'retry',
+              })
+            }
+            onStop={() =>
+              setConfirm({
+                controller: operations.controller,
+                operationId: value.operationId,
+                kind: 'cancel',
+              })
+            }
+            onDone={() => void operations.acknowledge(value.operationId).catch(() => undefined)}
+          />
         </>
       ) : null}
       {confirmation ? (

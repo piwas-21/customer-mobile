@@ -58,40 +58,43 @@ export class SessionRepository {
       const id = await this.store.get(pointerKey(context));
       if (id === null) return null;
       const principal = { kind: 'customer', id: z.uuid().parse(id) } as const;
-      const raw = await this.store.get(secretKey(context, 'order-operation-proof', principal));
-      if (raw !== null) {
-        const proof = orderOperationProofSchema.parse(JSON.parse(raw));
-        assertOrderProofScope(context, proof);
-        if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
-          throw new Error('Order recovery owner mismatch');
-      } else {
-        const saved = await this.store.get(secretKey(context, 'order-decisions', principal));
-        const records = scopedOrderDecisions(
-          context,
-          principal,
-          saved === null ? [] : JSON.parse(saved),
-        );
-        if (!records.some((record) => record.outcome === 'Applied')) {
-          const payment = await this.store.get(secretKey(context, 'payment', principal));
-          if (payment !== null) scopedPaymentRecord(context, principal, JSON.parse(payment));
-          else {
-            const cancellation = await new CancellationOperationStorage(this.store).read(
-              context,
-              principal,
-              () => {},
-            );
-            const reservation = await new ReservationOperationStorage(this.store).read(
-              context,
-              principal,
-              () => {},
-            );
-            if (cancellation?.resolution !== null && !reservation) return null;
-          }
-        }
-      }
+      if (!(await this.hasRecovery(context, principal))) return null;
       // Account-disabled browsing reads a JWT only for its original order or reservation recovery.
       return this.vault.session(context, principal.id);
     });
+  }
+  private async hasRecovery(context: TenantContext, principal: { kind: 'customer'; id: string }) {
+    const raw = await this.store.get(secretKey(context, 'order-operation-proof', principal));
+    if (raw !== null) {
+      const proof = orderOperationProofSchema.parse(JSON.parse(raw));
+      assertOrderProofScope(context, proof);
+      if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
+        throw new Error('Order recovery owner mismatch');
+      return true;
+    }
+    const saved = await this.store.get(secretKey(context, 'order-decisions', principal));
+    const records = scopedOrderDecisions(
+      context,
+      principal,
+      saved === null ? [] : JSON.parse(saved),
+    );
+    if (records.some((record) => record.outcome === 'Applied')) return true;
+    const payment = await this.store.get(secretKey(context, 'payment', principal));
+    if (payment !== null) {
+      scopedPaymentRecord(context, principal, JSON.parse(payment));
+      return true;
+    }
+    const cancellation = await new CancellationOperationStorage(this.store).read(
+      context,
+      principal,
+      () => {},
+    );
+    const reservation = await new ReservationOperationStorage(this.store).read(
+      context,
+      principal,
+      () => {},
+    );
+    return cancellation?.resolution === null || Boolean(reservation);
   }
   activate(
     context: TenantContext,
