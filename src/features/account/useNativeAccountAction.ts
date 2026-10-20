@@ -18,7 +18,7 @@ export default function useNativeAccountAction(entry: PendingAccountAction) {
   const bootstrap = useBootstrap();
   const mounted = useMounted();
   const pending = useRef(false);
-  const [newPassword, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'unknown'>('idle');
   const [inputFailed, setInputFailed] = useState(false);
@@ -88,7 +88,7 @@ export default function useNativeAccountAction(entry: PendingAccountAction) {
     } finally {
       pending.current = false;
       if (mounted.current) {
-        setPassword('');
+        setNewPassword('');
         setConfirmPassword('');
       }
     }
@@ -102,7 +102,7 @@ export default function useNativeAccountAction(entry: PendingAccountAction) {
       if (tenant) restaurant.select(tenant.id);
     },
     newPassword,
-    setPassword,
+    setPassword: setNewPassword,
     confirmPassword,
     setConfirmPassword,
     status: status === 'idle' && !pendingAccountActions.canTake(entry.id) ? 'unknown' : status,

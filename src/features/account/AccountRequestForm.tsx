@@ -22,29 +22,21 @@ import { spacing, typography, useTheme } from '../../ui/theme';
 import useAccountRequest from './useAccountRequest';
 export type AccountRequestMode = 'register' | 'recovery' | 'verification';
 type Props = Readonly<{ mode: AccountRequestMode; onBack: () => void }>;
+const requestCopy = {
+  register: { title: 'createAccount', action: 'createAccount', sent: 'registrationSent' },
+  recovery: { title: 'forgotPassword', action: 'sendRecovery', sent: 'recoverySent' },
+  verification: {
+    title: 'nativeAccount.requestVerification',
+    action: 'nativeAccount.sendVerification',
+    sent: 'nativeAccount.verificationSent',
+  },
+} as const;
 export default function AccountRequestForm({ mode, onBack }: Props) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const { client, context } = useRestaurant();
   const bootstrap = useBootstrap();
-  const title =
-    mode === 'register'
-      ? 'createAccount'
-      : mode === 'recovery'
-        ? 'forgotPassword'
-        : 'nativeAccount.requestVerification';
-  const action =
-    mode === 'register'
-      ? 'createAccount'
-      : mode === 'recovery'
-        ? 'sendRecovery'
-        : 'nativeAccount.sendVerification';
-  const sent =
-    mode === 'register'
-      ? 'registrationSent'
-      : mode === 'recovery'
-        ? 'recoverySent'
-        : 'nativeAccount.verificationSent';
+  const { title, action, sent } = requestCopy[mode];
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');

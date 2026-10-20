@@ -68,8 +68,7 @@ export class PendingAccountActions {
   }
   take(id: number, now = Date.now()) {
     const current = this.entry;
-    if (!current || current.public.id !== id || !current.proof)
-      throw new Error('Account link unavailable');
+    if (!current?.proof || current.public.id !== id) throw new Error('Account link unavailable');
     const proof = current.proof;
     current.proof = undefined;
     if (current.public.expiresAt <= now) {
