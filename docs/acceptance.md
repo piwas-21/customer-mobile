@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                                                                               | Remaining acceptance                                                                                              |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                                                                           | Two approved pilot tenants, company publisher accounts and EAS ownership                                          |
-| P1    | Menu, guided choices, owned basket operations, hosted payment recovery, QR and switching foundations                                                         | Installed payment return, notification tap and physical iPhone/Android journeys                                   |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation                                                            | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                         |
-| P3    | Email accounts and protected email-link completion, profile/deletion, durable ordering/payment recovery, owned receipts/reorder and eligible delay rejection | Social sign-in and installed account-link, rejection, reorder/payment recovery                                    |
-| P4    | Scoped reservation history/detail, native calendar and durable reservation request/recovery                                                                  | Backend deployment and installed booking journeys; changes, loyalty, table rounds/payments and transactional push |
-| P5    | Source build and privacy foundations                                                                                                                         | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                                |
-| P6    | Runtime directory/configuration foundations                                                                                                                  | Third-tenant activation, rollback and support/offboarding proof                                                   |
+| Phase | Current source                                                                                                                                               | Remaining acceptance                                                                                               |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                                                                           | Two approved pilot tenants, company publisher accounts and EAS ownership                                           |
+| P1    | Menu, guided choices, owned basket operations, hosted payment recovery, QR and switching foundations                                                         | Installed payment return, notification tap and physical iPhone/Android journeys                                    |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation                                                            | Shared host deployment, verified links, full localization/RTL, signed reproducible builds                          |
+| P3    | Email accounts and protected email-link completion, profile/deletion, durable ordering/payment recovery, owned receipts/reorder and eligible delay rejection | Social sign-in and installed account-link, rejection, reorder/payment recovery                                     |
+| P4    | Reservation history/calendar/request recovery and recorded loyalty balance/ledger                                                                            | Backend deployment and installed journeys; booking changes, loyalty redemption/discounts, tables/payments and push |
+| P5    | Source build and privacy foundations                                                                                                                         | Website entry, signed APK/update flow, store submissions and two-tenant acceptance                                 |
+| P6    | Runtime directory/configuration foundations                                                                                                                  | Third-tenant activation, rollback and support/offboarding proof                                                    |
 
 ## Workflow and dependency gates
 
@@ -567,7 +567,7 @@ The shared provider restores only local minimal state on navigation or foregroun
 pending recovery even when Bookings is hidden. Current tenant/account/controller and lifecycle guards
 withdraw forms and late callbacks; contact input never enters routing or Query caches. Logout purges
 contact with acknowledged deletion while retaining minimal proof. Original customer recovery can
-restore its JWT when accounts are disabled, without enabling a new request or account actions.
+restore its JWT when accounts are disabled, without enabling a new request or account actions. Bound recover/stop calls may renew an expired JWT once; creation never automatically renews or replays. A rejected refresh purges contact and credentials but preserves the original proof and an explicit customer reminder. A different customer requires a separate-customer choice; reauthentication can recover the original request. Confirmation captures the original operation ID and cannot stop a later attempt on the same controller.
 
 Source tests exercise guest/customer requests, required contact fields, response loss/restart, exact
 explicit retry, Unseen, cancellation races, secure storage failure, background/foreground and logout.

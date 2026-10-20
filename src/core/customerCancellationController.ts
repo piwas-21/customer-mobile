@@ -74,7 +74,7 @@ export class CustomerCancellationController {
       )
         throw new ApiFailure(401, 'refused');
       authority = { kind: 'original', proof: decisionProof(decision) };
-      preparation = await this.sessions.orders.prepareCancellation(decision, locale);
+      preparation = await this.sessions.recovery.prepareCancellation(decision, locale);
     } else {
       if (this.scope.principal.kind !== 'customer') throw new ApiFailure(401, 'refused');
       authority = { kind: 'customer' };
@@ -136,7 +136,7 @@ export class CustomerCancellationController {
       const record = await this.load();
       if (!record) return null;
       if (record.resolution) return this.view(record, record.resolution);
-      const result = await this.sessions.orders.cancellation(record, locale);
+      const result = await this.sessions.recovery.cancellation(record, locale);
       return this.accept(record, result);
     });
   }

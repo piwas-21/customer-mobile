@@ -1,3 +1,8 @@
+import {
+  scopedReservationRecord,
+  type ReservationOperationRecord,
+} from '../core/reservationOperationRecord';
+import type { RequestOptions } from '../core/httpTypes';
 import type { CancellationOperationRecord } from '../core/cancellationOperationRecord';
 import type { OrderOperationProof } from '../core/orderOperationProof';
 import { z } from 'zod';
@@ -58,9 +63,7 @@ export async function refreshSession(
     (receiptProof.principal.kind !== 'customer' || receiptProof.principal.id !== captured.userId)
   )
     throw new ApiFailure(401, 'refused');
-  const response = await client.request(context, '/api/Auth/refresh-token', authSchema, {
-    method: 'POST',
-    body: { accessToken: captured.accessToken, refreshToken: captured.refreshToken },
+  return requestSessionRefresh(client, context, captured, {
     ...(assertCurrent ? { assertCurrent } : {}),
     ...(cancellation
       ? {
@@ -77,6 +80,44 @@ export async function refreshSession(
           expectedOrderProof: receiptProof,
         }
       : {}),
+  });
+}
+export function refreshReservationSession(
+  client: CustomerTransport,
+  context: TenantContext,
+  session: CustomerSession,
+  assertCurrent: () => void,
+  input: ReservationOperationRecord,
+) {
+  const record = scopedReservationRecord(context, input.principal, input);
+  if (
+    record.principal.kind !== 'customer' ||
+    record.principal.id !== session.userId ||
+    record.resolution
+  )
+    throw new ApiFailure(401, 'refused');
+  return requestSessionRefresh(
+    client,
+    context,
+    { ...session },
+    {
+      credentials: 'reservation-renewal',
+      principal: record.principal,
+      expectedReservationRecord: record,
+      assertCurrent,
+    },
+  );
+}
+async function requestSessionRefresh(
+  client: CustomerTransport,
+  context: TenantContext,
+  captured: CustomerSession,
+  options: RequestOptions,
+): Promise<CustomerSession> {
+  const response = await client.request(context, '/api/Auth/refresh-token', authSchema, {
+    ...options,
+    method: 'POST',
+    body: { accessToken: captured.accessToken, refreshToken: captured.refreshToken },
   });
   if (response.userId !== captured.userId) throw new ApiFailure(200, 'contract');
   return {

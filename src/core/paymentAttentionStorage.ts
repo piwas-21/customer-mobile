@@ -1,3 +1,4 @@
+import { ReservationOperationStorage } from './reservationOperationStorage';
 import { z } from 'zod';
 import type { SecretStore } from './credentials';
 import { CancellationOperationStorage } from './cancellationOperationStorage';
@@ -24,6 +25,8 @@ export class PaymentAttentionStorage {
       !(await orders.read(context, principal, guard)) &&
       (await payments.read(context, principal, guard))?.state !== 'pending' &&
       (await new CancellationOperationStorage(this.store).read(context, principal, guard))
+        ?.resolution !== null &&
+      (await new ReservationOperationStorage(this.store).read(context, principal, guard))
         ?.resolution !== null
     )
       return;

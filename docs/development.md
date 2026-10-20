@@ -175,8 +175,7 @@ Only then may transport dispatch the exact saved full input, original session an
 The queue never spans network I/O. A rejected customer token never becomes a guest request.
 
 `/recover` and `/cancel-attempt` use only the original minimal proof. Unseen is observation, never a
-release. The durable cancellation flag is acknowledged before contact purge and cannot permit later
-full-body retry. Applied/Cancelled decisions are acknowledged before cleanup; dismissal requires the
+release. The captured cancellation operation ID must equal the persisted original before any mutation or purge. The durable cancellation flag is acknowledged before contact purge and cannot permit later full-body retry. Applied/Cancelled decisions are acknowledged before cleanup; dismissal requires the
 same terminal operation and verified removals. Logout keeps proof and purges private contact. Runtime
 transport refuses unbound routes, bodies, owner revisions and cross-tenant/session changes.
 
@@ -189,3 +188,10 @@ Fresh public form configuration uses the shared customer-field policy and native
 The additive contract has strict handwritten adapters; the captured deployed OpenAPI stays unchanged
 until deployment. No booking change/cancellation, notification delivery or server migration deployment
 is implied by source acceptance. Full locale/RTL and installed native acceptance remain required.
+
+Authenticated original recovery uses `CustomerRecoveryReads`, shared with order receipt/payment/
+cancellation reads. Its owner-bound one-renewal path permits only exact persisted reservation proof
+and current stored refresh credentials, including during account-disabled/read-only recovery. New
+creation never enters this path. Rejected refresh retains the shared customer reminder before cleanup,
+preserving minimal proof and requiring same-customer reauthentication or explicit separate-customer
+continuation. The reminder appears in Bookings as well as Orders and Account.

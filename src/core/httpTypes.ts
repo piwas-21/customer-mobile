@@ -33,7 +33,8 @@ export type RequestOptions = {
     | 'order-cancellation'
     | 'cancellation-renewal'
     | 'reservation-prepare'
-    | 'reservation-operation';
+    | 'reservation-operation'
+    | 'reservation-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;

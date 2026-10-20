@@ -4,6 +4,7 @@ import {
   type ReservationCreateProof,
   type ReservationCreateResolution,
 } from '../api/reservationCreateContract';
+import { canonicalUuidSchema } from './identifiers';
 import type { Principal, SecretStore } from './credentials';
 import { principalSchema } from './credentials';
 import {
@@ -62,11 +63,18 @@ export class ReservationOperationRepository {
       return record;
     });
   }
-  requestCancellation(context: TenantContext, principal: Principal, assertCurrent: () => void) {
+  requestCancellation(
+    context: TenantContext,
+    principal: Principal,
+    operationId: string,
+    assertCurrent: () => void,
+  ) {
     const owner = principalSchema.parse(principal);
+    const expectedId = canonicalUuidSchema.parse(operationId);
     return this.tasks.run(async () => {
       const record = await this.storage.read(context, owner, assertCurrent);
-      if (!record) throw new Error('Original reservation attempt unavailable');
+      if (!record || record.proof.operationId !== expectedId)
+        throw new Error('Original reservation attempt unavailable');
       if (record.resolution || record.cancellationRequested) return record;
       const cancelling = { ...record, cancellationRequested: true };
       await this.storage.save(context, cancelling, assertCurrent);

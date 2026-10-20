@@ -70,7 +70,7 @@ export class CustomerPaymentController {
     return this.checks.run('recover', async () => {
       const saved = await this.load();
       if (!saved) return null;
-      const decision = await this.sessions.orders.payment(saved, locale);
+      const decision = await this.sessions.recovery.payment(saved, locale);
       this.assertCurrent();
       const record = await this.repository.payments.resolve(
         this.context,

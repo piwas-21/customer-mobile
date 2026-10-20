@@ -85,7 +85,10 @@ it('after contact purge only original recovery or cancellation can resolve the a
   expect(await actor.saved()).toMatchObject({ outcome: 'Pending', canRetry: false });
   await expect(actor.retryOriginal(f.proof.operationId, 'en')).rejects.toThrow();
   f.fetcher.mockResolvedValue(f.reply({ ...f.applied, outcome: 'Cancelled', reservationId: null }));
-  expect(await actor.cancelAttempt('en')).toMatchObject({ outcome: 'Cancelled', canRetry: false });
+  expect(await actor.cancelAttempt(f.proof.operationId, 'en')).toMatchObject({
+    outcome: 'Cancelled',
+    canRetry: false,
+  });
   expect(f.fetcher).toHaveBeenCalledTimes(1);
   expect(new URL(f.fetcher.mock.calls[0]![0]).pathname).toBe(
     reservationCreatePath + '/cancel-attempt',
@@ -97,7 +100,7 @@ it('lost cancellation acknowledgement leaves durable cancellation intent and can
   const actor = f.controller();
   await f.repository.reservations.install(f.context, f.prepared, f.proof, f.guard);
   f.fetcher.mockRejectedValue(new Error('Injected lost cancellation response'));
-  await expect(actor.cancelAttempt('en')).rejects.toThrow();
+  await expect(actor.cancelAttempt(f.proof.operationId, 'en')).rejects.toThrow();
   expect(await f.controller().saved()).toMatchObject({
     outcome: 'Pending',
     cancelling: true,
@@ -110,7 +113,10 @@ it('a canonical applied decision wins over a cancellation attempt without cancel
   const f = await reservationControllerFixture();
   const actor = f.controller();
   await f.repository.reservations.install(f.context, f.prepared, f.proof, f.guard);
-  expect(await actor.cancelAttempt('en')).toMatchObject({ outcome: 'Applied', cancelling: true });
+  expect(await actor.cancelAttempt(f.proof.operationId, 'en')).toMatchObject({
+    outcome: 'Applied',
+    cancelling: true,
+  });
 });
 it.each(['capability', 'currency', 'timezone', 'lifecycle'])(
   'refuses new creation on changed current bootstrap: %s',

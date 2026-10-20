@@ -59,6 +59,7 @@ it('recovers or seals with only the original proof after contacts and ordinary g
   const cancelling = await f.repository.reservations.requestCancellation(
     f.context,
     f.principal,
+    f.proof.operationId,
     f.guard,
   );
   f.fetcher.mockResolvedValue(f.reply({ ...f.applied, outcome: 'Cancelled', reservationId: null }));

@@ -113,6 +113,7 @@ it('cancellation is acknowledged before contact purge and permanently removes fu
   const cancelling = await f.repository.reservations.requestCancellation(
     f.context,
     f.principal,
+    f.proof.operationId,
     f.guard,
   );
   expect(cancelling.cancellationRequested).toBe(true);

@@ -1,9 +1,10 @@
 import { createReservationPreparation } from './reservationOperationRecord';
 import {
   canStartReservation,
+  dispatchReservationCreation,
   requireFreshReservationConfiguration,
 } from './reservationCreationPolicy';
-import { prepareReservation, resolveReservationAttempt } from '../api/reservationCreate';
+import { prepareReservation } from '../api/reservationCreate';
 import {
   reservationBookingInputSchema,
   type ReservationBookingInput,
@@ -27,7 +28,7 @@ export class CustomerReservationController {
     private readonly context: TenantContext,
     private readonly client: CustomerTransport,
     private readonly repository: SessionRepository,
-    sessions: SessionController,
+    private readonly sessions: SessionController,
     principal: Principal,
     private readonly createId: () => string,
     bootstrap: Bootstrap,
@@ -94,12 +95,14 @@ export class CustomerReservationController {
       return this.dispatch(record, 'create', locale);
     });
   }
-  cancelAttempt(locale: string) {
+  cancelAttempt(operationId: string, locale: string) {
     this.assertCurrent();
-    return this.actions.run('cancel', async () => {
+    const id = canonicalUuidSchema.parse(operationId);
+    return this.actions.run('cancel/' + id, async () => {
       const record = await this.repository.reservations.requestCancellation(
         this.context,
         this.owner.principal,
+        id,
         this.assertCurrent,
       );
       return this.dispatch(record, 'cancel-attempt', locale);
@@ -150,27 +153,18 @@ export class CustomerReservationController {
     this.assertCurrent();
     let result = record.resolution;
     if (!result) {
-      const draft =
+      result =
         phase === 'create'
-          ? await this.repository.reservations.intent(
+          ? await dispatchReservationCreation(
               this.context,
-              this.owner.principal,
+              this.client,
+              this.repository,
+              this.configuration,
+              record,
               this.assertCurrent,
+              locale,
             )
-          : null;
-      if (phase === 'create') {
-        if (!draft || record.cancellationRequested) throw new ApiFailure(409, 'refused');
-        await this.requireCurrentConfiguration(draft.timeZone);
-      }
-      result = await resolveReservationAttempt(
-        this.client,
-        this.context,
-        record,
-        phase,
-        this.assertCurrent,
-        locale,
-        draft ?? undefined,
-      );
+          : await this.sessions.recovery.reservation(record, phase, locale);
     }
     const final = await this.repository.reservations.finish(
       this.context,

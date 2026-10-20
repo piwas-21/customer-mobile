@@ -1,7 +1,7 @@
 import { SessionWithdrawal } from './sessionWithdrawal';
 import { renewStoredSession } from './sessionRenewal';
-import { CustomerOrderReads, orderReadPrincipal } from './customerOrderReads';
-import type { OrderReadAuthority } from './customerOrderReads';
+import { CustomerRecoveryReads, recoveryPrincipal } from './customerRecoveryReads';
+import type { CustomerRecoveryAuthority } from './customerRecoveryReads';
 import { readSession, retryAuthenticatedRead, writeSession } from './sessionRead';
 import type { z } from 'zod';
 import { signIn, type LoginInput } from '../api/auth';
@@ -11,7 +11,7 @@ import type { TenantContext } from './tenantContext';
 import type { SessionRepository } from './sessionRepository';
 import { SerialTasks } from './serialTasks';
 export class SessionController {
-  readonly orders: CustomerOrderReads;
+  readonly recovery: CustomerRecoveryReads;
   private readonly tasks = new SerialTasks();
   private readonly listeners = new Set<() => void>();
   private revision = 0;
@@ -28,8 +28,8 @@ export class SessionController {
     private readonly recoveryOnly = false,
   ) {
     this.withdrawal = new SessionWithdrawal(context, repository, accountsEnabled);
-    this.orders = new CustomerOrderReads(context, client, (authority, read) => {
-      const principal = orderReadPrincipal(authority);
+    this.recovery = new CustomerRecoveryReads(context, client, (authority, read) => {
+      const principal = recoveryPrincipal(authority);
       return principal.kind === 'customer'
         ? this.readOwned(principal.id, read, authority)
         : read(this.captureRequestOwner(principal));
@@ -152,7 +152,7 @@ export class SessionController {
   private async readOwned<T>(
     userId: string,
     read: (guard: () => void) => Promise<T>,
-    authority?: OrderReadAuthority,
+    authority?: CustomerRecoveryAuthority,
   ): Promise<T> {
     const revision = this.revision;
     const captured = this.assertPrincipal(revision, userId);
@@ -181,7 +181,7 @@ export class SessionController {
       this.captureRequestOwner({ kind: 'customer', id: userId }),
     );
   }
-  private async renew(revision: number, authority?: OrderReadAuthority): Promise<void> {
+  private async renew(revision: number, authority?: CustomerRecoveryAuthority): Promise<void> {
     const captured = this.session;
     if (!captured) throw new ApiFailure(401, 'refused');
     const next = await renewStoredSession(

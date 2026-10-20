@@ -30,7 +30,7 @@ export default function ReservationAttemptNotice() {
     setConfirm(undefined);
     try {
       if (captured.kind === 'retry') await operations.retryOriginal(captured.operationId);
-      else await operations.cancelAttempt();
+      else await operations.cancelAttempt(captured.operationId);
     } catch {
       /* The shared pending view retains canonical recovery authority. */
     }

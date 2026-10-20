@@ -23,7 +23,12 @@ it.each(['no-proof', 'no-intent', 'changed-intent', 'cancelling', 'terminal'])(
       saved.draft.customerName = 'Changed private intent';
       await f.store.set(key, JSON.stringify(saved));
     } else if (mode === 'cancelling')
-      record = await f.repository.reservations.requestCancellation(f.context, f.principal, f.guard);
+      record = await f.repository.reservations.requestCancellation(
+        f.context,
+        f.principal,
+        f.proof.operationId,
+        f.guard,
+      );
     else
       record = await f.repository.reservations.finish(f.context, f.principal, f.applied, f.guard);
     await expect(
@@ -82,6 +87,7 @@ it('refuses successful but unknown create/cancel decisions and a foreign operati
   const cancelling = await f.repository.reservations.requestCancellation(
     f.context,
     f.principal,
+    f.proof.operationId,
     f.guard,
   );
   await expect(

@@ -1,3 +1,4 @@
+import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { useReservation } from './ReservationProvider';
 import ReservationCreateModal from './ReservationCreateModal';
 import ReservationAttemptNotice from './ReservationAttemptNotice';
@@ -122,6 +123,7 @@ function AvailabilityBody({
               onPress={page.read}
             />
             <Feedback message={t('reservationAvailabilityAdvisory')} />
+            {operations ? <PaymentAttentionNotice /> : null}
             <ReservationAttemptNotice />
           </View>
         }

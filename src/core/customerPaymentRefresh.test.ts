@@ -33,8 +33,8 @@ it.each([false, true])('renews payment proof once in parallel, readonly=%s', asy
   );
   expect(
     await Promise.all([
-      f.sessions.orders.payment(f.record, 'en'),
-      f.sessions.orders.payment(f.record, 'en'),
+      f.sessions.recovery.payment(f.record, 'en'),
+      f.sessions.recovery.payment(f.record, 'en'),
     ]),
   ).toEqual([paymentDecision('paid'), paymentDecision('paid')]);
   const refreshes = f.fetcher.mock.calls.filter(([url]) => url.endsWith('/refresh-token'));
@@ -56,7 +56,7 @@ it.each([false, true])('renews payment proof once in parallel, readonly=%s', asy
 it.each([403, 404, 503])('never renews or retries a payment HTTP %s', async (status) => {
   const f = await fixture();
   f.fetcher.mockResolvedValue(response({}, status));
-  await expect(f.sessions.orders.payment(f.record, 'en')).rejects.toMatchObject({ status });
+  await expect(f.sessions.recovery.payment(f.record, 'en')).rejects.toMatchObject({ status });
   expect(f.fetcher).toHaveBeenCalledTimes(1);
 });
 it('retries exactly once after an HTTP 401, retains the attempt on a second refusal', async () => {
@@ -64,7 +64,7 @@ it('retries exactly once after an HTTP 401, retains the attempt on a second refu
   f.fetcher.mockImplementation(async (url) =>
     url.endsWith('/refresh-token') ? authResponse() : response({}, 401),
   );
-  await expect(f.sessions.orders.payment(f.record, 'en')).rejects.toMatchObject({ status: 401 });
+  await expect(f.sessions.recovery.payment(f.record, 'en')).rejects.toMatchObject({ status: 401 });
   expect(f.fetcher).toHaveBeenCalledTimes(3);
   expect(await f.repository.payments.load(f.context, f.principal, () => {})).toEqual(f.record);
 });
@@ -79,7 +79,7 @@ it('logout during renewal withdraws publication and retry but preserves the pend
     }
     return response({}, 401);
   });
-  const pending = f.sessions.orders.payment(f.record, 'en');
+  const pending = f.sessions.recovery.payment(f.record, 'en');
   await entered.promise;
   await f.sessions.logout();
   reply.resolve(authResponse());
@@ -91,7 +91,7 @@ it('logout during renewal withdraws publication and retry but preserves the pend
 it('invalid refresh removes credentials while retaining the original private attempt', async () => {
   const f = await fixture();
   f.fetcher.mockResolvedValue(response({}, 401));
-  await expect(f.sessions.orders.payment(f.record, 'en')).rejects.toMatchObject({ status: 401 });
+  await expect(f.sessions.recovery.payment(f.record, 'en')).rejects.toMatchObject({ status: 401 });
   expect(f.fetcher).toHaveBeenCalledTimes(2);
   expect(f.sessions.userId).toBeNull();
   expect(await f.repository.payments.load(f.context, f.principal, () => {})).toEqual(f.record);

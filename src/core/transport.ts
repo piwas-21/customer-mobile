@@ -61,7 +61,8 @@ export class CustomerTransport {
     const renewal =
       options.credentials === 'receipt-renewal' ||
       options.credentials === 'payment-renewal' ||
-      options.credentials === 'cancellation-renewal';
+      options.credentials === 'cancellation-renewal' ||
+      options.credentials === 'reservation-renewal';
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')

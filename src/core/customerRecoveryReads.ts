@@ -3,6 +3,11 @@ import {
   scopedCancellationRecord,
   type CancellationOperationRecord,
 } from './cancellationOperationRecord';
+import { resolveReservationAttempt } from '../api/reservationCreate';
+import {
+  scopedReservationRecord,
+  type ReservationOperationRecord,
+} from './reservationOperationRecord';
 import type { Principal } from './credentials';
 import { readOrderReceipt } from '../api/orderReceipt';
 import { recoverCustomerPayment } from '../api/customerPayment';
@@ -11,24 +16,35 @@ import { scopedPaymentRecord, type PaymentOperationRecord } from './paymentOpera
 import type { OrderOperationProof } from './orderOperationProof';
 import type { TenantContext } from './tenantContext';
 import type { CustomerTransport } from './transport';
-export type OrderReadAuthority =
+export type CustomerRecoveryAuthority =
   | {
       proof: OrderOperationProof;
       paymentOrderId?: string | undefined;
       cancellation?: never;
+      reservation?: never;
     }
   | {
       cancellation: CancellationOperationRecord;
       proof?: never;
       paymentOrderId?: never;
+      reservation?: never;
+    }
+  | {
+      reservation: ReservationOperationRecord;
+      proof?: never;
+      paymentOrderId?: never;
+      cancellation?: never;
     };
-export const orderReadPrincipal = (authority: OrderReadAuthority): Principal =>
-  authority.cancellation ? authority.cancellation.principal : authority.proof.principal;
+export function recoveryPrincipal(authority: CustomerRecoveryAuthority): Principal {
+  if (authority.reservation) return authority.reservation.principal;
+  if (authority.cancellation) return authority.cancellation.principal;
+  return authority.proof.principal;
+}
 type ReadPrivate = <T>(
-  authority: OrderReadAuthority,
+  authority: CustomerRecoveryAuthority,
   read: (guard: () => void) => Promise<T>,
 ) => Promise<T>;
-export class CustomerOrderReads {
+export class CustomerRecoveryReads {
   constructor(
     private readonly context: TenantContext,
     private readonly client: CustomerTransport,
@@ -56,6 +72,16 @@ export class CustomerOrderReads {
     const record = scopedCancellationRecord(this.context, saved.principal, saved);
     return this.readPrivate({ cancellation: record }, (guard) =>
       resolveCancellation(this.client, this.context, record, 'recover', guard, locale),
+    );
+  }
+  reservation(
+    saved: ReservationOperationRecord,
+    phase: 'recover' | 'cancel-attempt',
+    locale: string,
+  ) {
+    const record = scopedReservationRecord(this.context, saved.principal, saved);
+    return this.readPrivate({ reservation: record }, (guard) =>
+      resolveReservationAttempt(this.client, this.context, record, phase, guard, locale),
     );
   }
 }

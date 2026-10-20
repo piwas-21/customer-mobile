@@ -9,6 +9,7 @@ import {
   openReservationRequest,
   fillReservationContact,
 } from '../../test/reservationUi';
+import { response } from '../../test/transport';
 import { reservationCreatePath } from '../../core/reservationRequest';
 it('backgrounding purges unfinished contact input and foreground requires a fresh selection', async () => {
   const f = await reservationUiFixture();
@@ -82,6 +83,39 @@ it('stopping an uncertain attempt requires confirmation and persists the decisio
     await waitFor(() =>
       expect(view.queryByText('This reservation request was stopped.')).toBeNull(),
     );
+  } finally {
+    view.unmount();
+    f.cache.clear();
+  }
+});
+
+it('shows the original-customer reminder after rejected renewal and cannot silently offer a new guest booking', async () => {
+  const f = await reservationUiFixture(true);
+  await f.repository.reservations.install(f.context, f.prepared, f.proof, f.guard);
+  const normal = f.fetcher.getMockImplementation()!;
+  f.fetcher.mockResolvedValue(response({}, 401));
+  await expect(f.controller().recover('en')).rejects.toThrow();
+  expect(f.sessions.needsPaymentAttention).toBe(true);
+  f.state.userId = f.sessions.userId;
+  f.state.ownerVersion = f.sessions.ownerVersion;
+  f.state.needsPaymentAttention = f.sessions.needsPaymentAttention;
+  f.fetcher.mockImplementation(normal);
+  const view = render(<ReservationAvailabilityScreen />, { wrapper: f.Wrapper });
+  try {
+    await view.findByText(
+      /An earlier order, payment, cancellation or reservation request needs confirmation/,
+    );
+    fireEvent.press(view.getByRole('button', { name: 'Check available times' }));
+    expect(await view.findByRole('button', { name: 'Choose 6:00 PM' })).toBeDisabled();
+    fireEvent.press(view.getByRole('button', { name: 'Use this device for another customer' }));
+    await view.findByText(
+      /The previous customer’s order, payment, cancellation or reservation request may still complete/,
+    );
+    expect(f.sessions.needsPaymentAttention).toBe(true);
+    expect((await f.repository.reservations.load(f.context, f.principal, f.guard))?.proof).toEqual(
+      f.proof,
+    );
+    expect(await f.repository.reservations.intent(f.context, f.principal, f.guard)).toBeNull();
   } finally {
     view.unmount();
     f.cache.clear();

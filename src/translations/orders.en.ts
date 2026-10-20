@@ -17,15 +17,15 @@ export const ordersEnglish = {
   },
   paymentAttention: {
     message:
-      'An earlier order, payment or cancellation needs confirmation. Sign in to the same restaurant account to check it before placing another order. You can still browse the menu.',
+      'An earlier order, payment, cancellation or reservation request needs confirmation. Sign in to the same restaurant account to check it before placing another order or reservation. You can still browse the menu.',
     accountsUnavailable:
-      'An earlier order, payment or cancellation needs confirmation. Account access is currently unavailable at this restaurant. Contact the restaurant to check the original order before placing another. You can still browse the menu.',
-    signIn: 'Sign in to check the original order',
+      'An earlier order, payment, cancellation or reservation request needs confirmation. Account access is currently unavailable at this restaurant. Contact the restaurant to check the original request before placing another order or reservation. You can still browse the menu.',
+    signIn: 'Sign in to check the original request',
     separate: 'Use this device for another customer',
     confirmation:
-      'The previous customer’s order, payment or cancellation may still complete. Continuing does not cancel it or refund a payment. Only continue if you are placing a separate order for another customer. The original customer can sign in later to check their order.',
+      'The previous customer’s order, payment, cancellation or reservation request may still complete. Continuing does not cancel it or refund a payment. Only continue if you are placing a separate order or reservation for another customer. The original customer can sign in later to check their original request.',
     confirm: 'Continue for another customer',
-    keep: 'Keep the original order reminder',
+    keep: 'Keep the original request reminder',
   },
   hostedPayment: {
     pending:

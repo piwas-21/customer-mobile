@@ -1,3 +1,5 @@
+import { z } from 'zod';
+import { credentialSecretSchema } from './credentials';
 import {
   reservationDraftSchema,
   reservationCreateProofSchema,
@@ -13,6 +15,10 @@ import type { CredentialVault, Principal } from './credentials';
 import type { RequestOptions } from './httpTypes';
 import type { TenantContext } from './tenantContext';
 export const reservationCreatePath = '/api/customer-mobile/reservations/create';
+const renewalBodySchema = z.strictObject({
+  accessToken: credentialSecretSchema,
+  refreshToken: credentialSecretSchema,
+});
 const fullBodySchema = reservationDraftSchema.safeExtend({
   payloadHash: reservationCreateProofSchema.shape.payloadHash,
   ownerProof: reservationCreateProofSchema.shape.ownerProof,
@@ -24,7 +30,11 @@ export function captureReservationRequest(
   options: RequestOptions,
 ): RequestOptions {
   const mode = options.credentials;
-  if (mode !== 'reservation-prepare' && mode !== 'reservation-operation') {
+  if (
+    mode !== 'reservation-prepare' &&
+    mode !== 'reservation-operation' &&
+    mode !== 'reservation-renewal'
+  ) {
     if (
       options.expectedReservationPreparation !== undefined ||
       options.expectedReservationRecord !== undefined
@@ -36,6 +46,26 @@ export function captureReservationRequest(
     throw new ApiFailure(401, 'refused');
   if (mode === 'reservation-prepare')
     return capturePreparation(context, path, options, options.principal);
+  if (mode === 'reservation-renewal') {
+    const record = scopedReservationRecord(
+      context,
+      options.principal,
+      options.expectedReservationRecord,
+    );
+    if (
+      path !== '/api/Auth/refresh-token' ||
+      record.principal.kind !== 'customer' ||
+      record.resolution ||
+      options.expectedReservationPreparation !== undefined
+    )
+      throw new ApiFailure(401, 'refused');
+    return {
+      ...options,
+      principal: record.principal,
+      expectedReservationRecord: record,
+      body: renewalBodySchema.parse(options.body),
+    };
+  }
   return captureOperation(context, path, options, options.principal);
 }
 function capturePreparation(
@@ -135,7 +165,11 @@ export async function reservationRequestHeaders(
   if (principal.kind === 'customer') {
     const session = await vault.session(context, principal.id);
     if (!session) throw new ApiFailure(401, 'refused');
-    headers.Authorization = `Bearer ${session.accessToken}`;
+    if (options.credentials === 'reservation-renewal') {
+      const body = renewalBodySchema.parse(options.body);
+      if (body.accessToken !== session.accessToken || body.refreshToken !== session.refreshToken)
+        throw new ApiFailure(401, 'refused');
+    } else headers.Authorization = `Bearer ${session.accessToken}`;
   }
   options.assertCurrent();
   return headers;
