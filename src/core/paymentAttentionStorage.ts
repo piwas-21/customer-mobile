@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { SecretStore } from './credentials';
+import { CancellationOperationStorage } from './cancellationOperationStorage';
 import { OrderOperationStorage } from './orderOperationStorage';
 import { PaymentOperationStorage } from './paymentOperationStorage';
 import type { TenantContext } from './tenantContext';
@@ -21,9 +22,22 @@ export class PaymentAttentionStorage {
     };
     if (
       !(await orders.read(context, principal, guard)) &&
-      (await payments.read(context, principal, guard))?.state !== 'pending'
+      (await payments.read(context, principal, guard))?.state !== 'pending' &&
+      (await new CancellationOperationStorage(this.store).read(context, principal, guard))
+        ?.resolution !== null
     )
       return;
+    await this.save(context, userId);
+  }
+  async retainCancellation(context: TenantContext, userId: string): Promise<void> {
+    const principal = { kind: 'customer', id: z.uuid().parse(userId) } as const;
+    if (
+      (await new CancellationOperationStorage(this.store).readForCleanup(context, principal))
+        ?.resolution === null
+    )
+      await this.save(context, userId);
+  }
+  private async save(context: TenantContext, userId: string): Promise<void> {
     await this.store.set(key(context), userId);
     if ((await this.load(context)) !== userId) throw new Error('Payment reminder save incomplete');
   }

@@ -1,3 +1,4 @@
+import CancellationNotice from './CancellationNotice';
 import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +39,7 @@ export default function OrdersScreen() {
             <OrderHistoryControl />
             <PaymentAttentionNotice />
             <PaymentNotice />
+            <CancellationNotice />
             {cleanup ? (
               <Feedback
                 message={t('accountFailure.logout')}

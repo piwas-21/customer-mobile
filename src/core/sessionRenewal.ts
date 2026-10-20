@@ -26,6 +26,7 @@ export async function renewStoredSession(
       guard,
       authority?.proof,
       authority?.paymentOrderId,
+      authority?.cancellation,
     );
   } catch (error) {
     guard();

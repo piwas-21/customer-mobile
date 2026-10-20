@@ -15,6 +15,7 @@ import {
   type PendingBasketOperation,
 } from './basketOperationRecord';
 import { BasketOperationStorage } from './basketOperationStorage';
+import { CancellationOperationStorage } from './cancellationOperationStorage';
 import { PaymentOperationStorage } from './paymentOperationStorage';
 import type { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
@@ -76,6 +77,11 @@ export class BasketOperationRepository {
           throw new Error('Recover the pending basket change before preparing another.');
         return immutableBasketOperation(previous);
       }
+      await new CancellationOperationStorage(this.store).assertResolved(
+        context,
+        owner,
+        assertCurrent,
+      );
       await new PaymentOperationStorage(this.store).assertResolved(context, owner, assertCurrent);
       // The same secure queue arbitrates basket and order claims across controller instances.
       // Any unresolved proof (including malformed data) blocks a new basket effect.

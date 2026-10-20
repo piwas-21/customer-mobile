@@ -1,3 +1,5 @@
+import CancellationEntry from './CancellationEntry';
+import CancellationModal from './CancellationModal';
 import type { HistoryReceipt } from '../../api/historyReceipt';
 import ReorderEntry from './ReorderEntry';
 import ReorderModal from './ReorderModal';
@@ -15,6 +17,7 @@ export default function ReceiptModal({
   const { t } = useTranslation();
   const [confirm, setConfirm] = useState(false);
   const [reorder, setReorder] = useState<HistoryReceipt>();
+  const [decline, setDecline] = useState<HistoryReceipt>();
   if (
     reorder === orders.receipt &&
     orders.receipt &&
@@ -25,6 +28,20 @@ export default function ReceiptModal({
       <ReorderModal
         receipt={orders.receipt}
         onBack={() => setReorder(undefined)}
+        onClose={orders.close}
+      />
+    );
+  if (
+    decline === orders.receipt &&
+    orders.receipt &&
+    !orders.receiptLoading &&
+    !orders.receiptFailed
+  )
+    return (
+      <CancellationModal
+        orderId={orders.receipt.orderId}
+        {...(orders.item ? { originalOperationId: orders.item.operationId } : {})}
+        onBack={() => setDecline(undefined)}
         onClose={orders.close}
       />
     );
@@ -51,6 +68,14 @@ export default function ReceiptModal({
             ) : null}
             {orders.receipt && !orders.receiptLoading && !orders.receiptFailed ? (
               <ReorderEntry disabled={orders.busy} onPress={() => setReorder(orders.receipt)} />
+            ) : null}
+            {orders.receipt && !orders.receiptLoading && !orders.receiptFailed ? (
+              <CancellationEntry
+                status={orders.receipt.status}
+                confirmationFlow={orders.receipt.confirmationFlow}
+                disabled={orders.busy}
+                onPress={() => setDecline(orders.receipt)}
+              />
             ) : null}
             {orders.actionFailed ? <Feedback message={t('savedOrdersActionFailed')} /> : null}
             {confirm ? (

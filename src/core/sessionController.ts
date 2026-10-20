@@ -1,6 +1,7 @@
 import { SessionWithdrawal } from './sessionWithdrawal';
 import { renewStoredSession } from './sessionRenewal';
-import { CustomerOrderReads, type OrderReadAuthority } from './customerOrderReads';
+import { CustomerOrderReads, orderReadPrincipal } from './customerOrderReads';
+import type { OrderReadAuthority } from './customerOrderReads';
 import { readSession, retryAuthenticatedRead, writeSession } from './sessionRead';
 import type { z } from 'zod';
 import { signIn, type LoginInput } from '../api/auth';
@@ -27,11 +28,12 @@ export class SessionController {
     private readonly recoveryOnly = false,
   ) {
     this.withdrawal = new SessionWithdrawal(context, repository, accountsEnabled);
-    this.orders = new CustomerOrderReads(context, client, (proof, read, paymentOrderId) =>
-      proof.principal.kind === 'customer'
-        ? this.readOwned(proof.principal.id, read, { proof, paymentOrderId })
-        : read(this.captureRequestOwner(proof.principal)),
-    );
+    this.orders = new CustomerOrderReads(context, client, (authority, read) => {
+      const principal = orderReadPrincipal(authority);
+      return principal.kind === 'customer'
+        ? this.readOwned(principal.id, read, authority)
+        : read(this.captureRequestOwner(principal));
+    });
   }
   get onlyRecoverOrders(): boolean {
     return this.recoveryOnly || (!this.accountsEnabled && this.session !== null);

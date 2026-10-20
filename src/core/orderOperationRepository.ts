@@ -14,6 +14,7 @@ import {
 } from './credentials';
 import { orderOperationProofSchema, type OrderOperationProof } from './orderOperationProof';
 import { OrderOperationStorage } from './orderOperationStorage';
+import { CancellationOperationStorage } from './cancellationOperationStorage';
 import { PaymentOperationStorage } from './paymentOperationStorage';
 import type { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
@@ -21,7 +22,7 @@ export class OrderOperationRepository {
   private readonly storage: OrderOperationStorage;
   private readonly payments: PaymentOperationStorage;
   constructor(
-    store: SecretStore,
+    private readonly store: SecretStore,
     private readonly vault: CredentialVault,
     private readonly tasks: SerialTasks,
   ) {
@@ -46,6 +47,11 @@ export class OrderOperationRepository {
         throw new Error('Manage saved order receipts before placing another order');
       await this.storage.ensureBasketUnclaimed(context, owner, assertCurrent);
       await this.payments.assertResolved(context, owner, assertCurrent);
+      await new CancellationOperationStorage(this.store).assertResolved(
+        context,
+        owner,
+        assertCurrent,
+      );
       const sessionId = canonicalUuidSchema.parse(
         await this.vault.capability(context, 'guest-session', owner),
       );
@@ -88,7 +94,9 @@ export class OrderOperationRepository {
     return this.tasks.run(
       async () =>
         Boolean(await this.storage.read(context, owner, assertCurrent)) ||
-        (await this.payments.read(context, owner, assertCurrent))?.state === 'pending',
+        (await this.payments.read(context, owner, assertCurrent))?.state === 'pending' ||
+        (await new CancellationOperationStorage(this.store).read(context, owner, assertCurrent))
+          ?.resolution === null,
     );
   }
   requestCancellation(

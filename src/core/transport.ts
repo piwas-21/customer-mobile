@@ -4,6 +4,7 @@ import { originSchema } from './directory';
 import type { CredentialVault } from './credentials';
 import type { TenantBoundary, TenantContext } from './tenantContext';
 import { ApiFailure } from './apiFailure';
+import { captureCancellationRequest } from './cancellationRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
 export { ApiFailure } from './apiFailure';
@@ -48,19 +49,30 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureCancellationRequest(context, path, options);
     const assertOwner = options.assertCurrent ?? (() => {});
     assertOwner();
     const method = options.method ?? 'GET';
     const receiptRead = options.credentials === 'order-receipt';
     const paymentRecovery = options.credentials === 'order-payment';
+    const cancellation = options.credentials === 'order-cancellation';
     const renewal =
-      options.credentials === 'receipt-renewal' || options.credentials === 'payment-renewal';
+      options.credentials === 'receipt-renewal' ||
+      options.credentials === 'payment-renewal' ||
+      options.credentials === 'cancellation-renewal';
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
     )
       throw new ApiFailure(401, 'refused');
-    if (receiptRead && (method !== 'POST' || path !== '/api/customer-mobile/orders/receipt'))
+    if (
+      receiptRead &&
+      (method !== 'POST' ||
+        ![
+          '/api/customer-mobile/orders/receipt',
+          '/api/customer-mobile/orders/cancellation/original/prepare',
+        ].includes(path))
+    )
       throw new ApiFailure(401, 'refused');
     if (
       paymentRecovery &&
@@ -80,6 +92,7 @@ export class CustomerTransport {
       !orderRecovery &&
       !receiptRead &&
       !paymentRecovery &&
+      !cancellation &&
       !renewal
     )
       throw new Error('Restaurant is read-only');

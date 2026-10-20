@@ -1,3 +1,4 @@
+import CancellationNotice from '../orders/CancellationNotice';
 import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
@@ -51,6 +52,7 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
         ListHeaderComponent={
           <>
             <PaymentAttentionNotice />
+            <CancellationNotice />
             <BasketNotice basket={basket} />
             <CustomerOrderNotice basket={basket} />
             <BasketChannelControl basket={basket} />

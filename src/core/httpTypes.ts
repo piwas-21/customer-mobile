@@ -1,3 +1,4 @@
+import type { CancellationOperationRecord } from './cancellationOperationRecord';
 import type { OrderOperationProof } from './orderOperationProof';
 import type { Principal } from './credentials';
 export type Fetch = (
@@ -24,11 +25,14 @@ export type RequestOptions = {
     | 'order-receipt'
     | 'order-payment'
     | 'receipt-renewal'
-    | 'payment-renewal';
+    | 'payment-renewal'
+    | 'order-cancellation'
+    | 'cancellation-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
   expectedOrderProof?: OrderOperationProof;
   expectedPaymentOrderId?: string;
+  expectedCancellationRecord?: CancellationOperationRecord;
 };

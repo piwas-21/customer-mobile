@@ -1,3 +1,4 @@
+import { cancellationEnglish } from './translations/cancellation.en';
 import { addressesEnglish } from './translations/addresses.en';
 import { cacheEnglish } from './translations/cache.en';
 import { accountEnglish } from './translations/account.en';
@@ -33,6 +34,7 @@ const en = {
   reviewOrder: 'Review order',
   ...checkoutEnglish,
   ...ordersEnglish,
+  ...cancellationEnglish,
   ...deletionEnglish,
   basket: 'Basket',
   basketCount: 'Basket · {{count}}',
