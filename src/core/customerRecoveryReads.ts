@@ -22,15 +22,18 @@ export type CustomerRecoveryAuthority =
       paymentOrderId?: string | undefined;
       cancellation?: never;
       reservation?: never;
+      assertCurrent?: never;
     }
   | {
       cancellation: CancellationOperationRecord;
       proof?: never;
       paymentOrderId?: never;
       reservation?: never;
+      assertCurrent?: never;
     }
   | {
       reservation: ReservationOperationRecord;
+      assertCurrent: () => void;
       proof?: never;
       paymentOrderId?: never;
       cancellation?: never;
@@ -78,10 +81,16 @@ export class CustomerRecoveryReads {
     saved: ReservationOperationRecord,
     phase: 'recover' | 'cancel-attempt',
     locale: string,
+    assertCurrent: () => void,
   ) {
     const record = scopedReservationRecord(this.context, saved.principal, saved);
-    return this.readPrivate({ reservation: record }, (guard) =>
-      resolveReservationAttempt(this.client, this.context, record, phase, guard, locale),
-    );
+    return this.readPrivate({ reservation: record, assertCurrent }, (sessionGuard) => {
+      const guard = () => {
+        sessionGuard();
+        assertCurrent();
+      };
+      guard();
+      return resolveReservationAttempt(this.client, this.context, record, phase, guard, locale);
+    });
   }
 }

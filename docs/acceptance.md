@@ -573,3 +573,5 @@ Source tests exercise guest/customer requests, required contact fields, response
 explicit retry, Unseen, cancellation races, secure storage failure, background/foreground and logout.
 Full ten-locale/RTL, installed SecureStore/keyboard/back/accessibility, API deployment, persisted server
 protection keys and real restaurant confirmation/mail remain separate acceptance gates.
+
+Original reservation recovery preserves both the booking resource lifetime and the account owner guard through private header reads, token renewal, secure credential activation and retry. A withdrawn resource cannot dispatch a later recover/stop request or install a late renewal. App-state events dispose the current actor before queued React updates; layout cleanup withdraws committed account/bootstrap/tenant scope changes synchronously.

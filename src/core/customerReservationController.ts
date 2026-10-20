@@ -164,7 +164,7 @@ export class CustomerReservationController {
               this.assertCurrent,
               locale,
             )
-          : await this.sessions.recovery.reservation(record, phase, locale);
+          : await this.sessions.recovery.reservation(record, phase, locale, this.assertCurrent);
     }
     const final = await this.repository.reservations.finish(
       this.context,

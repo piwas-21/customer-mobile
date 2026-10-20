@@ -15,6 +15,7 @@ export async function renewStoredSession(
 ): Promise<CustomerSession> {
   const guard = () => {
     if (!isCurrent()) throw new ApiFailure(401, 'refused');
+    authority?.assertCurrent?.();
   };
   guard();
   let next: CustomerSession;
@@ -37,7 +38,10 @@ export async function renewStoredSession(
     throw error;
   }
   guard();
-  await repository.activate(context, next, isCurrent);
+  await repository.activate(context, next, () => {
+    guard();
+    return true;
+  });
   guard();
   return next;
 }

@@ -5,6 +5,7 @@ import { SessionRepository } from '../core/sessionRepository';
 export async function reservationRenewalFixture() {
   const f = await reservationControllerFixture(true);
   await f.repository.reservations.install(f.context, f.prepared, f.proof, f.guard);
+  const transportVault = f.repository.vault;
   f.sessions.dispose();
   const repository = new SessionRepository(f.store);
   const sessions = new SessionController(f.context, f.client, repository, false, true);
@@ -30,5 +31,5 @@ export async function reservationRenewalFixture() {
       accessToken: 'renewed-access',
       refreshToken: 'renewed-refresh',
     });
-  return { ...f, repository, sessions, actor, bootstrap, authentication };
+  return { ...f, repository, sessions, actor, bootstrap, authentication, transportVault };
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { randomUUID } from 'expo-crypto';
 import { CustomerReservationController } from '../../core/customerReservationController';
@@ -12,14 +12,16 @@ export default function useReservationResource() {
   const { context, client } = useRestaurant();
   const session = useSession();
   const bootstrap = useBootstrap().data;
+  const activeController = useRef<CustomerReservationController | undefined>(undefined);
   const [lifecycle, setLifecycle] = useState({
     active: AppState.currentState === 'active',
     revision: 0,
   });
-  useEffect(() => {
-    const listener = AppState.addEventListener('change', (state) =>
-      setLifecycle((previous) => ({ active: state === 'active', revision: previous.revision + 1 })),
-    );
+  useLayoutEffect(() => {
+    const listener = AppState.addEventListener('change', (state) => {
+      activeController.current?.dispose();
+      setLifecycle((previous) => ({ active: state === 'active', revision: previous.revision + 1 }));
+    });
     return () => listener.remove();
   }, []);
   const scope = useMemo(
@@ -47,7 +49,7 @@ export default function useReservationResource() {
     controller: CustomerReservationController;
     version: number;
   }>();
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (
       !scope.context ||
       !scope.client ||
@@ -71,7 +73,14 @@ export default function useReservationResource() {
       return;
     }
     const version = ++nextReservationResource;
-    return restoreOrderController(controller, () => setResource({ scope, controller, version }));
+    activeController.current = controller;
+    const withdraw = restoreOrderController(controller, () =>
+      setResource({ scope, controller, version }),
+    );
+    return () => {
+      if (activeController.current === controller) activeController.current = undefined;
+      withdraw();
+    };
   }, [scope]);
   const current = resource?.scope === scope ? resource : undefined;
   const key = useMemo(

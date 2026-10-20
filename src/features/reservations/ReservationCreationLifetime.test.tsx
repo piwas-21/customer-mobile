@@ -9,6 +9,8 @@ import {
   openReservationRequest,
   fillReservationContact,
 } from '../../test/reservationUi';
+import { CustomerReservationController } from '../../core/customerReservationController';
+import { deferred } from '../../test/deferred';
 import { response } from '../../test/transport';
 import { reservationCreatePath } from '../../core/reservationRequest';
 it('backgrounding purges unfinished contact input and foreground requires a fresh selection', async () => {
@@ -121,3 +123,50 @@ it('shows the original-customer reminder after rejected renewal and cannot silen
     f.cache.clear();
   }
 });
+
+it.each([false, true])(
+  'backgrounding a paused original check prevents its dispatch: customer=%p',
+  async (customer) => {
+    const f = await reservationUiFixture(customer);
+    await f.repository.reservations.install(f.context, f.prepared, f.proof, f.guard);
+    const entered = deferred<void>();
+    const release = deferred<void>();
+    const checkOriginal = jest.spyOn(CustomerReservationController.prototype, 'recover');
+    const read = f.repository.vault.capability.bind(f.repository.vault);
+    jest.spyOn(f.repository.vault, 'capability').mockImplementation(async (...args) => {
+      if (args[1] === 'reservation-operation') {
+        entered.resolve();
+        await release.promise;
+      }
+      return read(...args);
+    });
+    const view = render(<ReservationAttemptNotice />, { wrapper: f.Wrapper });
+    try {
+      const check = await view.findByRole('button', { name: 'Check reservation request' });
+      await waitFor(() => expect(check).not.toBeDisabled());
+      fireEvent.press(check);
+      await entered.promise;
+      expect(checkOriginal).toHaveBeenCalledTimes(1);
+      const result = checkOriginal.mock.results[0];
+      if (result?.type !== 'return') throw new Error('Original check did not start');
+      const completed = result.value.catch(() => undefined);
+      const listeners = jest
+        .mocked(AppState.addEventListener)
+        .mock.calls.map(([, listener]) => listener);
+      await act(async () => {
+        listeners.forEach((listener) => listener('background'));
+        release.resolve();
+        await completed;
+      });
+      expect(view.queryByRole('button', { name: 'Check reservation request' })).toBeNull();
+      expect(f.fetcher).not.toHaveBeenCalled();
+      expect(
+        (await f.repository.reservations.load(f.context, f.principal, f.guard))?.resolution,
+      ).toBeNull();
+    } finally {
+      release.resolve();
+      view.unmount();
+      f.cache.clear();
+    }
+  },
+);
