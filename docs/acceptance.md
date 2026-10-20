@@ -387,3 +387,18 @@ order, payment or login authority. Actual OS domain association, shared-service 
 provider app switching, signed installations and device/process-death acceptance remain open. Backend
 #743 remains a draft until the required connected return contract is complete; no native payment
 activation follows from these source tests.
+
+## Native central-domain declarations
+
+`EXPO_PUBLIC_MOBILE_LINK_ORIGIN` supplies the single canonical HTTPS origin for both runtime return
+validation and native declarations. Missing configuration emits no associated domains or verified
+intent filters. Invalid configured origins refuse generation/build. iOS declares that host only;
+Android additionally restricts the verified intent to the payment-return path. Existing provisional
+application identifiers remain subject to publisher ownership approval.
+
+Ten configuration controls pass, and generated iOS entitlements/Android manifest were parsed against
+an offline fixture origin. Generation without an origin was restored afterward. These establish source
+configuration, not OS verification. A working return also needs the matching reviewed public AASA /
+asset-links files, actual publisher/signing identities, HTTPS deployment and installed-device checks.
+See [Expo iOS links](https://docs.expo.dev/linking/ios-universal-links/) and
+[Expo Android links](https://docs.expo.dev/linking/android-app-links/).
