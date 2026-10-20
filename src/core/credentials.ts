@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { removeAcknowledgedSecret } from './acknowledgedSecret';
 import type { TenantContext } from './tenantContext';
 export interface SecretStore {
   get(key: string): Promise<string | null>;
@@ -33,7 +34,9 @@ export type CredentialKind =
   | 'order-operation-proof'
   | 'order-contact'
   | 'order-decisions'
-  | 'order-cancellation';
+  | 'order-cancellation'
+  | 'reservation-operation'
+  | 'reservation-contact';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,
@@ -63,6 +66,9 @@ export class CredentialVault {
   async removeSession(context: TenantContext, userId: string): Promise<void> {
     await this.store.remove(secretKey(context, 'session', { kind: 'customer', id: userId }));
   }
+  reservationContactRecord(context: TenantContext, principal: Principal): Promise<string | null> {
+    return this.store.get(secretKey(context, 'reservation-contact', principal));
+  }
   orderReceiptRecords(context: TenantContext, principal: Principal): Promise<string | null> {
     return this.store.get(secretKey(context, 'order-decisions', principal));
   }
@@ -70,7 +76,7 @@ export class CredentialVault {
     context: TenantContext,
     kind: Exclude<
       CredentialKind,
-      'session' | 'basket-operation' | 'order-contact' | 'order-decisions'
+      'session' | 'basket-operation' | 'order-contact' | 'order-decisions' | 'reservation-contact'
     >,
     principal: Principal,
   ): Promise<string | null> {
@@ -81,7 +87,7 @@ export class CredentialVault {
     context: TenantContext,
     kind: Exclude<
       CredentialKind,
-      'session' | 'basket-operation' | 'order-contact' | 'order-decisions'
+      'session' | 'basket-operation' | 'order-contact' | 'order-decisions' | 'reservation-contact'
     >,
     principal: Principal,
     value: string,
@@ -97,12 +103,18 @@ export class CredentialVault {
       'guest-order',
       'basket-operation',
       'order-contact',
+      'reservation-contact',
       'order-decisions',
-      // Keep minimal order/payment proofs until explicit financial recovery.
+      // Keep minimal order/payment/reservation proofs for original recovery.
       // Contact, tokens and ordinary guest sessions are still purged on logout.
     ] as const;
     const removals = await Promise.allSettled(
-      kinds.map((kind) => this.store.remove(secretKey(context, kind, scoped))),
+      kinds.map((kind) => {
+        const key = secretKey(context, kind, scoped);
+        return kind === 'reservation-contact'
+          ? removeAcknowledgedSecret(this.store, key)
+          : this.store.remove(key);
+      }),
     );
     if (removals.some((result) => result.status === 'rejected'))
       throw new Error('Credential removal incomplete');

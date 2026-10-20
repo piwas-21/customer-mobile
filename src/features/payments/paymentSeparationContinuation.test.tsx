@@ -76,7 +76,7 @@ it('keeps real confirmed separation busy across its synchronous owner revision a
   try {
     await waitFor(() => expect(owner.controller).toBeTruthy());
     await act(async () => {
-      await expect(owner.controller!.orders.payment(record, 'en')).rejects.toThrow();
+      await expect(owner.controller!.recovery.payment(record, 'en')).rejects.toThrow();
     });
     await waitFor(() => expect(owner.needsPaymentAttention).toBe(true));
     const version = owner.ownerVersion;

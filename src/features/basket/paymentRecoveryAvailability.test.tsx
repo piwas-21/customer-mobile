@@ -176,7 +176,7 @@ it('keeps the pending warning and blocks automatic guest purchasing after reject
   try {
     await waitFor(() => expect(owner.controller).toBeTruthy());
     await act(async () => {
-      await expect(owner.controller!.orders.payment(record, 'en')).rejects.toMatchObject({
+      await expect(owner.controller!.recovery.payment(record, 'en')).rejects.toMatchObject({
         status: 401,
       });
     });
@@ -184,13 +184,17 @@ it('keeps the pending warning and blocks automatic guest purchasing after reject
     expect(owner.userId).toBeNull();
     expect(basket.canAdd).toBe(false);
     expect(
-      view.getByText(/An earlier order, payment or cancellation needs confirmation/),
+      view.getByText(
+        /An earlier order, payment, cancellation or reservation request needs confirmation/,
+      ),
     ).toBeTruthy();
     fireEvent.press(view.getByRole('button', { name: 'Use this device for another customer' }));
     expect(
-      view.getByText(/The previous customer’s order, payment or cancellation may still complete/),
+      view.getByText(
+        /The previous customer’s order, payment, cancellation or reservation request may still complete/,
+      ),
     ).toBeTruthy();
-    fireEvent.press(view.getByRole('button', { name: 'Keep the original order reminder' }));
+    fireEvent.press(view.getByRole('button', { name: 'Keep the original request reminder' }));
     expect(owner.needsPaymentAttention).toBe(true);
     expect(basket.canAdd).toBe(false);
     fireEvent.press(view.getByRole('button', { name: 'Use this device for another customer' }));

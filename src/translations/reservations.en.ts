@@ -1,4 +1,35 @@
 export const reservationsEnglish = {
+  reservationAttemptPending:
+    'We have not confirmed whether the restaurant received this request. Check it before making another.',
+  reservationAttemptReceived:
+    'Your request reached the restaurant. The restaurant confirms reservations separately.',
+  reservationRequestDone: 'Done',
+  reservationAttemptStopped: 'This reservation request was stopped.',
+  reservationCheckRequest: 'Check reservation request',
+  reservationRetryOriginal: 'Send original request again',
+  reservationStopAttempt: 'Stop pending request',
+  reservationFinishStopping: 'Finish stopping request',
+  reservationRetryOriginalExplanation:
+    'Send the same reservation details again. If they were already received, you will see the existing result.',
+  reservationStopAttemptExplanation:
+    'Stop an unreceived request. Received reservations keep their current status.',
+
+  reservationRequestTitle: 'Request a reservation',
+  reservationSelectTime: 'Choose {{time}}',
+  reservationRequestReview: '{{date}} at {{time}} · {{count}} guests',
+  reservationFieldsUnavailable:
+    'Reservation contact fields are unavailable. Check again before continuing.',
+  reservationFieldInvalid: 'Check this field.',
+  reservationRequestFailed:
+    'We could not complete this action. Check your reservation request before trying again.',
+  reservationSendRequest: 'Request reservation',
+  reservationField: {
+    customerName: 'Name',
+    customerEmail: 'Email',
+    customerPhone: 'Phone',
+    specialRequests: 'Special requests',
+  },
+
   reservationTab: 'Bookings',
   reservationAvailability: 'Reservation times',
   reservationAvailabilityUnavailable: 'Reservations are unavailable at this restaurant right now.',

@@ -12,7 +12,7 @@ async function rejectedRefresh() {
   const controller = new SessionController(f.context, f.client, f.repository);
   await controller.initialize();
   f.fetcher.mockResolvedValue(response({}, 401));
-  await expect(controller.orders.payment(f.record, 'en')).rejects.toMatchObject({ status: 401 });
+  await expect(controller.recovery.payment(f.record, 'en')).rejects.toMatchObject({ status: 401 });
   return { ...f, controller };
 }
 function guestBasket(f: Awaited<ReturnType<typeof rejectedRefresh>>, controller = f.controller) {
@@ -76,7 +76,7 @@ it('holds an unresolved online submission even before an accepted payment record
   const controller = new SessionController(f.context, f.client, f.repository);
   await controller.initialize();
   f.fetcher.mockResolvedValue(response({}, 401));
-  await expect(controller.orders.payment(f.record, 'en')).rejects.toThrow();
+  await expect(controller.recovery.payment(f.record, 'en')).rejects.toThrow();
   // The read requires a persisted payment record; a regular authenticated read exercises withdrawal.
   await expect(controller.get(session.userId, '/api/User/profile', z.unknown())).rejects.toThrow();
   expect(controller.needsPaymentAttention).toBe(true);
@@ -118,7 +118,7 @@ it.each(['reminder-save', 'reminder-ack', 'credential-remove'] as const)(
       await remove(key);
     });
     f.fetcher.mockResolvedValue(response({}, 401));
-    await expect(controller.orders.payment(f.record, 'en')).rejects.toThrow();
+    await expect(controller.recovery.payment(f.record, 'en')).rejects.toThrow();
     expect(controller.needsCleanup).toBe(true);
     expect(() => controller.captureRequestOwner({ kind: 'guest', id: 'basket' })).toThrow();
     save.mockRestore();

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { bootstrapSchema } from '../core/capabilities';
 import type { TenantContext } from '../core/tenantContext';
-import { ApiFailure, type CustomerTransport } from '../core/transport';
+import { ApiFailure } from '../core/apiFailure';
+import type { CustomerTransport } from '../core/transport';
 import { compareReservationTimes } from './reservationTime';
 
 // Matches the backend ReservationWriteDto party-size contract.
@@ -17,7 +18,7 @@ export const availabilityInputSchema = z.strictObject({
 });
 export type AvailabilityInput = z.infer<typeof availabilityInputSchema>;
 const wallTime = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,7})?$/);
-const slotSchema = z
+export const reservationSlotSchema = z
   .strictObject({
     startTime: wallTime,
     endTime: z.union([wallTime, z.literal('1.00:00:00')]),
@@ -34,7 +35,7 @@ export const reservationAvailabilitySchema = z
     date: z.iso.date(),
     timeZone: bootstrapSchema.shape.timezone,
     numberOfGuests: partySizeSchema,
-    slots: z.array(slotSchema).max(48),
+    slots: z.array(reservationSlotSchema).max(48),
   })
   .refine((page) =>
     page.slots.every((slot, index) => {

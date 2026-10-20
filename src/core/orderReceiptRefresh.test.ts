@@ -106,7 +106,7 @@ it('cannot publish a renewal or retry the receipt after logout during refresh', 
 it('does not exchange credentials for a forgotten receipt or a local owner refusal', async () => {
   const f = await fixture(false);
   await f.reader.forget(basketOperationId);
-  await expect(f.sessions.orders.receipt(f.decision, 'en')).rejects.toMatchObject({
+  await expect(f.sessions.recovery.receipt(f.decision, 'en')).rejects.toMatchObject({
     reason: 'refused',
   });
   expect(f.fetcher).not.toHaveBeenCalled();

@@ -4,6 +4,7 @@ import { originSchema } from './directory';
 import type { CredentialVault } from './credentials';
 import type { TenantBoundary, TenantContext } from './tenantContext';
 import { ApiFailure } from './apiFailure';
+import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
@@ -50,6 +51,7 @@ export class CustomerTransport {
   ): Promise<T> {
     this.boundary.assertCurrent(context);
     options = captureCancellationRequest(context, path, options);
+    options = captureReservationRequest(context, path, options);
     const assertOwner = options.assertCurrent ?? (() => {});
     assertOwner();
     const method = options.method ?? 'GET';
@@ -59,7 +61,8 @@ export class CustomerTransport {
     const renewal =
       options.credentials === 'receipt-renewal' ||
       options.credentials === 'payment-renewal' ||
-      options.credentials === 'cancellation-renewal';
+      options.credentials === 'cancellation-renewal' ||
+      options.credentials === 'reservation-renewal';
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
@@ -81,6 +84,9 @@ export class CustomerTransport {
         path !== '/api/customer-mobile/checkout/payment/recover')
     )
       throw new ApiFailure(401, 'refused');
+    const reservationRecovery =
+      options.credentials === 'reservation-operation' &&
+      path !== '/api/customer-mobile/reservations/create';
     const orderRecovery =
       method === 'POST' &&
       options.credentials === 'order' &&
@@ -90,6 +96,7 @@ export class CustomerTransport {
       method !== 'GET' &&
       context.tenant.status !== 'active' &&
       !orderRecovery &&
+      !reservationRecovery &&
       !receiptRead &&
       !paymentRecovery &&
       !cancellation &&

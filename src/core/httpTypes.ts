@@ -1,3 +1,7 @@
+import type {
+  ReservationOperationRecord,
+  ReservationPreparation,
+} from './reservationOperationRecord';
 import type { CancellationOperationRecord } from './cancellationOperationRecord';
 import type { OrderOperationProof } from './orderOperationProof';
 import type { Principal } from './credentials';
@@ -27,7 +31,10 @@ export type RequestOptions = {
     | 'receipt-renewal'
     | 'payment-renewal'
     | 'order-cancellation'
-    | 'cancellation-renewal';
+    | 'cancellation-renewal'
+    | 'reservation-prepare'
+    | 'reservation-operation'
+    | 'reservation-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
@@ -35,4 +42,6 @@ export type RequestOptions = {
   expectedOrderProof?: OrderOperationProof;
   expectedPaymentOrderId?: string;
   expectedCancellationRecord?: CancellationOperationRecord;
+  expectedReservationPreparation?: ReservationPreparation;
+  expectedReservationRecord?: ReservationOperationRecord;
 };

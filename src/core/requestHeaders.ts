@@ -3,6 +3,7 @@ import {
   orderRequestHeaders,
   type OrderProofSource,
 } from './orderRequestHeaders';
+import { reservationRequestHeaders } from './reservationRequest';
 import { cancellationRequestHeaders } from './cancellationRequest';
 import { canonicalUuidSchema } from './identifiers';
 import { ApiFailure } from './apiFailure';
@@ -72,6 +73,12 @@ export async function requestHeaders(
   const orderProof = captureOrderProof(context, options);
   const paymentOrderId = options.expectedPaymentOrderId;
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
+  if (
+    mode === 'reservation-prepare' ||
+    mode === 'reservation-operation' ||
+    mode === 'reservation-renewal'
+  )
+    Object.assign(headers, await reservationRequestHeaders(context, vault, options));
   if (mode === 'order-cancellation' || mode === 'cancellation-renewal')
     Object.assign(headers, await cancellationRequestHeaders(context, vault, options));
   if (

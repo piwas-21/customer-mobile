@@ -1,3 +1,9 @@
+import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
+import { useReservation } from './ReservationProvider';
+import ReservationCreateModal from './ReservationCreateModal';
+import ReservationAttemptNotice from './ReservationAttemptNotice';
+import type { CustomerReservationController } from '../../core/customerReservationController';
+import type { ReservationAvailability } from '../../api/reservationAvailability';
 import { useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -50,10 +56,32 @@ function AvailabilityBody({
   const [day, setDay] = useState(today);
   const [party, setParty] = useState(2);
   const [choosing, setChoosing] = useState(false);
+  const operations = useReservation();
+  const [selected, setSelected] = useState<{
+    slot: { startTime: string; endTime: string };
+    source: ReservationAvailability;
+    controller: CustomerReservationController;
+  }>();
   const page = useReservationAvailability(client, context, zone, {
     date: day,
     numberOfGuests: party,
   });
+  const selection =
+    selected &&
+    operations &&
+    page.data &&
+    selected.source === page.data &&
+    selected.controller === operations?.controller &&
+    operations.value === null
+      ? selected
+      : undefined;
+  const canSelect = Boolean(
+    operations?.controller &&
+    operations.value === null &&
+    !operations.busy &&
+    !operations.loading &&
+    !operations.failed,
+  );
   let emptyMessage = 'reservationChooseTimeInputs';
   if (page.loading) emptyMessage = 'loading';
   else if (page.failed) emptyMessage = 'reservationTimesFailed';
@@ -95,6 +123,8 @@ function AvailabilityBody({
               onPress={page.read}
             />
             <Feedback message={t('reservationAvailabilityAdvisory')} />
+            {operations ? <PaymentAttentionNotice /> : null}
+            <ReservationAttemptNotice />
           </View>
         }
         renderItem={({ item }) => (
@@ -102,10 +132,31 @@ function AvailabilityBody({
             <Text style={[styles.body, { color: theme.text }]}>
               {t('reservationHours', { start: hour(item.startTime), end: hour(item.endTime) })}
             </Text>
+            {operations ? (
+              <Button
+                secondary
+                label={t('reservationSelectTime', { time: hour(item.startTime) })}
+                disabled={!canSelect}
+                onPress={() => {
+                  if (canSelect && page.data && operations.controller)
+                    setSelected({
+                      slot: item,
+                      source: page.data,
+                      controller: operations.controller,
+                    });
+                }}
+              />
+            ) : null}
           </View>
         )}
         ListEmptyComponent={<Feedback loading={page.loading} message={t(emptyMessage)} />}
       />
+      {selection ? (
+        <ReservationCreateModal
+          selection={{ date: day, numberOfGuests: party, timeZone: zone, ...selection.slot }}
+          onClose={() => setSelected(undefined)}
+        />
+      ) : null}
       {choosing ? (
         <ReservationDatePicker
           key={today}
