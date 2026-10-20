@@ -12,6 +12,7 @@ import {
   publicMenuSnapshotSchema,
   snapshotIdentity,
   PUBLIC_MENU_MAX_SNAPSHOTS,
+  PUBLIC_MENU_MAX_AGE_MS,
   type PublicMenuSnapshot,
 } from '../domain/publicMenuSnapshot';
 import {
@@ -28,7 +29,17 @@ export class PublicMenuCache {
   private readonly pending = new Map<Environment, Promise<void>>();
   private readonly retention = new Map<Environment, PublicMenuRetention>();
   private readonly observedAt = new Map<Environment, number>();
+  private readonly listeners = new Set<(environment: Environment) => void>();
   constructor(private readonly storage: Storage) {}
+  subscribe(listener: (environment: Environment) => void) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+  private changed(environment: Environment) {
+    for (const listener of this.listeners) listener(environment);
+  }
   private remember(environment: Environment, policy: PublicMenuRetention | undefined) {
     const current = latestMenuRetention(this.retention.get(environment), policy);
     if (current) this.retention.set(environment, current);
@@ -90,6 +101,7 @@ export class PublicMenuCache {
         .sort((a, b) => Date.parse(b.capturedAt) - Date.parse(a.capturedAt))
         .slice(0, PUBLIC_MENU_MAX_SNAPSHOTS);
       await this.write(environment, { ...state, snapshots });
+      this.changed(environment);
     });
   }
   remove(environment: Environment, identity: string) {
@@ -100,7 +112,23 @@ export class PublicMenuCache {
         ...state,
         snapshots: state.snapshots.filter((value) => snapshotIdentity(value) !== identity),
       });
+      this.changed(environment);
     });
+  }
+  prune(environment: Environment, clock = Date.now) {
+    key(environment);
+    let nextExpiry: number | undefined;
+    return this.update(environment, async () => {
+      const state = await this.load(environment, clock());
+      const snapshots = state.snapshots.filter((snapshot) =>
+        menuSnapshotIsFresh(snapshot, clock()),
+      );
+      await this.write(environment, { ...state, snapshots }, true);
+      if (snapshots.length)
+        nextExpiry = Math.min(
+          ...snapshots.map((snapshot) => Date.parse(snapshot.capturedAt) + PUBLIC_MENU_MAX_AGE_MS),
+        );
+    }).then(() => nextExpiry);
   }
   reconcile(directory: Directory, now = Date.now()) {
     // Install the in-memory fence synchronously, including while an older disk write is pending.
@@ -126,3 +154,6 @@ export const removePublicMenu = (environment: Environment, identity: string) =>
   cache.remove(environment, identity);
 export const reconcilePublicMenus = (directory: Directory, now?: number) =>
   cache.reconcile(directory, now);
+export const prunePublicMenus = (environment: Environment) => cache.prune(environment);
+export const subscribePublicMenus = (listener: (environment: Environment) => void) =>
+  cache.subscribe(listener);
