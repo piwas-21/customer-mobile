@@ -29,7 +29,11 @@ for (const environment of ['staging', 'production'])
       {
         action: 'VIEW',
         autoVerify: true,
-        data: [{ scheme: 'https', host: 'links.example', pathPattern: '/r/.*/payment-return/.*' }],
+        data: [
+          { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/payment-return/.*' },
+          { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/verify' },
+          { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/recover' },
+        ],
         category: ['BROWSABLE', 'DEFAULT'],
       },
     ]);

@@ -30,7 +30,11 @@ const config: ExpoConfig = {
           {
             action: 'VIEW',
             autoVerify: true,
-            data: [{ scheme: 'https', host: linkHost, pathPattern: '/r/.*/payment-return/.*' }],
+            data: [
+              { scheme: 'https', host: linkHost, pathPattern: '/r/.*/payment-return/.*' },
+              { scheme: 'https', host: linkHost, pathPattern: '/r/.*/verify' },
+              { scheme: 'https', host: linkHost, pathPattern: '/r/.*/recover' },
+            ],
             category: ['BROWSABLE', 'DEFAULT'],
           },
         ]

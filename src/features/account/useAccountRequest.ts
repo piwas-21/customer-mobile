@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import useMounted from '../../core/useMounted';
 export default function useAccountRequest<T>(
   schema: z.ZodType<T>,
-  send: (input: T) => Promise<void>,
+  send: (input: T, assertCurrent: () => void) => Promise<void>,
   onSettled: () => void,
 ) {
   const mounted = useMounted();
@@ -22,7 +22,9 @@ export default function useAccountRequest<T>(
     setBusy(true);
     setFailure(undefined);
     try {
-      await send(parsed.data);
+      await send(parsed.data, () => {
+        if (!mounted.current || !pending.current) throw new Error('Account request withdrawn');
+      });
       if (!mounted.current) return false;
       setSent(true);
       return true;

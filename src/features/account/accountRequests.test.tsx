@@ -2,7 +2,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { openBrowserAsync } from 'expo-web-browser';
 import AccountRoute from '../../../app/(restaurant)/account';
 import { accountStore, accountRepository, prepareAccountFixture } from '../../test/accounts';
-import { authResponse } from '../../test/sessions';
+import { nativeBootstrapResponse } from '../../test/nativeAccounts';
 import { response } from '../../test/transport';
 jest.mock('../../storage/sessions', () => ({
   deviceSessions:
@@ -33,11 +33,13 @@ it('validates registration and discards the returned session before explicit sig
     expect(fixture.fetcher).not.toHaveBeenCalled();
     fireEvent.changeText(screen.getByLabelText('Password'), 'Str0ng!Passw0rd');
     fireEvent.changeText(screen.getByLabelText('Confirm password'), 'Str0ng!Passw0rd');
-    fixture.fetcher.mockResolvedValue(authResponse());
+    fixture.fetcher
+      .mockResolvedValueOnce(nativeBootstrapResponse())
+      .mockResolvedValueOnce(response({ success: true, data: 'ack' }));
     fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
     await waitFor(() => expect(screen.getByText(/Your account was created/)).toBeTruthy());
-    expect(fixture.fetcher.mock.calls[0]?.[0]).toBe(
-      'https://alpha.example/api/User/register/customer',
+    expect(fixture.fetcher.mock.calls[1]?.[0]).toBe(
+      'https://alpha.example/api/customer-mobile/auth/register',
     );
     expect(await accountRepository.load(fixture.context)).toBeNull();
     expect(accountStore.values.size).toBe(0);
@@ -73,7 +75,9 @@ it('opens legal pages only on the approved restaurant website and reports an ope
 });
 it('requests recovery with a generic confirmation instead of server-supplied account information', async () => {
   const fixture = prepareAccountFixture();
-  fixture.fetcher.mockResolvedValue(response({ success: true, data: 'private server wording' }));
+  fixture.fetcher
+    .mockResolvedValueOnce(nativeBootstrapResponse())
+    .mockResolvedValueOnce(response({ success: true, data: 'private server wording' }));
   const screen = render(<AccountRoute />, { wrapper: fixture.Wrapper });
   try {
     await waitFor(() =>
@@ -84,9 +88,9 @@ it('requests recovery with a generic confirmation instead of server-supplied acc
     fireEvent.press(screen.getByRole('button', { name: 'Send reset instructions' }));
     await waitFor(() => expect(screen.getByText(/If an account matches this email/)).toBeTruthy());
     expect(screen.queryByText('private server wording')).toBeNull();
-    expect(fixture.fetcher).toHaveBeenCalledTimes(1);
-    expect(fixture.fetcher.mock.calls[0]?.[0]).toBe(
-      'https://alpha.example/api/Auth/forgot-password',
+    expect(fixture.fetcher).toHaveBeenCalledTimes(2);
+    expect(fixture.fetcher.mock.calls[1]?.[0]).toBe(
+      'https://alpha.example/api/customer-mobile/auth/request-password-reset',
     );
     fireEvent.press(screen.getByRole('button', { name: 'Back to sign in' }));
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();

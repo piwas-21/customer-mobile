@@ -39,3 +39,6 @@ export function canBrowse(bootstrap: Bootstrap | undefined): boolean {
     bootstrap.capabilities.menu === 'enabled',
   );
 }
+export function canUseNativeAccountLinks(bootstrap: Bootstrap | undefined): boolean {
+  return canUse(bootstrap, 'accounts') && bootstrap?.flags.nativeAccountLinksV1 === true;
+}

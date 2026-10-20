@@ -39,8 +39,37 @@ backend contracts. Profile updates send only names/phone; phone removal depends 
 Secure account writes serialize, logout persists cleanup, and stale/same-user login responses cannot
 publish private data. Account-disabled ordering initializes a guest without reading a saved customer's
 credentials unless the exact active customer has a scoped pending or accepted order proof. That customer session
-is restored only for order recovery/receipts; account actions and new purchases stay blocked. Publisher identities, social audiences, server revocation/deletion and installed keyboard/
-secure-store acceptance remain open.
+is restored only for order recovery/receipts; account actions and new purchases stay blocked. Publisher
+identities, social audiences, provider-token revocation and installed deletion/keyboard/SecureStore
+acceptance remain open.
+
+## Native account email links
+
+Backend #746 defines five strict versioned native aliases for registration, verification/reset mail
+requests and explicit completion. Native registration receives only a generic string acknowledgement;
+it never installs a session. All five writes perform a fresh bootstrap read and require active,
+supported accounts with `nativeAccountLinksV1`; a missing gate never falls back to a web mail alias.
+Input validation happens before I/O. Native password/confirmation fields retain the 1,000-unit wire
+bound separately from the existing sign-in policy. Request/response wording never supplies UI copy.
+
+Expo's native-intent interceptor removes fragments before navigation state is built. Only canonical
+configured shared-origin `/r/{slug}/verify#proof=...` and `/recover#proof=...` links can fill one app-owned
+volatile slot. Proofs are URL-safe and bounded to 96–4,096 characters. Public subscribers receive
+only action/slug/id/expiry metadata. Invalid replacement, expiry, dismissal and process death withdraw
+the proof; no proof, password or contact is placed in Query, router params, persistent storage or logs.
+The local slot has a ten-minute lifetime and each completion consumes its proof before dispatch.
+
+Opening a link performs no completion. The screen names the restaurant and requires explicit selection
+before crossing an existing restaurant context, then explicit verification or matching password entry.
+Current directory/capability checks withdraw unavailable actions. Duplicate taps serialize; failed or
+ambiguous completion offers account access/new instructions without repeating the action. Context/link
+replacement cannot publish an old success or borrow a replacement proof. Completion never signs in.
+Registration, recovery and verification-resend forms use generic confirmations and reset drafts on
+restaurant-generation changes. Existing login and profile journeys retain their session contracts.
+
+These source fixtures do not establish signed OS association, actual email delivery, rollout,
+provider-token revocation, installed keyboard/back/RTL behavior or store acceptance. Native gates
+remain disabled until separate deployment and signed-device acceptance.
 
 ## Menu, choices and basket
 
