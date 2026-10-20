@@ -35,8 +35,14 @@ it.each([
     if (mode === 'contact') request = { ...body, customerEmail: 'different@example.test' };
     if (mode === 'staff-field') request = { ...body, status: 'Confirmed' };
     if (mode === 'proof-only') request = f.edit.proof;
-    if (mode === 'creation-route') path = reservationCreatePath;
-    if (mode === 'cancellation-route') path = reservationCancellationPath + '/submit';
+    if (mode === 'creation-route') {
+      path = reservationCreatePath;
+      request = f.edit.proof;
+    }
+    if (mode === 'cancellation-route') {
+      path = reservationCancellationPath + '/submit';
+      request = f.edit.proof;
+    }
     await expect(
       f.client.request(f.context, path, reservationCreateResolutionSchema, {
         method: 'POST',
@@ -143,4 +149,22 @@ it('restores the minimal edit view without reading its private contact intent', 
   });
   const contactKey = secretKey(f.context, 'reservation-contact', f.principal);
   expect(reads.mock.calls.some(([name]) => name === contactKey)).toBe(false);
+});
+
+it('refuses a canonical applied result naming a different booking at the API boundary', async () => {
+  const f = await fixture();
+  const record = await f.install();
+  f.fetcher.mockResolvedValue(f.reply({ ...f.applied, reservationId: tenantB }));
+  await expect(
+    resolveReservationAttempt(
+      f.client,
+      f.context,
+      record,
+      'submit',
+      f.guard,
+      'en',
+      f.prepared.draft,
+    ),
+  ).rejects.toMatchObject({ reason: 'contract' });
+  expect(f.fetcher).toHaveBeenCalledTimes(1);
 });
