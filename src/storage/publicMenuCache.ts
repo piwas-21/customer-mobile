@@ -27,20 +27,19 @@ function key(environment: Environment) {
 export class PublicMenuCache {
   private readonly pending = new Map<Environment, Promise<void>>();
   private readonly retention = new Map<Environment, PublicMenuRetention>();
+  private readonly observedAt = new Map<Environment, number>();
   constructor(private readonly storage: Storage) {}
-  private remember(environment: Environment, policy: PublicMenuRetention | undefined, now: number) {
-    const previous = this.retention.get(environment);
-    const current = latestMenuRetention(
-      previous && menuRetentionHasValidDate(previous, now) ? previous : undefined,
-      policy,
-    );
+  private remember(environment: Environment, policy: PublicMenuRetention | undefined) {
+    const current = latestMenuRetention(this.retention.get(environment), policy);
     if (current) this.retention.set(environment, current);
     else this.retention.delete(environment);
     return current;
   }
   private async load(environment: Environment, now: number) {
-    const state = decodePublicMenus(await this.storage.getItem(key(environment)), environment, now);
-    const retention = this.remember(environment, state.retention, now);
+    const raw = await this.storage.getItem(key(environment));
+    // A suspended operation's clock must not invalidate a later directory observation.
+    const state = decodePublicMenus(raw, environment, now, this.observedAt.get(environment) ?? now);
+    const retention = this.remember(environment, state.retention);
     return {
       ...state,
       retention,
@@ -107,7 +106,11 @@ export class PublicMenuCache {
     // Install the in-memory fence synchronously, including while an older disk write is pending.
     const observed = menuRetentionFromDirectory(directory, now);
     const environment = observed.environment;
-    this.remember(environment, observed, now);
+    this.observedAt.set(environment, now);
+    // Only a new fresh observation can establish that the device clock was corrected.
+    const previous = this.retention.get(environment);
+    if (previous && !menuRetentionHasValidDate(previous, now)) this.retention.delete(environment);
+    this.remember(environment, observed);
     return this.update(environment, async () => {
       const state = await this.load(environment, now);
       await this.write(environment, state, true);

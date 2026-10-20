@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   DIRECTORY_CLOCK_SKEW_MS,
+  DIRECTORY_MAX_TENANTS,
   environmentSchema,
   parseDirectory,
   type Directory,
@@ -9,7 +10,7 @@ export const publicMenuRetentionSchema = z
   .strictObject({
     environment: environmentSchema,
     publishedAt: z.iso.datetime(),
-    tenantIds: z.array(z.uuid()).max(1000),
+    tenantIds: z.array(z.uuid()).max(DIRECTORY_MAX_TENANTS),
   })
   .refine((value) => new Set(value.tenantIds).size === value.tenantIds.length);
 export type PublicMenuRetention = z.infer<typeof publicMenuRetentionSchema>;

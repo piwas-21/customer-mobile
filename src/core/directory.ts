@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+export const DIRECTORY_MAX_TENANTS = 1000;
 export const environmentSchema = z.enum(['staging', 'production']);
 export type Environment = z.infer<typeof environmentSchema>;
 export const originSchema = z.url().refine((value) => {
@@ -36,7 +37,7 @@ const directorySchema = z
     environment: environmentSchema,
     publishedAt: z.iso.datetime(),
     expiresAt: z.iso.datetime(),
-    tenants: z.array(tenantSchema).max(1000),
+    tenants: z.array(tenantSchema).max(DIRECTORY_MAX_TENANTS),
   })
   .strict();
 export type Directory = Readonly<

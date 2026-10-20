@@ -25,6 +25,7 @@ export function decodePublicMenus(
   raw: string | null,
   environment: Environment,
   now: number,
+  policyNow = now,
 ): PublicMenuEnvelope {
   const empty: PublicMenuEnvelope = { schemaVersion: 1, snapshots: [] };
   if (!raw || raw.length > PUBLIC_MENU_MAX_TEXT_UNITS) return empty;
@@ -33,7 +34,7 @@ export function decodePublicMenus(
     if (
       value.retention &&
       (value.retention.environment !== environment ||
-        !menuRetentionHasValidDate(value.retention, now))
+        !menuRetentionHasValidDate(value.retention, policyNow))
     )
       return empty;
     return {
