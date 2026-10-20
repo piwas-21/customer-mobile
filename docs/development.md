@@ -124,3 +124,28 @@ These handwritten adapters target the additive backend source contract. They do 
 captured deployed OpenAPI fixture. Backend acceptance, deployed tenant availability, signed device
 checks, all supported locales/RTL and installed accessibility remain release gates. Availability,
 creation, edits and cancellation are separate reservation implementation; this source adds reads.
+
+## Native reservation availability
+
+The Bookings tab follows the current Reservations bootstrap gate. Public availability uses the
+additive schema1 backend projection and never installs customer or guest credentials. The adapter
+binds date, party size and restaurant timezone to the original request, validates a maximum 48
+unique ordered wall-time slots, and rejects table/contact/staff fields. Availability reserves nothing;
+creation must later revalidate and accept a durable booking operation.
+
+Date selection uses SDK 56's pinned `@react-native-community/datetimepicker` 9.1.0. Calendar values use
+an explicit UTC marker and `timeZoneName="UTC"` on both platforms; restaurant today is derived on the
+restaurant clock. Party 1–20 bounds are shared with the wire schema. Native iOS confirmation and
+Android selection/dismissal preserve the selected calendar day. The package's Android component
+closes its native picker on unmount; an additional component lifetime guard ignores late native
+selection/dismissal callbacks. Context/capability/timezone withdrawal removes the whole view.
+
+Results live only in component memory and are scoped to tenant/environment/generation, client,
+restaurant zone, calendar day, party and lifecycle revision. Input changes or failed refresh hide
+old results. Newer requests and lifecycle changes suppress late replies. Foreground requires a fresh
+explicit check and recomputes the restaurant day, including an overnight resume with no earlier result.
+
+The package is SDK-pinned and MIT licensed ([upstream](https://github.com/react-native-datetimepicker/datetimepicker)).
+Native generation, both exports, dependency audit and installed iOS/Android date-picker, accessibility,
+large text and RTL checks remain independent gates. Source/JavaScript export does not prove a rebuilt
+native client or device behavior. Full localization and booking creation/changes remain open.
