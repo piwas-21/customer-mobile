@@ -74,7 +74,7 @@ it('a delayed conflict for A cannot mark B as stale', async () => {
     JSON.stringify(replacement),
   );
   await expect(
-    f.repository.reservations.blockCancellationRetry(f.context, record, f.guard),
+    f.repository.reservations.blockMutationRetry(f.context, record, f.guard),
   ).rejects.toThrow();
   expect(
     (await f.repository.reservations.load(f.context, f.principal, f.guard))?.cancellation

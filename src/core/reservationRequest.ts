@@ -1,3 +1,4 @@
+import { reservationEditInputSchema } from '../api/reservationEditContract';
 import { z } from 'zod';
 import { credentialSecretSchema } from './credentials';
 import {
@@ -23,10 +24,14 @@ const renewalBodySchema = z.strictObject({
   accessToken: credentialSecretSchema,
   refreshToken: credentialSecretSchema,
 });
-const fullBodySchema = reservationDraftSchema.safeExtend({
+const proofFields = {
   payloadHash: reservationCreateProofSchema.shape.payloadHash,
   ownerProof: reservationCreateProofSchema.shape.ownerProof,
-});
+};
+const fullBodySchema = z.union([
+  reservationDraftSchema.safeExtend(proofFields),
+  reservationEditInputSchema.safeExtend(proofFields),
+]);
 // Capture immutable authority/body before secure reads or UI lifecycle events can yield.
 export function captureReservationRequest(
   context: TenantContext,
@@ -79,22 +84,32 @@ function captureOperation(
 ): RequestOptions {
   if (options.expectedReservationPreparation !== undefined) throw new ApiFailure(401, 'refused');
   const record = scopedReservationRecord(context, principal, options.expectedReservationRecord);
-  const base = reservationOperationPath(record.cancellation !== undefined);
-  const apply = base + (record.cancellation ? '/submit' : '');
+  const base = reservationOperationPath(
+    record.cancellation !== undefined,
+    record.edit !== undefined,
+  );
+  const apply = base + (record.cancellation || record.edit ? '/submit' : '');
   if (record.resolution || ![apply, base + '/recover', base + '/cancel-attempt'].includes(path))
     throw new ApiFailure(401, 'refused');
-  const create = !record.cancellation && path === apply;
-  if (path === apply && (record.cancellationRequested || record.cancellation?.retryBlocked))
+  const full = !record.cancellation && path === apply;
+  if (
+    path === apply &&
+    (record.cancellationRequested || (record.cancellation ?? record.edit)?.retryBlocked)
+  )
     throw new ApiFailure(401, 'refused');
   if (
-    (create && record.cancellationRequested) ||
+    (full && record.cancellationRequested) ||
     (path.endsWith('/cancel-attempt') && !record.cancellationRequested)
   )
     throw new ApiFailure(401, 'refused');
-  const body = create
+  const body = full
     ? fullBodySchema.parse(options.body)
     : reservationCreateProofSchema.parse(options.body);
   if (
+    (full &&
+      (record.edit
+        ? !('reservationId' in body) || body.reservationId !== record.edit.reservationId
+        : 'reservationId' in body)) ||
     body.operationId !== record.proof.operationId ||
     body.tenantId !== record.tenantId ||
     body.payloadHash !== record.proof.payloadHash ||

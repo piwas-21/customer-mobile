@@ -53,23 +53,28 @@ export async function resolveReservationAttempt(
 ) {
   const record = scopedReservationRecord(context, input.principal, input);
   if (record.resolution) throw new ApiFailure(409, 'refused');
-  if (phase === 'submit' && (record.cancellationRequested || record.cancellation?.retryBlocked))
+  if (
+    phase === 'submit' &&
+    (record.cancellationRequested || (record.cancellation ?? record.edit)?.retryBlocked)
+  )
     throw new ApiFailure(409, 'refused');
   if (
-    (record.cancellation && (phase === 'create' || draft !== undefined)) ||
-    (!record.cancellation && phase === 'submit')
+    (record.cancellation && draft !== undefined) ||
+    ((record.cancellation || record.edit) && phase === 'create') ||
+    (!(record.cancellation || record.edit) && phase === 'submit') ||
+    (record.edit && phase === 'submit' && !draft)
   )
     throw new ApiFailure(409, 'refused');
   if (phase === 'create' && !draft) throw new ApiFailure(409, 'refused');
   assertCurrent();
   const suffix = phase === 'create' ? '' : '/' + phase;
   const body =
-    phase === 'create'
+    phase === 'create' || (record.edit && phase === 'submit')
       ? { ...draft, payloadHash: record.proof.payloadHash, ownerProof: record.proof.ownerProof }
       : record.proof;
   const result = await client.request(
     context,
-    reservationOperationPath(record.cancellation !== undefined) + suffix,
+    reservationOperationPath(record.cancellation !== undefined, record.edit !== undefined) + suffix,
     reservationCreateResolutionSchema,
     {
       method: 'POST',
@@ -88,9 +93,9 @@ export async function resolveReservationAttempt(
     phase === 'submit' ? 'create' : phase,
   );
   if (
-    record.cancellation &&
+    (record.cancellation || record.edit) &&
     bound.outcome === 'Applied' &&
-    bound.reservationId !== record.cancellation.reservationId
+    bound.reservationId !== (record.cancellation ?? record.edit)?.reservationId
   )
     throw new ApiFailure(200, 'contract');
   return bound;

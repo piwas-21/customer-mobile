@@ -9,19 +9,32 @@ const cancellationMessages = {
   Applied: 'reservationCancellationApplied',
   Cancelled: 'reservationCancellationStopped',
 };
+const editMessages = {
+  Pending: 'reservationEditPending',
+  Applied: 'reservationEditApplied',
+  Cancelled: 'reservationEditStopped',
+};
 export function reservationAttemptCopy(value: ReservationAttemptView | null | undefined) {
-  const cancellation = Boolean(value?.cancellation);
-  const messages = cancellation ? cancellationMessages : creationMessages;
+  let messages = creationMessages;
+  let stopLabel = 'reservationStopAttempt';
+  let stopExplanation = 'reservationStopAttemptExplanation';
+  if (value?.edit) {
+    messages = editMessages;
+    stopLabel = 'reservationEditStop';
+    stopExplanation = 'reservationEditStopExplanation';
+  } else if (value?.cancellation) {
+    messages = cancellationMessages;
+    stopLabel = 'reservationCancellationStop';
+    stopExplanation = 'reservationCancellationStopExplanation';
+  }
   let message = messages[value?.outcome ?? 'Pending'];
   if (value?.outcome === 'Pending' && value.retryBlocked)
-    message = 'reservationCancellationChanged';
+    message = value.edit ? 'reservationEditChanged' : 'reservationCancellationChanged';
   return {
     message,
     retryLabel: 'reservationRetryOriginal',
-    stopLabel: cancellation ? 'reservationCancellationStop' : 'reservationStopAttempt',
+    stopLabel,
     retryExplanation: 'reservationRetryOriginalExplanation',
-    stopExplanation: cancellation
-      ? 'reservationCancellationStopExplanation'
-      : 'reservationStopAttemptExplanation',
+    stopExplanation,
   };
 }

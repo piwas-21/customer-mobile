@@ -2,13 +2,21 @@ import { z } from 'zod';
 import { bootstrapSchema } from '../core/capabilities';
 import { canonicalUuidSchema } from '../core/identifiers';
 import { ApiFailure } from '../core/apiFailure';
-import { reservationDraftSchema, reservationCreateProofSchema } from './reservationCreateContract';
+import {
+  reservationDraftSchema,
+  reservationCreateProofSchema,
+  reservationBookingInputSchema,
+} from './reservationCreateContract';
 import { reservationItemSchema } from './reservations';
 import { compareReservationTimes } from './reservationTime';
 export const reservationEditInputSchema = reservationDraftSchema.safeExtend({
   reservationId: canonicalUuidSchema,
 });
 export type ReservationEditInput = z.infer<typeof reservationEditInputSchema>;
+export const reservationEditBookingInputSchema = reservationBookingInputSchema.safeExtend({
+  reservationId: canonicalUuidSchema,
+});
+export type ReservationEditBookingInput = z.infer<typeof reservationEditBookingInputSchema>;
 const editableReservationSchema = reservationItemSchema.extend({
   status: z.enum(['Pending', 'Confirmed']),
 });

@@ -1,3 +1,6 @@
+import type { AvailabilityInput } from '../api/reservationAvailability';
+import { ReservationEditActions } from './reservationEditActions';
+import type { ReservationEditBookingInput } from '../api/reservationEditContract';
 import { createReservationPreparation } from './reservationOperationRecord';
 import { prepareReservation } from '../api/reservationCreate';
 import {
@@ -17,6 +20,7 @@ import { ReservationOperationScope } from './reservationOperationScope';
 import { ReservationCancellationActions } from './reservationCancellationActions';
 export class CustomerReservationController {
   private readonly scope: ReservationOperationScope;
+  private readonly edits: ReservationEditActions;
   private readonly cancellations: ReservationCancellationActions;
   private readonly actions = new SingleOperation<ReservationAttemptView | null>();
   constructor(
@@ -37,10 +41,11 @@ export class CustomerReservationController {
       bootstrap,
     );
     this.cancellations = new ReservationCancellationActions(this.scope, this.actions, createId);
+    this.edits = new ReservationEditActions(this.scope, this.actions, createId);
   }
   readonly assertCurrent = () => this.scope.assertCurrent();
   dispose() {
-    this.cancellations.invalidate();
+    this.invalidateReviews();
     this.scope.owner.dispose();
   }
   async saved() {
@@ -48,6 +53,7 @@ export class CustomerReservationController {
     return record ? this.scope.view(record) : null;
   }
   prepareCancellation(reservationId: string, locale: string) {
+    this.edits.invalidate();
     return this.cancellations.prepare(reservationId, locale);
   }
   dismissCancellation(operationId: string) {
@@ -60,11 +66,33 @@ export class CustomerReservationController {
       this.cancellations.confirm(id, locale),
     );
   }
+  editContext(reservationId: string) {
+    return this.edits.context(reservationId);
+  }
+  editAvailability(reservationId: string, input: AvailabilityInput) {
+    return this.edits.availability(reservationId, input);
+  }
+  prepareEdit(input: ReservationEditBookingInput, locale: string) {
+    this.cancellations.invalidate();
+    return this.edits.prepare(input, locale);
+  }
+  dismissEdit(operationId: string) {
+    this.edits.dismiss(operationId);
+  }
+  confirmEdit(operationId: string, locale: string) {
+    const id = canonicalUuidSchema.parse(operationId);
+    this.assertCurrent();
+    return this.actions.run('confirm-edit/' + id, () => this.edits.confirm(id, locale));
+  }
+  private invalidateReviews() {
+    this.cancellations.invalidate();
+    this.edits.invalidate();
+  }
   create(input: ReservationBookingInput, locale: string) {
     const captured = reservationBookingInputSchema.parse(input);
     this.scope.assertStart();
     return this.actions.run(JSON.stringify(captured), async () => {
-      this.cancellations.invalidate();
+      this.invalidateReviews();
       if (await this.scope.load()) throw new ApiFailure(409, 'refused');
       await this.scope.fresh(captured.timeZone);
       const preparation = createReservationPreparation(
@@ -93,7 +121,7 @@ export class CustomerReservationController {
   recover(locale: string) {
     this.assertCurrent();
     return this.actions.run('recover', async () => {
-      this.cancellations.invalidate();
+      this.invalidateReviews();
       const record = await this.scope.load();
       return record ? this.scope.dispatch(record, 'recover', locale) : null;
     });
@@ -102,7 +130,7 @@ export class CustomerReservationController {
     this.scope.assertStart();
     const id = canonicalUuidSchema.parse(operationId);
     return this.actions.run('retry/' + id, async () => {
-      this.cancellations.invalidate();
+      this.invalidateReviews();
       const record = await this.scope.load();
       if (
         record?.proof.operationId !== id ||
@@ -118,7 +146,7 @@ export class CustomerReservationController {
     this.assertCurrent();
     const id = canonicalUuidSchema.parse(operationId);
     return this.actions.run('cancel/' + id, async () => {
-      this.cancellations.invalidate();
+      this.invalidateReviews();
       const record = await this.scope.repository.reservations.requestCancellation(
         this.scope.context,
         this.scope.owner.principal,
@@ -132,7 +160,7 @@ export class CustomerReservationController {
     this.assertCurrent();
     const id = canonicalUuidSchema.parse(operationId);
     return this.actions.run('acknowledge/' + id, async () => {
-      this.cancellations.invalidate();
+      this.invalidateReviews();
       await this.scope.repository.reservations.acknowledge(
         this.scope.context,
         this.scope.owner.principal,

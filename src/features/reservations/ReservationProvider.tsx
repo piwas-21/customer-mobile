@@ -15,13 +15,14 @@ import type { ReservationAttemptView } from '../../core/reservationAttemptView';
 import type { ReservationBookingInput } from '../../api/reservationCreateContract';
 import useMounted from '../../core/useMounted';
 import useReservationResource from './useReservationResource';
-type ReservationState = Readonly<{
+export type ReservationState = Readonly<{
   controller: CustomerReservationController | undefined;
   value: ReservationAttemptView | null | undefined;
   busy: boolean;
   loading: boolean;
   failed: boolean;
   create: (input: ReservationBookingInput) => Promise<ReservationAttemptView | null>;
+  confirmEdit: (operationId: string) => Promise<ReservationAttemptView | null>;
   confirmCancellation: (operationId: string) => Promise<ReservationAttemptView | null>;
   check: () => Promise<ReservationAttemptView | null>;
   retryOriginal: (operationId: string) => Promise<ReservationAttemptView | null>;
@@ -77,7 +78,7 @@ export default function ReservationProvider({ children }: Readonly<PropsWithChil
             predicate: (entry) =>
               entry.queryKey.includes('reservation-history') ||
               Boolean(
-                value.cancellation &&
+                (value.cancellation || value.edit) &&
                 entry.queryKey.includes('reservation-detail/' + value.reservationId),
               ),
           });
@@ -112,6 +113,7 @@ export default function ReservationProvider({ children }: Readonly<PropsWithChil
       loading: Boolean(controller && query.isFetching),
       failed: Boolean(controller && (failed === controller || query.isError)),
       create: (input) => run((owner) => owner.create(input, i18n.language)),
+      confirmEdit: (operationId) => run((owner) => owner.confirmEdit(operationId, i18n.language)),
       confirmCancellation: (operationId) =>
         run((owner) => owner.confirmCancellation(operationId, i18n.language)),
       check: () => run((owner) => owner.recover(i18n.language)),

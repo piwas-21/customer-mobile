@@ -1,3 +1,5 @@
+import { installReservationEdit } from './reservationEditJournal';
+import type { ReservationEditPreparation } from './reservationEditPreparation';
 import {
   reservationCancellationPreparationSchema,
   type ReservationCancellationPreparation,
@@ -83,7 +85,17 @@ export class ReservationOperationRepository {
       return record;
     });
   }
-  blockCancellationRetry(
+  installEdit(
+    context: TenantContext,
+    input: ReservationEditPreparation,
+    response: unknown,
+    assertCurrent: () => void,
+  ) {
+    return this.tasks.run(() =>
+      installReservationEdit(this.storage, context, input, response, assertCurrent),
+    );
+  }
+  blockMutationRetry(
     context: TenantContext,
     input: ReservationOperationRecord,
     assertCurrent: () => void,
@@ -96,11 +108,17 @@ export class ReservationOperationRepository {
         expected.proof.operationId,
         assertCurrent,
       );
-      if (!record.cancellation) throw new Error('Original cancellation attempt unavailable');
+      if (!record.cancellation && !record.edit)
+        throw new Error('Original booking change unavailable');
       if (record.resolution || record.cancellationRequested) return;
       await this.storage.save(
         context,
-        { ...record, cancellation: { ...record.cancellation, retryBlocked: true } },
+        {
+          ...record,
+          ...(record.edit
+            ? { edit: { ...record.edit, retryBlocked: true } }
+            : { cancellation: { ...record.cancellation!, retryBlocked: true } }),
+        },
         assertCurrent,
       );
     });
