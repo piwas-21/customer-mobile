@@ -1,11 +1,8 @@
 import '../i18n';
-import { fireEvent, render } from '@testing-library/react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useSession } from '../features/account/SessionProvider';
-import { useRestaurant } from '../features/restaurant/RestaurantProvider';
+import { fireEvent } from '@testing-library/react-native';
 import useBootstrap from '../features/restaurant/useBootstrap';
 import { accountBootstrap } from './accounts';
-import { sessionSetup } from './sessions';
+import { privateModuleSetup } from './privateModules';
 import { reservationPage } from './reservations';
 import { response } from './transport';
 import ReservationHistoryControl from '../features/reservations/ReservationHistoryControl';
@@ -25,47 +22,10 @@ export function reservationBootstrapState(
 export const reservationEnabled = reservationBootstrapState();
 export const reservationDisabled = reservationBootstrapState('disabled');
 export async function reservationHistorySetup(customer = true, data = reservationPage()) {
-  const f = await sessionSetup(customer);
-  const state = {
-    controller: f.controller,
-    userId: f.controller.userId,
-    ownerVersion: f.controller.ownerVersion,
-    unavailable: false,
-    needsCleanup: false,
-    needsPaymentAttention: false,
-    loading: false,
-    failed: false,
-    retry: jest.fn(),
-  };
-  jest.mocked(useSession).mockReturnValue(state);
-  jest.mocked(useRestaurant).mockReturnValue({
-    context: f.context,
-    client: f.client,
-    directory: undefined,
-    loading: false,
-    select: jest.fn(),
-    clear: jest.fn(),
-    refresh: jest.fn(),
-  });
-  jest.mocked(useBootstrap).mockReturnValue(reservationEnabled);
+  const f = await privateModuleSetup(ReservationHistoryControl, reservationEnabled, customer);
   f.fetcher.mockResolvedValue(response({ success: true, data }));
-  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const view = () => (
-    <QueryClientProvider client={cache}>
-      <ReservationHistoryControl />
-    </QueryClientProvider>
-  );
-  const screen = render(view());
   return {
     ...f,
-    state,
-    cache,
-    screen,
-    view,
-    open: () => fireEvent.press(screen.getByRole('button', { name: 'Your reservations' })),
-    dispose: () => {
-      screen.unmount();
-      cache.clear();
-    },
+    open: () => fireEvent.press(f.screen.getByRole('button', { name: 'Your reservations' })),
   };
 }
