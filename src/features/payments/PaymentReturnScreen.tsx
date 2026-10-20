@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useURL } from 'expo-linking';
+import { useLinkingURL } from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { runtimeConfig } from '../../config';
@@ -9,7 +9,7 @@ import Screen from '../../ui/Screen';
 import Feedback from '../../ui/Feedback';
 import Button from '../../ui/Button';
 export default function PaymentReturnScreen() {
-  const url = useURL();
+  const url = useLinkingURL();
   const router = useRouter();
   const { t } = useTranslation();
   const { directory, context, select } = useRestaurant();
@@ -35,18 +35,12 @@ export default function PaymentReturnScreen() {
     router.replace(destination.pathname);
   }, [destination, anotherRestaurant, context, select, router]);
   const failed = destination === null;
+  let message = 'loading';
+  if (failed) message = 'invalidQr';
+  else if (anotherRestaurant) message = 'hostedPayment.returnOtherRestaurant';
   return (
     <Screen>
-      <Feedback
-        loading={!failed && !anotherRestaurant}
-        message={t(
-          failed
-            ? 'invalidQr'
-            : anotherRestaurant
-              ? 'hostedPayment.returnOtherRestaurant'
-              : 'loading',
-        )}
-      />
+      <Feedback loading={!failed && !anotherRestaurant} message={t(message)} />
       {anotherRestaurant ? (
         <Button label={t('hostedPayment.returnRestaurant')} onPress={navigate} />
       ) : null}

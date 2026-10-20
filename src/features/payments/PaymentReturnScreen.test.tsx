@@ -1,12 +1,12 @@
 import '../../i18n';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { useURL } from 'expo-linking';
+import { useLinkingURL } from 'expo-linking';
 import { useRouter } from 'expo-router';
 import PaymentReturnScreen from './PaymentReturnScreen';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import { fixtureDirectory, tenantA, tenantB } from '../../test/fixtures';
 import { TenantBoundary } from '../../core/tenantContext';
-jest.mock('expo-linking', () => ({ useURL: jest.fn() }));
+jest.mock('expo-linking', () => ({ useLinkingURL: jest.fn() }));
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('../../config', () => ({ runtimeConfig: { linkOrigin: 'https://links.example' } }));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
@@ -23,7 +23,7 @@ function setup(value = url, selected = true) {
   const context = selected ? new TenantBoundary(directory).select(tenantA) : undefined;
   const replace = jest.fn();
   const select = jest.fn().mockReturnValue(true);
-  jest.mocked(useURL).mockReturnValue(value);
+  jest.mocked(useLinkingURL).mockReturnValue(value);
   jest.mocked(useRouter).mockReturnValue({ replace } as unknown as ReturnType<typeof useRouter>);
   jest.mocked(useRestaurant).mockReturnValue({
     context,

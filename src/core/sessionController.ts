@@ -189,8 +189,7 @@ export class SessionController {
       captured,
       () => this.isCurrent(revision),
       () => this.clearSession(captured),
-      authority?.proof,
-      authority?.paymentOrderId,
+      authority,
     );
     this.assertCurrent(revision);
     this.publish(next);

@@ -1,5 +1,7 @@
 import {
   createContext,
+  useCallback,
+  useMemo,
   useContext,
   useEffect,
   useRef,
@@ -28,14 +30,17 @@ export default function PaymentProvider({ children }: Readonly<PropsWithChildren
   const active = useRef<CustomerPaymentController | undefined>(undefined);
   const [busy, setBusy] = useState<CustomerPaymentController>();
   const [failed, setFailed] = useState<CustomerPaymentController>();
-  function refreshPurchaseState(result: PaymentView | null) {
-    if (result && result.state !== 'pending')
-      void cache.invalidateQueries({
-        queryKey: key.slice(0, 3),
-        predicate: (q) =>
-          q.queryKey.includes('unresolved-purchase') || q.queryKey[3] === 'receipts',
-      });
-  }
+  const refreshPurchaseState = useCallback(
+    (result: PaymentView | null) => {
+      if (result && result.state !== 'pending')
+        void cache.invalidateQueries({
+          queryKey: key.slice(0, 3),
+          predicate: (q) =>
+            q.queryKey.includes('unresolved-purchase') || q.queryKey[3] === 'receipts',
+        });
+    },
+    [cache, key],
+  );
   const query = useQuery({
     queryKey: key,
     queryFn: async () => {
@@ -64,7 +69,7 @@ export default function PaymentProvider({ children }: Readonly<PropsWithChildren
     },
     [cache, key],
   );
-  async function open() {
+  const openPage = useCallback(async () => {
     if (!controller || active.current === controller) return;
     active.current = controller;
     setBusy(controller);
@@ -86,25 +91,25 @@ export default function PaymentProvider({ children }: Readonly<PropsWithChildren
       if (active.current === controller) active.current = undefined;
       setBusy((previous) => (previous === controller ? undefined : previous));
     }
-  }
-  return (
-    <PaymentContext.Provider
-      value={{
-        value: controller && !query.isError ? query.data : undefined,
-        loading: Boolean(controller && query.isPending),
-        failed: Boolean(controller && (query.isError || failed === controller)),
-        busy: Boolean(controller && busy === controller),
-        refresh: () => {
-          if (controller) void refetch();
-        },
-        open: () => {
-          void open();
-        },
-      }}
-    >
-      {children}
-    </PaymentContext.Provider>
+  }, [controller, cache, key, i18n.language, refreshPurchaseState, refetch]);
+  const refresh = useCallback(() => {
+    if (controller) void refetch();
+  }, [controller, refetch]);
+  const open = useCallback(() => {
+    void openPage();
+  }, [openPage]);
+  const state = useMemo<PaymentState>(
+    () => ({
+      value: controller && !query.isError ? query.data : undefined,
+      loading: Boolean(controller && query.isPending),
+      failed: Boolean(controller && (query.isError || failed === controller)),
+      busy: Boolean(controller && busy === controller),
+      refresh,
+      open,
+    }),
+    [controller, query.isError, query.data, query.isPending, failed, busy, refresh, open],
   );
+  return <PaymentContext.Provider value={state}>{children}</PaymentContext.Provider>;
 }
 export function usePayment() {
   const state = useContext(PaymentContext);

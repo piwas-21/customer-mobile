@@ -1,4 +1,8 @@
-import { captureOrderProof, orderRequestHeaders } from './orderRequestHeaders';
+import {
+  captureOrderProof,
+  orderRequestHeaders,
+  type OrderProofSource,
+} from './orderRequestHeaders';
 import { canonicalUuidSchema } from './identifiers';
 import { ApiFailure } from './apiFailure';
 import type { CredentialVault, Principal } from './credentials';
@@ -48,6 +52,12 @@ async function sessionHeaders(
   return headers;
 }
 
+function orderProofSource(mode: RequestOptions['credentials']): OrderProofSource {
+  if (mode === 'order-payment' || mode === 'payment-renewal') return 'payment';
+  if (mode === 'order-receipt' || mode === 'receipt-renewal') return 'receipt';
+  return 'pending';
+}
+
 export async function requestHeaders(
   context: TenantContext,
   vault: CredentialVault,
@@ -73,17 +83,7 @@ export async function requestHeaders(
   if (orderProof)
     Object.assign(
       headers,
-      await orderRequestHeaders(
-        context,
-        vault,
-        orderProof,
-        mode === 'order-payment' || mode === 'payment-renewal'
-          ? 'payment'
-          : mode === 'order-receipt' || mode === 'receipt-renewal'
-            ? 'receipt'
-            : 'pending',
-        paymentOrderId,
-      ),
+      await orderRequestHeaders(context, vault, orderProof, orderProofSource(mode), paymentOrderId),
     );
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
     Object.assign(headers, await sessionHeaders(context, vault, principal, mode, expectedSession));

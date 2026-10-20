@@ -40,11 +40,12 @@ export function captureOrderProof(
     throw new ApiFailure(401, 'refused');
   return proof;
 }
+export type OrderProofSource = 'pending' | 'receipt' | 'payment';
 export async function orderRequestHeaders(
   context: TenantContext,
   vault: CredentialVault,
   expected: OrderOperationProof,
-  source: 'pending' | 'receipt' | 'payment' = 'pending',
+  source: OrderProofSource = 'pending',
   paymentOrderId?: string,
 ) {
   let proof: OrderOperationProof;

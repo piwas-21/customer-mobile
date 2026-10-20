@@ -46,7 +46,7 @@ export class CustomerPaymentController {
     this.assertCurrent();
     return this.browser.run('open', async () => {
       const resolved = await this.check(locale);
-      if (!resolved || resolved.decision.outcome !== 'ready') return this.present(resolved);
+      if (resolved?.decision.outcome !== 'ready') return this.present(resolved);
       const page = this.page(resolved.decision);
       this.assertCurrent();
       try {
