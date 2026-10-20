@@ -1,3 +1,4 @@
+import type { ReservationCancellationPreparation } from './reservationCancellationPreparation';
 import type {
   ReservationOperationRecord,
   ReservationPreparation,
@@ -42,6 +43,6 @@ export type RequestOptions = {
   expectedOrderProof?: OrderOperationProof;
   expectedPaymentOrderId?: string;
   expectedCancellationRecord?: CancellationOperationRecord;
-  expectedReservationPreparation?: ReservationPreparation;
+  expectedReservationPreparation?: ReservationPreparation | ReservationCancellationPreparation;
   expectedReservationRecord?: ReservationOperationRecord;
 };

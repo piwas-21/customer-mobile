@@ -22,6 +22,7 @@ type ReservationState = Readonly<{
   loading: boolean;
   failed: boolean;
   create: (input: ReservationBookingInput) => Promise<ReservationAttemptView | null>;
+  confirmCancellation: (operationId: string) => Promise<ReservationAttemptView | null>;
   check: () => Promise<ReservationAttemptView | null>;
   retryOriginal: (operationId: string) => Promise<ReservationAttemptView | null>;
   cancelAttempt: (operationId: string) => Promise<ReservationAttemptView | null>;
@@ -104,6 +105,8 @@ export default function ReservationProvider({ children }: Readonly<PropsWithChil
       loading: Boolean(controller && query.isFetching),
       failed: Boolean(controller && (failed === controller || query.isError)),
       create: (input) => run((owner) => owner.create(input, i18n.language)),
+      confirmCancellation: (operationId) =>
+        run((owner) => owner.confirmCancellation(operationId, i18n.language)),
       check: () => run((owner) => owner.recover(i18n.language)),
       retryOriginal: (operationId) =>
         run((owner) => owner.retryOriginal(operationId, i18n.language)),

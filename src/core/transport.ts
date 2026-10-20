@@ -4,6 +4,7 @@ import { originSchema } from './directory';
 import type { CredentialVault } from './credentials';
 import type { TenantBoundary, TenantContext } from './tenantContext';
 import { ApiFailure } from './apiFailure';
+import { isReservationRecoveryPath } from './reservationPaths';
 import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
 import { requestHeaders } from './requestHeaders';
@@ -85,8 +86,7 @@ export class CustomerTransport {
     )
       throw new ApiFailure(401, 'refused');
     const reservationRecovery =
-      options.credentials === 'reservation-operation' &&
-      path !== '/api/customer-mobile/reservations/create';
+      options.credentials === 'reservation-operation' && isReservationRecoveryPath(path);
     const orderRecovery =
       method === 'POST' &&
       options.credentials === 'order' &&

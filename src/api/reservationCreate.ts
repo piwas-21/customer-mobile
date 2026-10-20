@@ -12,7 +12,7 @@ import {
   type ReservationOperationRecord,
   type ReservationPreparation,
 } from '../core/reservationOperationRecord';
-import { reservationCreatePath } from '../core/reservationRequest';
+import { reservationCreatePath, reservationOperationPath } from '../core/reservationPaths';
 import type { TenantContext } from '../core/tenantContext';
 import { ApiFailure, type CustomerTransport } from '../core/transport';
 export async function prepareReservation(
@@ -46,13 +46,20 @@ export async function resolveReservationAttempt(
   client: CustomerTransport,
   context: TenantContext,
   input: ReservationOperationRecord,
-  phase: 'create' | 'recover' | 'cancel-attempt',
+  phase: 'create' | 'submit' | 'recover' | 'cancel-attempt',
   assertCurrent: () => void,
   locale: string,
   draft?: ReservationDraft,
 ) {
   const record = scopedReservationRecord(context, input.principal, input);
   if (record.resolution) throw new ApiFailure(409, 'refused');
+  if (phase === 'submit' && (record.cancellationRequested || record.cancellation?.retryBlocked))
+    throw new ApiFailure(409, 'refused');
+  if (
+    (record.cancellation && (phase === 'create' || draft !== undefined)) ||
+    (!record.cancellation && phase === 'submit')
+  )
+    throw new ApiFailure(409, 'refused');
   if (phase === 'create' && !draft) throw new ApiFailure(409, 'refused');
   assertCurrent();
   const suffix = phase === 'create' ? '' : '/' + phase;
@@ -62,7 +69,7 @@ export async function resolveReservationAttempt(
       : record.proof;
   const result = await client.request(
     context,
-    reservationCreatePath + suffix,
+    reservationOperationPath(record.cancellation !== undefined) + suffix,
     reservationCreateResolutionSchema,
     {
       method: 'POST',
@@ -75,5 +82,16 @@ export async function resolveReservationAttempt(
     },
   );
   assertCurrent();
-  return bindReservationResolution(record.proof, result, phase);
+  const bound = bindReservationResolution(
+    record.proof,
+    result,
+    phase === 'submit' ? 'create' : phase,
+  );
+  if (
+    record.cancellation &&
+    bound.outcome === 'Applied' &&
+    bound.reservationId !== record.cancellation.reservationId
+  )
+    throw new ApiFailure(200, 'contract');
+  return bound;
 }

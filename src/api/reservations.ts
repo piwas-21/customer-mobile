@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { bootstrapSchema } from '../core/capabilities';
 import { canonicalUuidSchema } from '../core/identifiers';
 import type { SessionController } from '../core/sessionController';
-import { ApiFailure } from '../core/transport';
+import { ApiFailure } from '../core/apiFailure';
 import { normalizedUtcSortMarker, utcSortMarkerSchema } from '../core/utcSortMarker';
 import { compareReservationTimes, reservationTimeSchema } from './reservationTime';
 
