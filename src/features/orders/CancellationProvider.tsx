@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PropsWithChildren,
@@ -71,57 +72,64 @@ export default function CancellationProvider({ children }: Readonly<PropsWithChi
     },
     [cache, key],
   );
-  async function run(
-    action: (owner: CustomerCancellationController) => Promise<CancellationView | null>,
-  ) {
-    if (!controller || active.current === controller) throw new Error('Order action is busy');
-    active.current = controller;
-    setBusy(controller);
-    setFailed(undefined);
-    try {
-      await cache.cancelQueries({ queryKey: key });
-      controller.assertCurrent();
-      const value = await action(controller);
-      controller.assertCurrent();
-      cache.setQueryData(key, value);
-      accepted(value);
-      return value;
-    } catch (error) {
+  const run = useCallback(
+    async (action: (owner: CustomerCancellationController) => Promise<CancellationView | null>) => {
+      if (!controller || active.current === controller) throw new Error('Order action is busy');
+      active.current = controller;
+      setBusy(controller);
+      setFailed(undefined);
       try {
+        await cache.cancelQueries({ queryKey: key });
         controller.assertCurrent();
-        setFailed(controller);
-        void refetch();
-      } catch {
-        /* Withdrawn owner. */
+        const value = await action(controller);
+        controller.assertCurrent();
+        cache.setQueryData(key, value);
+        accepted(value);
+        return value;
+      } catch (error) {
+        try {
+          controller.assertCurrent();
+          setFailed(controller);
+          void refetch();
+        } catch {
+          /* Withdrawn owner. */
+        }
+        throw error;
+      } finally {
+        if (active.current === controller) active.current = undefined;
+        setBusy((value) => (value === controller ? undefined : value));
       }
-      throw error;
-    } finally {
-      if (active.current === controller) active.current = undefined;
-      setBusy((value) => (value === controller ? undefined : value));
-    }
-  }
-  return (
-    <CancellationContext.Provider
-      value={{
-        controller,
-        value: controller && !query.isError ? query.data : undefined,
-        busy: Boolean(controller && busy === controller),
-        loading: Boolean(controller && query.isFetching),
-        failed: Boolean(controller && (failed === controller || query.isError)),
-        confirm: (orderId) => run((owner) => owner.confirm(orderId, i18n.language)),
-        refresh: () => {
-          if (controller) void refetch();
-        },
-        retry: (operationId) => {
-          void run((owner) => owner.retryOriginal(operationId, i18n.language)).catch(
-            () => undefined,
-          );
-        },
-      }}
-    >
-      {children}
-    </CancellationContext.Provider>
+    },
+    [controller, cache, key, accepted, refetch],
   );
+  const value = useMemo<CancellationState>(
+    () => ({
+      controller,
+      value: controller && !query.isError ? query.data : undefined,
+      busy: Boolean(controller && busy === controller),
+      loading: Boolean(controller && query.isFetching),
+      failed: Boolean(controller && (failed === controller || query.isError)),
+      confirm: (orderId) => run((owner) => owner.confirm(orderId, i18n.language)),
+      refresh: () => {
+        if (controller) void refetch();
+      },
+      retry: (operationId) => {
+        void run((owner) => owner.retryOriginal(operationId, i18n.language)).catch(() => undefined);
+      },
+    }),
+    [
+      controller,
+      query.isError,
+      query.data,
+      query.isFetching,
+      busy,
+      failed,
+      run,
+      i18n.language,
+      refetch,
+    ],
+  );
+  return <CancellationContext.Provider value={value}>{children}</CancellationContext.Provider>;
 }
 // An entry outside the customer workspace has no mutation authority.
 export const useCancellation = () => useContext(CancellationContext);

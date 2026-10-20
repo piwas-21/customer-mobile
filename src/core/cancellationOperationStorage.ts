@@ -20,7 +20,7 @@ export class CancellationOperationStorage {
   }
   async clearResolvedForCleanup(context: TenantContext, principal: Principal) {
     const record = await this.readForCleanup(context, principal);
-    if (!record || record.resolution === null) return;
+    if (!record?.resolution) return;
     await this.remove(context, principal);
   }
   async assertResolved(context: TenantContext, principal: Principal, assertCurrent: () => void) {

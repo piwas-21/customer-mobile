@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { CancellationView } from '../../core/cancellationView';
 import type { CancellationOffer } from '../../core/customerCancellationController';
 import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
@@ -62,13 +63,7 @@ export default function CancellationModal({
     <BaseModal title={t('cancellation.title')} onClose={onClose}>
       <Feedback message={t('cancellation.explanation')} />
       {!current && !problem ? <Feedback message={t('loading')} loading /> : null}
-      {problem && result?.outcome !== 'Cancelled' && result?.outcome !== 'Refused' ? (
-        <Feedback message={t(sent ? 'cancellation.unknown' : 'cancellation.unavailable')} />
-      ) : null}
-      {current && !current.allowed ? (
-        <Feedback message={t(`cancellation.reason.${current.reason}`)} />
-      ) : null}
-      {sent && result ? <Feedback message={t(`cancellation.outcome.${result.outcome}`)} /> : null}
+      <ResultFeedback preparation={current} problem={problem} submitted={sent} result={result} />
       {current?.allowed && !sent && !problem ? (
         <Button
           destructive
@@ -86,5 +81,32 @@ export default function CancellationModal({
         onPress={sent ? onClose : onBack}
       />
     </BaseModal>
+  );
+}
+
+function ResultFeedback({
+  preparation,
+  problem,
+  submitted,
+  result,
+}: Readonly<{
+  preparation: CancellationOffer | undefined;
+  problem: boolean;
+  submitted: boolean;
+  result: CancellationView | null;
+}>) {
+  const { t } = useTranslation();
+  return (
+    <>
+      {problem && result?.outcome !== 'Cancelled' && result?.outcome !== 'Refused' ? (
+        <Feedback message={t(submitted ? 'cancellation.unknown' : 'cancellation.unavailable')} />
+      ) : null}
+      {preparation && !preparation.allowed ? (
+        <Feedback message={t(`cancellation.reason.${preparation.reason}`)} />
+      ) : null}
+      {submitted && result ? (
+        <Feedback message={t(`cancellation.outcome.${result.outcome}`)} />
+      ) : null}
+    </>
   );
 }

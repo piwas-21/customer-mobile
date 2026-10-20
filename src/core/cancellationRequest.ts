@@ -44,30 +44,35 @@ export function captureCancellationRequest(
     options.expectedCancellationRecord,
   );
   if (record.resolution !== null) throw new ApiFailure(401, 'refused');
-  let capturedBody: unknown;
-  if (mode === 'cancellation-renewal') {
-    capturedBody = renewalBody.parse(options.body);
-    if (path !== '/api/Auth/refresh-token' || record.principal.kind !== 'customer')
-      throw new ApiFailure(401, 'refused');
-  } else {
-    const prefix = '/api/customer-mobile/orders/cancellation/';
-    const scope = record.authority.kind === 'original' ? 'original/' : '';
-    if (path !== `${prefix}${scope}submit` && path !== `${prefix}${scope}recover`)
-      throw new ApiFailure(401, 'refused');
-    const body =
-      record.authority.kind === 'original'
-        ? originalBody.parse(options.body)
-        : cancellationIntentSchema.parse(options.body);
-    capturedBody = body;
-    if (JSON.stringify(body) !== JSON.stringify(cancellationBody(record)))
-      throw new ApiFailure(401, 'refused');
-  }
+  const capturedBody =
+    mode === 'cancellation-renewal'
+      ? captureRenewalBody(record, path, options.body)
+      : captureActionBody(record, path, options.body);
   return {
     ...options,
     body: capturedBody,
     principal: record.principal,
     expectedCancellationRecord: record,
   };
+}
+
+function captureRenewalBody(record: CancellationOperationRecord, path: string, body: unknown) {
+  if (path !== '/api/Auth/refresh-token' || record.principal.kind !== 'customer')
+    throw new ApiFailure(401, 'refused');
+  return renewalBody.parse(body);
+}
+function captureActionBody(record: CancellationOperationRecord, path: string, input: unknown) {
+  const prefix = '/api/customer-mobile/orders/cancellation/';
+  const scope = record.authority.kind === 'original' ? 'original/' : '';
+  if (path !== `${prefix}${scope}submit` && path !== `${prefix}${scope}recover`)
+    throw new ApiFailure(401, 'refused');
+  const body =
+    record.authority.kind === 'original'
+      ? originalBody.parse(input)
+      : cancellationIntentSchema.parse(input);
+  if (JSON.stringify(body) !== JSON.stringify(cancellationBody(record)))
+    throw new ApiFailure(401, 'refused');
+  return body;
 }
 
 export async function cancellationRequestHeaders(

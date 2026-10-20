@@ -111,7 +111,7 @@ export class CustomerCancellationController {
     this.assertStart();
     return this.actions.run(`confirm/${orderId}`, async () => {
       const prepared = this.prepared;
-      if (!prepared || prepared.preparation.orderId !== orderId || !prepared.preparation.allowed)
+      if (prepared?.preparation.orderId !== orderId || !prepared.preparation.allowed)
         throw new ApiFailure(409, 'refused');
       this.prepared = null;
       const record = await this.repository.cancellations.prepare(
@@ -144,8 +144,7 @@ export class CustomerCancellationController {
     this.assertCurrent();
     return this.actions.run(`retry/${operationId}`, async () => {
       const record = await this.load();
-      if (!record || record.intent.operationId !== operationId)
-        throw new ApiFailure(409, 'refused');
+      if (record?.intent.operationId !== operationId) throw new ApiFailure(409, 'refused');
       if (record.resolution) return this.view(record, record.resolution);
       return this.dispatch(record, 'submit', locale);
     });
