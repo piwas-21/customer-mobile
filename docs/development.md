@@ -256,3 +256,24 @@ Unseen results retain the original operation and allow only checking/stopping, i
 The original Customer proof can renew once during module/account withdrawal; initial submission never
 renews or retries. Known Applied results refresh the exact owned detail and history. Native exports,
 independent exact review, backend publication/deployment, full locales/RTL and installed acceptance remain gates.
+
+## Native table visit adapter and custody
+
+The existing guest visit join and account contracts have strict native adapters. Joining sends only
+the exact QR value anonymously after explicit action. Account reads send only the exact persisted
+participant capability to its service-session account route; Customer JWT and basket session never
+substitute for that capability. The separate existing table mode retains its two-credential semantics
+for later round work. Capability, flag, lifecycle, tenant, owner, expiry and response identity are
+checked independently.
+
+Participant authority is an acknowledged, versioned SecureStore record partitioned by environment,
+restaurant and original account/guest owner. The shared installation queue refuses implicit visit
+replacement and corrupt/foreign state; explicit local leaving checks the exact visit and deletion
+readback. Logout clears this private access with acknowledged deletion. Expiry does not infer a new
+visit or erase existing evidence. No participant token enters an ordinary persistence or query key.
+
+The account projection preserves original versus payable totals and billing credit, separate
+remaining/credit amounts, frozen line totals, legacy daily identities and unknown future status text.
+Database bigint revisions must be exact safe integers; nested items stop at the server's twenty-level
+projection boundary. This adapter/storage slice does not expose admission UI, rounds, payments,
+notifications or deployed/installed acceptance. Those journeys and full locale/RTL remain required.

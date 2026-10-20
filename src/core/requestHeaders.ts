@@ -3,6 +3,7 @@ import {
   orderRequestHeaders,
   type OrderProofSource,
 } from './orderRequestHeaders';
+import { tableAccountHeaders } from './tableAccountRequest';
 import { reservationRequestHeaders } from './reservationRequest';
 import { cancellationRequestHeaders } from './cancellationRequest';
 import { canonicalUuidSchema } from './identifiers';
@@ -79,6 +80,8 @@ export async function requestHeaders(
     mode === 'reservation-renewal'
   )
     Object.assign(headers, await reservationRequestHeaders(context, vault, options));
+  if (mode === 'table-account')
+    Object.assign(headers, await tableAccountHeaders(context, vault, options));
   if (mode === 'order-cancellation' || mode === 'cancellation-renewal')
     Object.assign(headers, await cancellationRequestHeaders(context, vault, options));
   if (

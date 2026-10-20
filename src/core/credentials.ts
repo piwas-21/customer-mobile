@@ -111,7 +111,7 @@ export class CredentialVault {
     const removals = await Promise.allSettled(
       kinds.map((kind) => {
         const key = secretKey(context, kind, scoped);
-        return kind === 'reservation-contact'
+        return kind === 'reservation-contact' || kind === 'table-participant'
           ? removeAcknowledgedSecret(this.store, key)
           : this.store.remove(key);
       }),

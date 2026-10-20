@@ -1,3 +1,4 @@
+import type { TableVisitRecord } from './tableVisitRecord';
 import type { ReservationCancellationPreparation } from './reservationCancellationPreparation';
 import type {
   ReservationOperationRecord,
@@ -25,6 +26,7 @@ export type RequestOptions = {
     | 'customer'
     | 'guest'
     | 'table'
+    | 'table-account'
     | 'basket'
     | 'order'
     | 'order-receipt'
@@ -40,6 +42,7 @@ export type RequestOptions = {
   locale?: string;
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
+  expectedTableVisit?: TableVisitRecord;
   expectedOrderProof?: OrderOperationProof;
   expectedPaymentOrderId?: string;
   expectedCancellationRecord?: CancellationOperationRecord;

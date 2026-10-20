@@ -7,6 +7,7 @@ import { ApiFailure } from './apiFailure';
 import { isReservationRecoveryPath } from './reservationPaths';
 import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
+import { captureTableAccountRequest } from './tableAccountRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
 export { ApiFailure } from './apiFailure';
@@ -51,6 +52,7 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureTableAccountRequest(context, path, options);
     options = captureCancellationRequest(context, path, options);
     options = captureReservationRequest(context, path, options);
     const assertOwner = options.assertCurrent ?? (() => {});
