@@ -84,3 +84,29 @@ it('uses the Android native confirmation/dismissal and rejects a value before th
   act(() => picker?.onDismiss?.());
   expect(close).toHaveBeenCalledTimes(1);
 });
+
+it.each(['ios', 'android'] as const)(
+  'ignores native callbacks after the %s picker lifetime ends',
+  (platform) => {
+    jest.replaceProperty(Platform, 'OS', platform);
+    const choose = jest.fn();
+    const close = jest.fn();
+    const screen = render(
+      <ReservationDatePicker
+        day="2026-11-01"
+        minimum="2026-11-01"
+        onChoose={choose}
+        onClose={close}
+      />,
+    );
+    const picker = jest.mocked(DateTimePicker).mock.calls.at(-1)?.[0];
+    screen.unmount();
+    const value = new Date('2026-11-02T12:00:00Z');
+    act(() => {
+      picker?.onValueChange?.({ nativeEvent: { timestamp: value.getTime(), utcOffset: 0 } }, value);
+      picker?.onDismiss?.();
+    });
+    expect(choose).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+  },
+);

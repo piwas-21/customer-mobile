@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,16 @@ export default function ReservationDatePicker({ day, minimum, onChoose, onClose 
   const theme = useTheme();
   const mode = useColorScheme() === 'dark' ? 'dark' : 'light';
   const [draft, setDraft] = useState(day);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const choose = (value: string) => {
+    if (mounted.current && value >= minimum) onChoose(value);
+  };
   const picker = (
     <DateTimePicker
       value={reservationPickerValue(draft)}
@@ -29,12 +39,15 @@ export default function ReservationDatePicker({ day, minimum, onChoose, onClose 
       locale={i18n.language}
       display={Platform.OS === 'ios' ? 'inline' : 'default'}
       onValueChange={(_event, value) => {
+        if (!mounted.current) return;
         const selected = reservationPickerDay(value);
         if (selected < minimum) return;
-        if (Platform.OS === 'android') onChoose(selected);
+        if (Platform.OS === 'android') choose(selected);
         else setDraft(selected);
       }}
-      onDismiss={onClose}
+      onDismiss={() => {
+        if (mounted.current) onClose();
+      }}
     />
   );
   if (Platform.OS === 'android') return picker;
@@ -44,7 +57,7 @@ export default function ReservationDatePicker({ day, minimum, onChoose, onClose 
       <Button
         label={t('reservationUseDate')}
         disabled={draft < minimum}
-        onPress={() => onChoose(draft)}
+        onPress={() => choose(draft)}
       />
       <Button secondary label={t('close')} onPress={onClose} />
     </BaseModal>

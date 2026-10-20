@@ -137,7 +137,8 @@ Date selection uses SDK 56's pinned `@react-native-community/datetimepicker` 9.1
 an explicit UTC marker and `timeZoneName="UTC"` on both platforms; restaurant today is derived on the
 restaurant clock. Party 1–20 bounds are shared with the wire schema. Native iOS confirmation and
 Android selection/dismissal preserve the selected calendar day. The package's Android component
-closes its native picker on unmount; context/capability/timezone withdrawal removes the whole view.
+closes its native picker on unmount; an additional component lifetime guard ignores late native
+selection/dismissal callbacks. Context/capability/timezone withdrawal removes the whole view.
 
 Results live only in component memory and are scoped to tenant/environment/generation, client,
 restaurant zone, calendar day, party and lifecycle revision. Input changes or failed refresh hide
