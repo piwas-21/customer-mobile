@@ -479,3 +479,14 @@ wrong-owner/route/payload refusal, initial and terminal save failures, rejected 
 shared-queue claim races and stale retry confirmation. Full release gates, physical process death,
 secure-store behavior, large text/screen readers and every enabled tenant remain required. This flow
 does not implement general accepted-order cancellation or prove a provider refund.
+
+## Public preview expiry cleanup
+
+Public menu envelopes are pruned on app startup, app-state changes, successful public saves/removals
+and the earliest retained preview expiry. The serialized cache queue removes expired/future or invalid
+public bytes and acknowledges the resulting envelope by exact disk readback. Retention fences survive
+an empty preview list. New saves reschedule cleanup; concurrent events coalesce and storage failures
+retry after one minute or the next lifecycle event. Only the configured environment's public menu key
+is touched; private sessions, purchase proof, history and other environment records are preserved.
+A suspended native app cannot guarantee background execution: the next foreground/startup repeats
+cleanup. Installed suspension/process-death and platform storage acceptance remain open.
