@@ -1,4 +1,11 @@
 export const checkoutEnglish = {
+  checkoutPoints: 'Points to use (optional)',
+  checkoutPointsInvalid: 'Enter a whole number of points, or leave it blank.',
+  checkoutPointsHint:
+    'The restaurant confirms eligible points and discounts when you review the total.',
+  checkoutPointsUnavailable: 'Points cannot be used right now. Remove them before reviewing again.',
+  checkoutRemovePoints: 'Remove requested points',
+  checkoutPointsApplied: '{{applied}} of {{requested}} requested points applied',
   placeOrder: 'Place order',
   placingOrder: 'Sending your order…',
   backToDetails: 'Back to your details',

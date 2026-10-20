@@ -32,11 +32,19 @@ export default function useCheckoutFlow(basket: ReturnType<typeof useBasket>) {
   };
   async function showReview() {
     setSubmitted(true);
-    if (!inspection?.values || sending.current) return;
+    if (
+      !inspection?.values ||
+      sending.current ||
+      (inspection.values.pointsToRedeem > 0 && !basket.canRedeemPoints)
+    )
+      return;
     Keyboard.dismiss();
     setReviewed({ ...draft });
     setMethod('Cash');
-    await review.show({ pointsToRedeem: 0, tip: inspection.values.tip });
+    await review.show({
+      pointsToRedeem: inspection.values.pointsToRedeem,
+      tip: inspection.values.tip,
+    });
   }
   async function place() {
     const quote = review.quote;
@@ -46,6 +54,7 @@ export default function useCheckoutFlow(basket: ReturnType<typeof useBasket>) {
       !quote ||
       !values ||
       !basket.canAdd ||
+      (values.pointsToRedeem > 0 && !basket.canRedeemPoints) ||
       sending.current ||
       !quote.availablePaymentMethods.includes(method)
     )
@@ -59,7 +68,7 @@ export default function useCheckoutFlow(basket: ReturnType<typeof useBasket>) {
           expectedBasketId: quote.basketId,
           expectedPurchaseFingerprint: quote.purchaseFingerprint,
           type: quote.type,
-          pointsToRedeem: 0,
+          pointsToRedeem: values.pointsToRedeem,
           tip: values.tip,
         },
         expectedQuoteFingerprint: quote.quoteFingerprint,
@@ -77,13 +86,18 @@ export default function useCheckoutFlow(basket: ReturnType<typeof useBasket>) {
       }
     }
   }
+  const reviewedValues =
+    reviewed && fields.fields ? inspectCheckoutDraft(reviewed, fields.fields).values : null;
   return {
+    canRedeemPoints: basket.canRedeemPoints,
+    reviewedPoints: reviewedValues?.pointsToRedeem ?? 0,
     canPlace: Boolean(
       review.quote &&
       !review.changed &&
       reviewed &&
       fields.fields &&
-      inspectCheckoutDraft(reviewed, fields.fields).values &&
+      reviewedValues &&
+      (reviewedValues.pointsToRedeem === 0 || basket.canRedeemPoints) &&
       basket.canAdd,
     ),
     open,

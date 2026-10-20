@@ -12,6 +12,7 @@ export const checkoutInputLimits = {
   country: 100,
   additionalInfo: 500,
   tip: 11,
+  pointsToRedeem: 10,
   notes: 1000,
 } as const;
 // FluentValidation bounds checkout strings in UTF-16 units, unlike current Zod's

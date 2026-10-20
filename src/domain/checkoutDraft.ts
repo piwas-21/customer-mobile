@@ -13,6 +13,7 @@ export function emptyCheckoutDraft() {
     country: '',
     additionalInfo: '',
     tip: '',
+    pointsToRedeem: '',
   };
 }
 export type CheckoutDraft = ReturnType<typeof emptyCheckoutDraft>;
@@ -22,6 +23,12 @@ const tipSchema = z
   .regex(/^(?:\d+(?:[.,]\d{1,2})?)?$/)
   .transform((text) => Number(text.replace(',', '.')))
   .pipe(checkoutMoney);
+const pointsSchema = z
+  .string()
+  .trim()
+  .regex(/^(?:\d{1,10})?$/)
+  .transform(Number)
+  .pipe(z.int32().nonnegative());
 function collectErrors(
   issues: readonly { path: PropertyKey[] }[],
   errors: Set<keyof CheckoutDraft>,
@@ -50,14 +57,21 @@ export function inspectCheckoutDraft(draft: CheckoutDraft, fields: CheckoutField
     if (field.required && !draft[field.key].trim()) errors.add(field.key);
   const tip = tipSchema.safeParse(draft.tip);
   if (!tip.success) errors.add('tip');
+  const points = pointsSchema.safeParse(draft.pointsToRedeem);
+  if (!points.success) errors.add('pointsToRedeem');
   return {
     errors,
     values:
-      errors.size === 0 && contact.success && (!address || address.success) && tip.success
+      errors.size === 0 &&
+      contact.success &&
+      (!address || address.success) &&
+      tip.success &&
+      points.success
         ? {
             contact: contact.data,
             address: address?.data,
             tip: tip.data,
+            pointsToRedeem: points.data,
           }
         : null,
   };

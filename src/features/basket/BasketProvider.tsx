@@ -158,6 +158,9 @@ function useBasketState() {
     cancelling: pending.data?.cancelling === true,
     resolution: resolution && resolution.owner === workspace ? resolution.outcome : null,
     canAdd: ready,
+    canRedeemPoints: Boolean(
+      ready && sessionController?.userId && !recoveryOnly && canUse(bootstrap.data, 'loyalty'),
+    ),
     failed: failure || pending.isError || basket.isError || order.failed,
     pendingOrder: order.pending ?? null,
     orderDecision: order.decision,

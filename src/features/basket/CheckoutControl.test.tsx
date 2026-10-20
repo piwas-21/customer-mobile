@@ -1,10 +1,6 @@
 import '../../i18n';
-import { act, fireEvent, render } from '@testing-library/react-native';
-import { checkoutFields } from '../../domain/checkoutFields';
-import { customerForms } from '../../test/customerForms';
-import { basketState } from '../../test/basketState';
-import { basketResponse } from '../../test/basketApi';
-import { checkoutQuote } from '../../test/checkoutQuote';
+import { configureCheckoutUiFields, checkoutUiFixture } from '../../test/checkoutUi';
+import { act, fireEvent } from '@testing-library/react-native';
 import { deferred } from '../../test/deferred';
 import CheckoutControl from './CheckoutControl';
 import useCheckoutFields from './useCheckoutFields';
@@ -22,37 +18,9 @@ jest.mock(
       'react-native-safe-area-context/jest/mock',
     ).default,
 );
-beforeEach(() => {
-  jest.mocked(useCheckoutFields).mockImplementation(
-    (_open, type) =>
-      ({
-        fields: type ? checkoutFields(customerForms(), type) : null,
-        isPending: false,
-        refetch: jest.fn(),
-      }) as unknown as ReturnType<typeof useCheckoutFields>,
-  );
-});
-function fixture(type: 'Takeaway' | 'Delivery' = 'Takeaway') {
-  const quote = checkoutQuote();
-  quote.type = type;
-  if (type === 'Delivery') quote.availablePaymentMethods = ['Cash'];
-  quote.money.tip = 0;
-  quote.money.total = 14;
-  const basket = basketState({
-    basket: { ...basketResponse(), orderType: type },
-    quote: jest.fn(async () => quote),
-  });
-  const screen = render(<CheckoutControl basket={basket} />);
-  const enter = () => {
-    fireEvent.press(screen.getByRole('button', { name: 'Checkout' }));
-    fireEvent.changeText(screen.getByLabelText('Full name'), 'Native guest');
-    fireEvent.changeText(screen.getByLabelText('Email'), 'native@example.test');
-    fireEvent.changeText(screen.getByLabelText('Phone number'), '+41000000000');
-  };
-  return { basket, screen, quote, enter };
-}
+beforeEach(configureCheckoutUiFields);
 it('collects required contact, reviews server money and sends one chosen pending till intent only on Place order', async () => {
-  const f = fixture();
+  const f = checkoutUiFixture();
   f.enter();
   expect(f.basket.quote).not.toHaveBeenCalled();
   await act(async () => fireEvent.press(f.screen.getByRole('button', { name: 'Review order' })));
@@ -84,7 +52,7 @@ it('collects required contact, reviews server money and sends one chosen pending
   expect(f.screen.queryByLabelText('Email')).toBeNull();
 });
 it('required contact and invalid tip prevent review without any order write', async () => {
-  const f = fixture();
+  const f = checkoutUiFixture();
   fireEvent.press(f.screen.getByRole('button', { name: 'Checkout' }));
   await act(async () => fireEvent.press(f.screen.getByRole('button', { name: 'Review order' })));
   expect(f.screen.getAllByText('Check this field before continuing.')).toHaveLength(3);
@@ -97,7 +65,7 @@ it('required contact and invalid tip prevent review without any order write', as
   expect(f.basket.placeOrder).not.toHaveBeenCalled();
 });
 it('closing clears contact, while Back retains details within the same owner', async () => {
-  const f = fixture();
+  const f = checkoutUiFixture();
   f.enter();
   await act(async () => fireEvent.press(f.screen.getByRole('button', { name: 'Review order' })));
   fireEvent.press(f.screen.getByRole('button', { name: 'Back to your details' }));
@@ -107,7 +75,7 @@ it('closing clears contact, while Back retains details within the same owner', a
   expect(f.screen.queryByDisplayValue('Native guest')).toBeNull();
 });
 it('a changed basket withdraws a late quote and cannot place the old order', async () => {
-  const f = fixture();
+  const f = checkoutUiFixture();
   const reply = deferred<CheckoutQuote>();
   f.basket.quote = jest.fn(() => reply.promise);
   f.enter();
@@ -122,7 +90,7 @@ it('a changed basket withdraws a late quote and cannot place the old order', asy
   expect(f.basket.placeOrder).not.toHaveBeenCalled();
 });
 it('double taps and dismissal during dispatch do not submit again or expose another order retry', async () => {
-  const f = fixture();
+  const f = checkoutUiFixture();
   const result = deferred<CustomerOrderResolution>();
   f.basket.placeOrder = jest.fn(() => result.promise);
   f.enter();
@@ -144,7 +112,7 @@ it('unavailable form policy blocks entry projection and offers only a public rea
     isPending: false,
     refetch: jest.fn(),
   } as unknown as ReturnType<typeof useCheckoutFields>);
-  const f = fixture();
+  const f = checkoutUiFixture();
   fireEvent.press(f.screen.getByRole('button', { name: 'Checkout' }));
   expect(f.screen.getByText(/Checkout details are unavailable/)).toBeTruthy();
   fireEvent.press(f.screen.getByRole('button', { name: 'Try again' }));
@@ -152,7 +120,7 @@ it('unavailable form policy blocks entry projection and offers only a public rea
 });
 
 it('collects delivery floors, keeps country optional and offers only server-supported delivery payment choices', async () => {
-  const f = fixture('Delivery');
+  const f = checkoutUiFixture('Delivery');
   f.enter();
   await act(async () => fireEvent.press(f.screen.getByRole('button', { name: 'Review order' })));
   expect(f.basket.quote).not.toHaveBeenCalled();

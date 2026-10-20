@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { CheckoutQuote } from '../../api/checkoutQuoteResponse';
 import useMounted from '../../core/useMounted';
 import type { useBasket } from './BasketProvider';
@@ -14,24 +14,27 @@ export default function useCheckoutReview(basket: ReturnType<typeof useBasket>) 
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [quote, setQuote] = useState<CheckoutQuote>();
-  const [reviewed, setReviewed] = useState<string>();
   const revision = JSON.stringify([
     basket.basket?.id,
     basket.basket?.purchaseFingerprint,
     basket.basket?.orderType,
+    basket.revision,
+    basket.canRedeemPoints,
   ]);
+  const scope = useMemo(() => ({ revision }), [revision]);
+  const [reviewed, setReviewed] = useState<typeof scope>();
   const allowed = Boolean(
     basket.canAdd &&
     !basket.failed &&
     basket.basket?.items.length &&
     (basket.basket.orderType === 'Takeaway' || basket.basket.orderType === 'Delivery'),
   );
-  const changed = open && (reviewed !== revision || !allowed);
+  const changed = open && (reviewed !== scope || !allowed);
   async function show(selection = defaultSelection) {
     if (!allowed || active.current) return;
     active.current = true;
     const request = ++generation.current;
-    setReviewed(revision);
+    setReviewed(scope);
     setQuote(undefined);
     setFailed(false);
     setBusy(true);
