@@ -14,16 +14,19 @@ import {
 } from './credentials';
 import { orderOperationProofSchema, type OrderOperationProof } from './orderOperationProof';
 import { OrderOperationStorage } from './orderOperationStorage';
+import { PaymentOperationStorage } from './paymentOperationStorage';
 import type { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
 export class OrderOperationRepository {
   private readonly storage: OrderOperationStorage;
+  private readonly payments: PaymentOperationStorage;
   constructor(
     store: SecretStore,
     private readonly vault: CredentialVault,
     private readonly tasks: SerialTasks,
   ) {
     this.storage = new OrderOperationStorage(store);
+    this.payments = new PaymentOperationStorage(store);
   }
   prepare(
     context: TenantContext,
@@ -42,6 +45,7 @@ export class OrderOperationRepository {
       if ((await this.storage.decisions(context, owner, assertCurrent)).length >= savedOrderLimit)
         throw new Error('Manage saved order receipts before placing another order');
       await this.storage.ensureBasketUnclaimed(context, owner, assertCurrent);
+      await this.payments.assertResolved(context, owner, assertCurrent);
       const sessionId = canonicalUuidSchema.parse(
         await this.vault.capability(context, 'guest-session', owner),
       );
@@ -55,6 +59,7 @@ export class OrderOperationRepository {
         operationId: createId(),
         payloadHash,
         cancellationRequested: false,
+        ...(intent.paymentMethod === 'OnlinePayment' ? { onlinePayment: true } : {}),
       });
       // Contact first, then the proof. Dispatch requires verified readback of both; a failed
       // acknowledgement cannot mint a replacement operation on the next attempt.
@@ -122,6 +127,8 @@ export class OrderOperationRepository {
         throw new Error('Order operation unavailable');
       }
       if (proof.operationId !== captured.operationId) throw new Error('Order operation changed');
+      if (proof.onlinePayment && captured.outcome === 'Applied' && captured.orderId)
+        await this.payments.accept(context, proof, captured.orderId, assertCurrent);
       const decision = orderDecisionSchema.parse({
         ...proof,
         outcome: captured.outcome,
@@ -156,6 +163,9 @@ export class OrderOperationRepository {
     const owner = principalSchema.parse(principal);
     canonicalUuidSchema.parse(operationId);
     return this.tasks.run(async () => {
+      const payment = await this.payments.read(context, owner, assertCurrent);
+      if (payment?.state === 'pending' && payment.proof.operationId === operationId)
+        throw new Error('Resolve the original payment before forgetting its receipt');
       const decisions = await this.storage.decisions(context, owner, assertCurrent);
       await this.storage.save(
         context,

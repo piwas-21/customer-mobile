@@ -181,11 +181,28 @@ login or new purchasing actions. When guest ordering remains enabled, a resolved
 sign out and continue as a guest; failed secure logout retains a visible cleanup retry.
 
 The additive backend acceptance contract depends on the accepted operation-store migration and the
-native endpoints under backend review. Its final server money comparison and strict points debit
+native endpoints accepted in backend #736. Its final server money comparison and strict points debit
 remain authoritative. The native online-payment capability stays unavailable until hosted provider
-recovery is implemented. Current source does not claim payment settlement or expose private order
-receipts/history yet. Migration application, deployment/readback, installed secure recovery and
+recovery is connected. Current native source does not claim payment settlement; private receipts/history
+are described below. Migration application, deployment/readback, installed secure recovery and
 physical checkout acceptance remain separate release gates.
+
+## Native payment recovery foundation
+
+An online order's original proof includes a non-contact marker before submission. Applied acceptance
+verifies a minimal payment record in SecureStore before releasing the order claim; interrupted receipt
+persistence or lost storage acknowledgement keeps the original identity recoverable. Payment records
+contain the original tenant/environment, principal, session/operation/digest and order reference, with
+pending/terminal state and the frozen server expiry. They contain no customer contact, JWT or hosted URL.
+Logout removes ordinary credentials/contact/history while retaining this minimal financial proof.
+
+Pending payments block new basket/order claims and forgetting their original receipt. Only the
+source-only dedicated payment decision contract can release the hold with paid/expired/failed;
+ready and unknown outcomes remain pending, and neither local expiry, fulfillment nor browser closure
+proves a payment outcome. Late or contradictory owner/order/operation/expiry decisions are refused.
+The old unused order-status-derived scaffold has been removed. Native online payment remains
+unavailable while API adaptation, browser/foreground recovery and verified central returns are connected.
+Storage source checks are separate from deployed backend, provider and installed-device acceptance.
 
 ## Native and device evidence
 

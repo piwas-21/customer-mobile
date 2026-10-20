@@ -30,9 +30,9 @@ export async function customerOrderFixture(customer = false) {
 }
 export function appliedOrder() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     operationId: basketOperationId,
-    outcome: 'Applied',
+    outcome: 'Applied' as const,
     orderId: checkoutQuote().basketId,
   };
 }

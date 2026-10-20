@@ -138,5 +138,7 @@ it('awaits all targeted removals and reports incomplete logout when storage refu
   await expect(vault.clear(context, { kind: 'customer', id: 'a' })).rejects.toThrow(
     'Credential removal incomplete',
   );
-  expect(await vault.capability(context, 'payment', { kind: 'customer', id: 'a' })).toBeNull();
+  expect(await vault.capability(context, 'payment', { kind: 'customer', id: 'a' })).toBe(
+    'pending-reference',
+  );
 });

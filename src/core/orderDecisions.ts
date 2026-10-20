@@ -40,5 +40,6 @@ export function decisionProof(decision: OrderDecision) {
     operationId: decision.operationId,
     payloadHash: decision.payloadHash,
     cancellationRequested: decision.cancellationRequested,
+    ...(decision.onlinePayment ? { onlinePayment: true } : {}),
   });
 }

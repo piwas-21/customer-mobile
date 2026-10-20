@@ -1,6 +1,7 @@
 import { scopedOrderDecisions } from './orderDecisions';
 import { assertOrderProofScope, orderOperationProofSchema } from './orderOperationProof';
 import { OrderOperationRepository } from './orderOperationRepository';
+import { PaymentOperationRepository } from './paymentOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
 import { CredentialVault, secretKey, type CustomerSession, type SecretStore } from './credentials';
@@ -18,11 +19,13 @@ export class SessionRepository {
   readonly vault: CredentialVault;
   readonly baskets: BasketOperationRepository;
   readonly orders: OrderOperationRepository;
+  readonly payments: PaymentOperationRepository;
   private readonly writes = new SerialTasks();
   constructor(private readonly store: SecretStore) {
     this.vault = new CredentialVault(store);
     this.baskets = new BasketOperationRepository(store, this.vault, this.writes);
     this.orders = new OrderOperationRepository(store, this.vault, this.writes);
+    this.payments = new PaymentOperationRepository(store, this.writes);
   }
   load(context: TenantContext): Promise<CustomerSession | null> {
     return this.writes.run(async () => {

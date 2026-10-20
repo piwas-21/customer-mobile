@@ -12,6 +12,8 @@ export const orderOperationProofSchema = z.strictObject({
   operationId: canonicalUuidSchema,
   payloadHash: z.string().regex(/^[a-f0-9]{64}$/),
   cancellationRequested: z.boolean(),
+  // Older clients could only submit cash. This non-contact marker survives contact cleanup.
+  onlinePayment: z.literal(true).optional(),
 });
 export type OrderOperationProof = Readonly<z.infer<typeof orderOperationProofSchema>>;
 export function assertOrderProofScope(context: TenantContext, proof: OrderOperationProof): void {
