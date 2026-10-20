@@ -42,7 +42,11 @@ jobs:
       - run: npm run audit:security
       - run: npm run contracts:generate && git diff --exit-code -- src/api/generated.ts
       - name: Generate both pinned native projects without signing
+        env:
+          EXPO_PUBLIC_MOBILE_LINK_ORIGIN: https://links.example
         run: npm run native:generate
+      - name: Verify generated HTTPS intent scope against an offline fixture host
+        run: node scripts/verify-native-links.mjs android/app/src/main/AndroidManifest.xml links.example
       - run: npm run build
       - name: SonarCloud Code Analysis
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6

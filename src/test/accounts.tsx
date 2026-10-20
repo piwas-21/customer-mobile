@@ -53,7 +53,7 @@ export const accountBootstrap = {
     lifecycle: 'active',
     compatibility: 'supported',
     modules: [],
-    flags: {},
+    flags: { nativeAccountLinksV1: true },
     capabilities: { accounts: 'enabled' },
   }),
   isPending: false,

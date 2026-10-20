@@ -7,21 +7,36 @@ import {
   recoverySchema,
   requestRegistration,
   requestRecovery,
+  requestVerification,
   type RegistrationInput,
   type RecoveryInput,
 } from '../../api/accountRequests';
-import { PASSWORD_MAX_LENGTH } from '../../domain/passwordPolicy';
+import { NATIVE_ACCOUNT_PASSWORD_MAX_LENGTH } from '../../domain/nativeAccountPolicy';
+import { canUseNativeAccountLinks } from '../../core/capabilities';
+import useBootstrap from '../restaurant/useBootstrap';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import Field from '../../ui/Field';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
 import { spacing, typography, useTheme } from '../../ui/theme';
 import useAccountRequest from './useAccountRequest';
-type Props = Readonly<{ mode: 'register' | 'recovery'; onBack: () => void }>;
+export type AccountRequestMode = 'register' | 'recovery' | 'verification';
+type Props = Readonly<{ mode: AccountRequestMode; onBack: () => void }>;
+const requestCopy = {
+  register: { title: 'createAccount', action: 'createAccount', sent: 'registrationSent' },
+  recovery: { title: 'forgotPassword', action: 'sendRecovery', sent: 'recoverySent' },
+  verification: {
+    title: 'nativeAccount.requestVerification',
+    action: 'nativeAccount.sendVerification',
+    sent: 'nativeAccount.verificationSent',
+  },
+} as const;
 export default function AccountRequestForm({ mode, onBack }: Props) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const { client, context } = useRestaurant();
+  const bootstrap = useBootstrap();
+  const { title, action, sent } = requestCopy[mode];
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -31,11 +46,19 @@ export default function AccountRequestForm({ mode, onBack }: Props) {
   // Both journeys use the same bounded state machine; each request validates its own input.
   const form = useAccountRequest<RegistrationInput | RecoveryInput>(
     mode === 'register' ? registrationSchema : recoverySchema,
-    async (input) => {
+    async (input, assertCurrent) => {
       if (!client || !context) throw new Error('Select a restaurant');
       if (mode === 'register')
-        await requestRegistration(client, context, registrationSchema.parse(input), i18n.language);
-      else await requestRecovery(client, context, input, i18n.language);
+        await requestRegistration(
+          client,
+          context,
+          registrationSchema.parse(input),
+          i18n.language,
+          assertCurrent,
+        );
+      else if (mode === 'verification')
+        await requestVerification(client, context, input, i18n.language, assertCurrent);
+      else await requestRecovery(client, context, input, i18n.language, assertCurrent);
     },
     () => {
       setPassword('');
@@ -56,17 +79,27 @@ export default function AccountRequestForm({ mode, onBack }: Props) {
       setLegalFailed(true);
     }
   }
+  if (!canUseNativeAccountLinks(bootstrap.data))
+    return (
+      <View style={styles.form}>
+        <Feedback
+          message={t(bootstrap.isPending ? 'loading' : 'nativeAccount.unavailable')}
+          loading={bootstrap.isPending}
+        />
+        <Button label={t('backToSignIn')} secondary onPress={onBack} />
+      </View>
+    );
   if (form.sent)
     return (
       <View style={styles.form}>
-        <Feedback message={t(mode === 'register' ? 'registrationSent' : 'recoverySent')} />
+        <Feedback message={t(sent)} />
         <Button label={t('backToSignIn')} onPress={onBack} />
       </View>
     );
   return (
     <View style={styles.form}>
       <Text accessibilityRole="header" style={[styles.heading, { color: theme.text }]}>
-        {t(mode === 'register' ? 'createAccount' : 'forgotPassword')}
+        {t(title)}
       </Text>
       {mode === 'register' ? (
         <>
@@ -111,7 +144,7 @@ export default function AccountRequestForm({ mode, onBack }: Props) {
             secureTextEntry
             autoComplete="new-password"
             textContentType="newPassword"
-            maxLength={PASSWORD_MAX_LENGTH}
+            maxLength={NATIVE_ACCOUNT_PASSWORD_MAX_LENGTH}
             editable={!form.busy}
           />
           <Field
@@ -120,7 +153,7 @@ export default function AccountRequestForm({ mode, onBack }: Props) {
             onChangeText={setConfirmPassword}
             secureTextEntry
             autoComplete="new-password"
-            maxLength={PASSWORD_MAX_LENGTH}
+            maxLength={NATIVE_ACCOUNT_PASSWORD_MAX_LENGTH}
             editable={!form.busy}
           />
           <Button
@@ -142,7 +175,7 @@ export default function AccountRequestForm({ mode, onBack }: Props) {
       {form.failure ? <Feedback message={t(`accountRequestFailure.${form.failure}`)} /> : null}
       {legalFailed ? <Feedback message={t('legalUnavailable')} /> : null}
       <Button
-        label={t(mode === 'register' ? 'createAccount' : 'sendRecovery')}
+        label={t(action)}
         onPress={() => {
           void submit();
         }}

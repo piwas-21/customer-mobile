@@ -8,7 +8,13 @@ export default function SignInForm({
   account,
   onRegister,
   onRecovery,
-}: Readonly<{ account: AccountState; onRegister: () => void; onRecovery: () => void }>) {
+  onVerification,
+}: Readonly<{
+  account: AccountState;
+  onRegister: () => void;
+  onRecovery: () => void;
+  onVerification: () => void;
+}>) {
   const { t } = useTranslation();
   return (
     <View style={styles.form}>
@@ -47,6 +53,12 @@ export default function SignInForm({
       />
       <Button label={t('createAccount')} secondary onPress={onRegister} disabled={account.busy} />
       <Button label={t('forgotPassword')} secondary onPress={onRecovery} disabled={account.busy} />
+      <Button
+        label={t('nativeAccount.requestVerification')}
+        secondary
+        onPress={onVerification}
+        disabled={account.busy}
+      />
     </View>
   );
 }
