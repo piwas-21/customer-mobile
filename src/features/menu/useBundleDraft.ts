@@ -1,3 +1,4 @@
+import { applyReorderSeed, type ReorderSeed } from '../../domain/reorder';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProductDetail } from '../../api/productDetail';
@@ -11,6 +12,7 @@ import {
 export default function useBundleDraft(
   product: ProductDetail,
   details: ReadonlyMap<string, ProductDetail>,
+  seed?: ReorderSeed,
 ) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -21,11 +23,11 @@ export default function useBundleDraft(
         ingredients: t('ingredients'),
         sauces: t('sauces'),
       });
-      return { plan, selection: defaultBundleSelection(plan) };
+      return { plan, selection: applyReorderSeed(defaultBundleSelection(plan), seed) };
     } catch {
       return undefined;
     }
-  }, [product, details, locale, t]);
+  }, [product, details, locale, t, seed]);
   const initial = {
     prepared,
     selection: prepared?.selection,

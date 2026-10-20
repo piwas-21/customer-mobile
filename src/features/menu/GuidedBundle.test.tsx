@@ -18,12 +18,16 @@ afterEach(async () => {
   });
   jest.useRealTimers();
 });
-function setup(product = bundleProduct(), patch: Parameters<typeof basketState>[0] = {}) {
+function setup(
+  product = bundleProduct(),
+  patch: Parameters<typeof basketState>[0] = {},
+  seed?: { quantity: number; instructions: string },
+) {
   const state = basketState(patch);
   const router = routerFixture();
   jest.mocked(useRouter).mockReturnValue(router);
   jest.mocked(useBasket).mockReturnValue(state);
-  const screen = render(<GuidedBundle product={product} details={new Map()} />);
+  const screen = render(<GuidedBundle product={product} details={new Map()} seed={seed} />);
   const next = () => fireEvent.press(screen.getByRole('button', { name: 'Next' }));
   const select = () => {
     fireEvent.press(screen.getByRole('checkbox', { name: 'Meat · Small' }));
@@ -118,4 +122,40 @@ it('keeps unknown adds on review and exposes explicit basket recovery', async ()
   await waitFor(() => expect(screen.getByRole('button', { name: 'Open basket' })).toBeTruthy());
   expect(state.add).toHaveBeenCalledTimes(1);
   expect(router.replace).not.toHaveBeenCalled();
+});
+
+it('requires current bundle portions after seeding a historical root quantity and note', async () => {
+  const { screen, state, next, select, router } = setup(
+    bundleProduct(),
+    {},
+    { quantity: 4, instructions: 'Together again' },
+  );
+  next();
+  expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+  expect(state.add).not.toHaveBeenCalled();
+  select();
+  next();
+  expect(screen.getByText('Review your bundle')).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Add to basket' }));
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/basket'));
+  expect(state.add).toHaveBeenCalledWith({
+    productId: tenantA,
+    quantity: 4,
+    specialInstructions: 'Together again',
+    selectedMenuOptions: [
+      {
+        sectionId: productIds.section,
+        menuSectionItemId: productIds.item,
+        itemId: tenantB,
+        productVariationId: productIds.variation,
+        componentProductVariationId: productIds.variation,
+        quantity: 2,
+        specialInstructions: '',
+        selectedIngredients: [],
+        ingredientQuantities: {},
+        customizationSelections: [],
+        selectedSideItems: [],
+      },
+    ],
+  });
 });

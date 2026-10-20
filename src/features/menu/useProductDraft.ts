@@ -1,3 +1,4 @@
+import { applyReorderSeed, type ReorderSeed } from '../../domain/reorder';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProductDetail } from '../../api/productDetail';
@@ -6,20 +7,22 @@ import type { ProductSelections } from '../../domain/productComposition';
 export default function useProductDraft(
   product: ProductDetail,
   details: ReadonlyMap<string, ProductDetail>,
+  seed?: ReorderSeed,
 ) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const plan = useMemo(() => {
     try {
-      return productFlow(product, details, locale, {
+      const current = productFlow(product, details, locale, {
         base: t('baseOption'),
         ingredients: t('ingredients'),
         sauces: t('sauces'),
       });
+      return { ...current, defaults: applyReorderSeed(current.defaults, seed) };
     } catch {
       return undefined;
     }
-  }, [product, details, locale, t]);
+  }, [product, details, locale, t, seed]);
   const initial = { plan, selection: plan?.defaults, index: 0, changed: false };
   const [state, setState] = useState(initial);
   if (state.plan !== plan) setState({ ...initial, changed: state.changed || Boolean(state.plan) });

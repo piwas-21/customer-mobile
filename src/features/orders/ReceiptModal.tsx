@@ -1,3 +1,6 @@
+import type { HistoryReceipt } from '../../api/historyReceipt';
+import ReorderEntry from './ReorderEntry';
+import ReorderModal from './ReorderModal';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +14,20 @@ export default function ReceiptModal({
 }: Readonly<{ orders: ReturnType<typeof useOrderReceipts> }>) {
   const { t } = useTranslation();
   const [confirm, setConfirm] = useState(false);
+  const [reorder, setReorder] = useState<HistoryReceipt>();
+  if (
+    reorder === orders.receipt &&
+    orders.receipt &&
+    !orders.receiptLoading &&
+    !orders.receiptFailed
+  )
+    return (
+      <ReorderModal
+        receipt={orders.receipt}
+        onBack={() => setReorder(undefined)}
+        onClose={orders.close}
+      />
+    );
   return (
     <BaseModal title={t('savedOrder')} onClose={orders.close} scroll={false}>
       <ReceiptContent
@@ -31,6 +48,9 @@ export default function ReceiptModal({
                 onPress={orders.refreshReceipt}
                 disabled={orders.busy || orders.receiptLoading}
               />
+            ) : null}
+            {orders.receipt && !orders.receiptLoading && !orders.receiptFailed ? (
+              <ReorderEntry disabled={orders.busy} onPress={() => setReorder(orders.receipt)} />
             ) : null}
             {orders.actionFailed ? <Feedback message={t('savedOrdersActionFailed')} /> : null}
             {confirm ? (

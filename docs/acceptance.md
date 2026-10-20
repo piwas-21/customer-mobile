@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                             | Remaining acceptance                                                                       |
-| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                   |
-| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys               |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds  |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, cancellation/reorder, deployed/installed payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                        |
-| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance         |
-| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                            |
+| Phase | Current source                                                                                             | Remaining acceptance                                                                             |
+| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                         |
+| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys                     |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds        |
+| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, accepted-order cancellation, installed reorder/payment recovery |
+| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                              |
+| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance               |
+| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                                  |
 
 ## Workflow and dependency gates
 
@@ -242,7 +242,7 @@ withdraw late responses and old private data. Recovery-only customers may explic
 continue as guests after pending order and payment resolution; secure-cleanup failure keeps a usable retry.
 Backend #737 and the operation migrations must be released before connected device acceptance.
 Installed status updates, font/RTL/screen-reader behavior, process death and receipt privacy remain
-required physical acceptance. Provider payment acceptance, cancellation/reorder and module completion remain open.
+required physical acceptance. Provider payment acceptance, accepted-order cancellation, installed reorder and module completion remain open.
 
 ## Native account deletion
 
@@ -315,9 +315,9 @@ withdrawal during/after failed refresh and query removal on dismissal or scope c
 account cannot reopen its former modal or repopulate a private page after a late HTTP response.
 Local saved receipt access remains available through its original guarded proof workflow.
 
-History summaries are source integration work; backend acceptance/readback and installed accessibility
-remain open. Detailed account-wide receipts, accepted-order cancellation and revalidated reorder are
-still required plan work. No new order, payment, provider or notification action is part of this read.
+History summaries and detailed receipts are source integration work; backend acceptance/readback and installed accessibility
+remain open. Accepted-order cancellation remains required. Revalidated reorder source is described below;
+no new order, payment, provider or notification action is part of the history read.
 
 ## Public saved-menu previews
 
@@ -354,7 +354,7 @@ Private queries use the current account/version and tenant generation, no retrie
 and zero cache retention. Refresh/foreground reads withdraw stale contents, and dismissal/owner
 withdrawal removes private queries. Back returns to the bounded history list; native modal escape
 and Close dismiss the flow. Real backend ownership, deployed readback, installed large-text/screen-
-reader behavior and full cancellation/reorder remain distinct acceptance gates.
+reader behavior, accepted-order cancellation and installed reorder remain distinct acceptance gates.
 
 The source-only payment adapter reads the dedicated original-proof recovery decision. Its exact
 POST route and payment-only credential-renewal route require the retained payment record, original
@@ -415,3 +415,24 @@ configuration, not OS verification. A working return also needs the matching rev
 asset-links files, actual publisher/signing identities, HTTPS deployment and installed-device checks.
 See [Expo iOS links](https://docs.expo.dev/linking/ios-universal-links/) and
 [Expo Android links](https://docs.expo.dev/linking/android-app-links/).
+
+## Revalidated receipt reorder
+
+Both a device-saved receipt and an owned account-history receipt can open a replacement modal to
+choose one historical root dish. Repeated roots remain separate. Supported quantities and kitchen
+notes are visible and seed only those fields; legacy product references and unsupported notes or
+quantities cannot be guessed or truncated. No historical price, size, recipe, choice ID or child is
+submitted. A new current product/side read bypasses the public product cache and uses an ephemeral
+restaurant/principal/revision key with no retry or persistence. Account/restaurant withdrawal and
+failed refresh hide the selection/result; reopening explicitly starts fresh.
+
+The current standalone/bundle guide requires its normal steps and final choice review before the
+ordinary durable basket add. Bundle portions are selected afresh. The restaurant validates the add;
+server basket/checkout totals remain authoritative. An accepted add stays accepted even if navigation
+fails, with explicit Open basket recovery and no write replay. Pending purchases and restricted or
+withdrawn ordering keep the basket guard in force. No offline or automatic reorder queue exists.
+
+Source tests cover fresh reads, cache/owner withdrawal, current standalone/bundle projection, both
+receipt entries, duplicate taps and navigation failure. Physical iPhone/Android large text, scrolling,
+RTL, screen-reader, restart and current-menu changes remain installed acceptance; accepted-order
+cancellation still needs its own customer contract and policy.

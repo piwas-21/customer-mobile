@@ -1,20 +1,27 @@
+import type { ReorderSeed } from '../../domain/reorder';
 import { useMemo, useState } from 'react';
 import { useSession } from '../account/SessionProvider';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import { useTranslation } from 'react-i18next';
 import type { ProductDetail, OrderType } from '../../api/productDetail';
-import useSideDetails from './useSideDetails';
+import useSideDetails, { type FreshProductKey } from './useSideDetails';
 import GuidedProduct from './GuidedProduct';
 import GuidedBundle from './GuidedBundle';
 import Feedback from '../../ui/Feedback';
 export default function ProductConfiguration({
   product,
   channel,
+  seed,
+  freshKey,
+  onBasketNavigation,
 }: Readonly<{
   product: ProductDetail;
   channel: OrderType | undefined;
+  seed?: ReorderSeed | undefined;
+  freshKey?: FreshProductKey | undefined;
+  onBasketNavigation?: ((navigate: () => void) => void) | undefined;
 }>) {
-  const details = useSideDetails(product, channel);
+  const details = useSideDetails(product, channel, freshKey);
   const { context } = useRestaurant();
   const { controller, userId, ownerVersion, loading, failed, retry } = useSession();
   const scope = useMemo(
@@ -47,5 +54,13 @@ export default function ProductConfiguration({
       />
     );
   const Guided = product.type === 'menu' ? GuidedBundle : GuidedProduct;
-  return <Guided key={owner.key} product={product} details={details.data} />;
+  return (
+    <Guided
+      key={owner.key}
+      product={product}
+      details={details.data}
+      seed={seed}
+      onBasketNavigation={onBasketNavigation}
+    />
+  );
 }
