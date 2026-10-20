@@ -18,13 +18,16 @@ export const availabilityInputSchema = z.strictObject({
 });
 export type AvailabilityInput = z.infer<typeof availabilityInputSchema>;
 const wallTime = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,7})?$/);
+const endingTime = z.union([wallTime, z.literal('1.00:00:00')]);
 export const reservationSlotSchema = z
   .strictObject({
     startTime: wallTime,
-    endTime: z.union([wallTime, z.literal('1.00:00:00')]),
+    endTime: endingTime,
   })
   .refine(
     (slot) =>
+      wallTime.safeParse(slot.startTime).success &&
+      endingTime.safeParse(slot.endTime).success &&
       compareReservationTimes(slot.startTime, '00:00:00') >= 0 &&
       compareReservationTimes(slot.endTime, '1.00:00:00') <= 0 &&
       compareReservationTimes(slot.endTime, slot.startTime) > 0,
@@ -39,6 +42,7 @@ export const reservationAvailabilitySchema = z
   })
   .refine((page) =>
     page.slots.every((slot, index) => {
+      if (!reservationSlotSchema.safeParse(slot).success) return false;
       if (index === 0) return true;
       const previous = page.slots[index - 1]!;
       const start = compareReservationTimes(slot.startTime, previous.startTime);

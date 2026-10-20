@@ -237,3 +237,11 @@ cannot select points. Withdrawal hides an outstanding quote, including after re-
 explicit review is required. An entered request must be explicitly removed before zero-point review
 when loyalty becomes unavailable. No new provider, settlement, schema or production activation is
 introduced. Full locale/RTL, deployment and installed acceptance remain required.
+
+## Owned reservation editor contracts
+
+Private editor contact and assigned-arrangement availability use separate strict adapters bound to
+the requested customer, restaurant, booking, zone, date and party. Existing contact remains editable;
+these reads never grant write authority or enter the deployed OpenAPI capture. Preparation binds the
+original and proposed minimal bookings to the exact request and preserves the server approval rule.
+The connected editor, durable submission/recovery and installed acceptance remain in progress.
