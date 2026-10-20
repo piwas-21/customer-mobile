@@ -1,4 +1,8 @@
-import { captureOrderProof, orderRequestHeaders } from './orderRequestHeaders';
+import {
+  captureOrderProof,
+  orderRequestHeaders,
+  type OrderProofSource,
+} from './orderRequestHeaders';
 import { canonicalUuidSchema } from './identifiers';
 import { ApiFailure } from './apiFailure';
 import type { CredentialVault, Principal } from './credentials';
@@ -48,6 +52,12 @@ async function sessionHeaders(
   return headers;
 }
 
+function orderProofSource(mode: RequestOptions['credentials']): OrderProofSource {
+  if (mode === 'order-payment' || mode === 'payment-renewal') return 'payment';
+  if (mode === 'order-receipt' || mode === 'receipt-renewal') return 'receipt';
+  return 'pending';
+}
+
 export async function requestHeaders(
   context: TenantContext,
   vault: CredentialVault,
@@ -59,22 +69,21 @@ export async function requestHeaders(
   const mode = options.credentials ?? 'none';
   const expectedSession = expectedBasketSession(options);
   const orderProof = captureOrderProof(context, options);
+  const paymentOrderId = options.expectedPaymentOrderId;
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
   if (
     mode === 'customer' ||
-    ((mode === 'basket' || mode === 'order' || mode === 'order-receipt') &&
+    ((mode === 'basket' ||
+      mode === 'order' ||
+      mode === 'order-receipt' ||
+      mode === 'order-payment') &&
       principal?.kind === 'customer')
   )
     Object.assign(headers, await customerHeaders(context, vault, principal));
   if (orderProof)
     Object.assign(
       headers,
-      await orderRequestHeaders(
-        context,
-        vault,
-        orderProof,
-        mode === 'order-receipt' || mode === 'receipt-renewal',
-      ),
+      await orderRequestHeaders(context, vault, orderProof, orderProofSource(mode), paymentOrderId),
     );
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
     Object.assign(headers, await sessionHeaders(context, vault, principal, mode, expectedSession));

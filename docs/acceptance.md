@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                             | Remaining acceptance                                                                        |
-| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                    |
-| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys                |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds   |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, orders/reorder/hosted payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                         |
-| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance          |
-| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                             |
+| Phase | Current source                                                                                             | Remaining acceptance                                                                       |
+| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                   |
+| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys               |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds  |
+| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, cancellation/reorder, deployed/installed payment recovery |
+| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                        |
+| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance         |
+| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                            |
 
 ## Workflow and dependency gates
 
@@ -181,11 +181,29 @@ login or new purchasing actions. When guest ordering remains enabled, a resolved
 sign out and continue as a guest; failed secure logout retains a visible cleanup retry.
 
 The additive backend acceptance contract depends on the accepted operation-store migration and the
-native endpoints under backend review. Its final server money comparison and strict points debit
-remain authoritative. The native online-payment capability stays unavailable until hosted provider
-recovery is implemented. Current source does not claim payment settlement or expose private order
-receipts/history yet. Migration application, deployment/readback, installed secure recovery and
+native endpoints accepted in backend #736. Its final server money comparison and strict points debit
+remain authoritative. The native online-payment capability stays unavailable until central return
+association and the release gates pass. Source-only canonical payment decisions and private receipts/history
+are described below. Migration application, deployment/readback, installed secure recovery and
 physical checkout acceptance remain separate release gates.
+
+## Native payment recovery foundation
+
+An online order's original proof includes a non-contact marker before submission. Applied acceptance
+verifies a minimal payment record in SecureStore before releasing the order claim; interrupted receipt
+persistence or lost storage acknowledgement keeps the original identity recoverable. Payment records
+contain the original tenant/environment, principal, session/operation/digest and order reference, with
+pending/terminal state and the frozen server expiry. They contain no customer contact, JWT or hosted URL.
+Logout removes ordinary credentials/contact/history while retaining this minimal financial proof.
+
+Pending payments block new basket/order claims and forgetting their original receipt. Only the
+source-only dedicated payment decision contract can release the hold with paid/expired/failed;
+ready and unknown outcomes remain pending, and neither local expiry, fulfillment nor browser closure
+proves a payment outcome. Late or contradictory owner/order/operation/expiry decisions are refused.
+The old unused order-status-derived scaffold has been removed. Native online payment remains
+unavailable until central link association and release acceptance pass. The connected source flow is
+described below.
+Storage source checks are separate from deployed backend, provider and installed-device acceptance.
 
 ## Native and device evidence
 
@@ -221,10 +239,10 @@ and virtualizes bounded composition. Unknown status values show a neutral unavai
 Removing a receipt requires confirmation, blocks its unresolved pending identity, clears its query
 value and local proof, and never cancels an order or refunds money. Logout/tenant/controller changes
 withdraw late responses and old private data. Recovery-only customers may explicitly sign out and
-continue as guests after pending order resolution; secure-cleanup failure keeps a usable retry.
+continue as guests after pending order and payment resolution; secure-cleanup failure keeps a usable retry.
 Backend #737 and the operation migrations must be released before connected device acceptance.
 Installed status updates, font/RTL/screen-reader behavior, process death and receipt privacy remain
-required physical acceptance. Hosted payment, reorder and complete account history remain open.
+required physical acceptance. Provider payment acceptance, cancellation/reorder and module completion remain open.
 
 ## Native account deletion
 
@@ -337,3 +355,63 @@ and zero cache retention. Refresh/foreground reads withdraw stale contents, and 
 withdrawal removes private queries. Back returns to the bounded history list; native modal escape
 and Close dismiss the flow. Real backend ownership, deployed readback, installed large-text/screen-
 reader behavior and full cancellation/reorder remain distinct acceptance gates.
+
+The source-only payment adapter reads the dedicated original-proof recovery decision. Its exact
+POST route and payment-only credential-renewal route require the retained payment record, original
+session/digest/operation/order and a current owner guard. A customer HTTP 401 can renew once through
+the existing serialized session authority; local refusals, other HTTP statuses, tenant changes and
+logout cannot replay it. Account-disabled restoration also recognizes the payment proof independently
+of receipt history. This does not establish deployed contract or installed browser acceptance.
+
+## Connected hosted payment source flow
+
+The root payment provider restores the original SecureStore record, requests its dedicated canonical
+decision, durably verifies it and exposes only masked order/operation/state/action data to queries and
+UI. Orders shows separate payment and fulfillment messages. Ready may open the same hosted page in
+the system browser; pending/unknown exposes only a check action. A browser result never books money.
+Close, launch failure, foreground and bounded pending polling reconcile the original operation.
+Canonical terminal decisions refresh purchase holds. Pending payments block recovery-only guest
+continuation in both basket and saved-order UI, including the final action after stale availability.
+
+Rejected refresh withdraws credentials without automatically selecting a purchase-ready guest.
+A minimal tenant/environment-scoped SecureStore reminder survives process death; account, basket
+and orders explain the unresolved original purchase. Cleanup retries preserve automatic withdrawal
+intent even after failed reminder save/readback or credential removal. The original account can
+reauthenticate; a different account needs an explicit separate-customer confirmation. That transition
+dismisses only the local reminder and allows a new guest basket, preserving the original private
+financial proof and unattended server reconciliation. No original proof is relabelled or sent as guest.
+Core restart/storage-failure controls and the rendered confirmation/cancel journey verify this boundary.
+The shared-device confirmation belongs to its original controller and owner revision. Tenant/account
+changes withdraw it, and former-owner completions cannot dismiss or overwrite a newer confirmation.
+A per-controller synchronous guard keeps separation busy through its own revision change; a paused
+SecureStore removal control verifies that another separation cannot start during cleanup.
+
+`EXPO_PUBLIC_HOSTED_CHECKOUT_ORIGINS` is an explicit JSON array of approved canonical HTTPS origins,
+maximum ten unique entries. Missing/invalid configuration permits no hosted browser opening; ordinary
+browsing and payment-status recovery remain available. Server approval is independently required.
+Hosted pages reject userinfo, fragments, nonstandard ports, whitespace/control/backslash input,
+unapproved origins and the original local deadline. URLs remain ephemeral and are never persisted.
+
+The central return route validates the configured origin, fresh directory tenant and exact UUID order
+and operation references; duplicate or extra query data is refused. It navigates to original-proof
+Orders recovery only. A cold launch may restore the approved tenant. A callback cannot overwrite a
+newer different selection; switching back needs an explicit customer action. Link references grant no
+order, payment or login authority. Opt-in association metadata and the shared-service landing are implemented in backend #743. Actual OS domain association and shared-service deployment,
+provider app switching, signed installations and device/process-death acceptance remain open. Backend
+#743 remains a draft pending final CI and merge gates; no native payment
+activation follows from these source tests.
+
+## Native central-domain declarations
+
+`EXPO_PUBLIC_MOBILE_LINK_ORIGIN` supplies the single canonical HTTPS origin for both runtime return
+validation and native declarations. Missing configuration emits no associated domains or verified
+intent filters. Invalid configured origins refuse generation/build. iOS declares that host only;
+Android additionally restricts the verified intent to the payment-return path. Existing provisional
+application identifiers remain subject to publisher ownership approval.
+
+Ten configuration controls pass, and generated iOS entitlements/Android manifest were parsed against
+an offline fixture origin. Generation without an origin was restored afterward. These establish source
+configuration, not OS verification. A working return also needs the matching reviewed public AASA /
+asset-links files, actual publisher/signing identities, HTTPS deployment and installed-device checks.
+See [Expo iOS links](https://docs.expo.dev/linking/ios-universal-links/) and
+[Expo Android links](https://docs.expo.dev/linking/android-app-links/).

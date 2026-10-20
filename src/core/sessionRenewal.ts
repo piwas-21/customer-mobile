@@ -1,4 +1,4 @@
-import type { OrderOperationProof } from './orderOperationProof';
+import type { OrderReadAuthority } from './customerOrderReads';
 import { refreshSession } from '../api/auth';
 import type { CustomerSession } from './credentials';
 import type { SessionRepository } from './sessionRepository';
@@ -11,7 +11,7 @@ export async function renewStoredSession(
   captured: CustomerSession,
   isCurrent: () => boolean,
   rejected: () => Promise<void>,
-  proof?: OrderOperationProof,
+  authority?: OrderReadAuthority,
 ): Promise<CustomerSession> {
   const guard = () => {
     if (!isCurrent()) throw new ApiFailure(401, 'refused');
@@ -19,7 +19,14 @@ export async function renewStoredSession(
   guard();
   let next: CustomerSession;
   try {
-    next = await refreshSession(client, context, captured, guard, proof);
+    next = await refreshSession(
+      client,
+      context,
+      captured,
+      guard,
+      authority?.proof,
+      authority?.paymentOrderId,
+    );
   } catch (error) {
     guard();
     if (error instanceof ApiFailure && error.status === 401 && error.reason === 'http')

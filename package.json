@@ -23,7 +23,7 @@
     "check": "npm run dependencies:verify && npm run format:check && npm run lint && npm run typecheck && npm run check:source && npm run test:tooling && npm run test:coverage && npm run check:duplicates",
     "hooks:install": "node scripts/install-hooks.mjs",
     "contracts:generate": "openapi-typescript contracts/customer.openapi.json -o src/api/generated.ts",
-    "build": "expo export --platform ios --platform android --output-dir dist && node scripts/check-bundle.mjs",
+    "build": "node scripts/check-export-root.mjs && expo export --platform ios --platform android --output-dir dist && node scripts/check-bundle.mjs",
     "check:workflow": "node --test scripts/*.test.mjs",
     "dependencies:prepare": "node scripts/prepare-dependencies.mjs",
     "dependencies:verify": "node scripts/prepare-dependencies.mjs --verify",

@@ -1,7 +1,6 @@
-import type { OrderOperationProof } from './orderOperationProof';
+import { SessionWithdrawal } from './sessionWithdrawal';
 import { renewStoredSession } from './sessionRenewal';
-import { readOrderReceipt } from '../api/orderReceipt';
-import { decisionProof, orderDecisionSchema, type OrderDecision } from './orderDecisions';
+import { CustomerOrderReads, type OrderReadAuthority } from './customerOrderReads';
 import { readSession, retryAuthenticatedRead, writeSession } from './sessionRead';
 import type { z } from 'zod';
 import { signIn, type LoginInput } from '../api/auth';
@@ -11,12 +10,13 @@ import type { TenantContext } from './tenantContext';
 import type { SessionRepository } from './sessionRepository';
 import { SerialTasks } from './serialTasks';
 export class SessionController {
+  readonly orders: CustomerOrderReads;
   private readonly tasks = new SerialTasks();
   private readonly listeners = new Set<() => void>();
   private revision = 0;
   private disposed = false;
   private session: CustomerSession | null = null;
-  private pendingCleanup: CustomerSession | null = null;
+  private readonly withdrawal: SessionWithdrawal;
   private initialized = false;
   private signingIn = false;
   constructor(
@@ -25,7 +25,14 @@ export class SessionController {
     private readonly repository: SessionRepository,
     private readonly accountsEnabled = true,
     private readonly recoveryOnly = false,
-  ) {}
+  ) {
+    this.withdrawal = new SessionWithdrawal(context, repository, accountsEnabled);
+    this.orders = new CustomerOrderReads(context, client, (proof, read, paymentOrderId) =>
+      proof.principal.kind === 'customer'
+        ? this.readOwned(proof.principal.id, read, { proof, paymentOrderId })
+        : read(this.captureRequestOwner(proof.principal)),
+    );
+  }
   get onlyRecoverOrders(): boolean {
     return this.recoveryOnly || (!this.accountsEnabled && this.session !== null);
   }
@@ -33,10 +40,13 @@ export class SessionController {
     return this.session?.userId ?? null;
   }
   get ownerVersion(): string {
-    return `${this.revision}:${!this.signingIn && !this.pendingCleanup}`;
+    return `${this.revision}:${!this.signingIn && !this.withdrawal.pending && !this.needsPaymentAttention}`;
+  }
+  get needsPaymentAttention(): boolean {
+    return this.withdrawal.attention !== null;
   }
   get needsCleanup(): boolean {
-    return this.pendingCleanup !== null;
+    return this.withdrawal.pending !== null;
   }
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
@@ -64,10 +74,10 @@ export class SessionController {
     const revision = this.revision;
     const check = () => {
       this.assertCurrent(revision);
-      if (!this.initialized || this.signingIn || this.pendingCleanup)
+      if (!this.initialized || this.signingIn || this.withdrawal.pending)
         throw new ApiFailure(401, 'refused');
       if (owner.kind === 'customer') this.assertPrincipal(revision, owner.id);
-      else if (this.session) throw new ApiFailure(401, 'refused');
+      else if (this.session || this.needsPaymentAttention) throw new ApiFailure(401, 'refused');
     };
     check();
     return check;
@@ -85,13 +95,15 @@ export class SessionController {
         ? this.repository.load(this.context)
         : this.repository.loadForOrderRecovery(this.context));
       this.assertCurrent(revision);
+      await this.withdrawal.restore();
+      this.assertCurrent(revision);
       this.initialized = true;
       this.publish(session);
       return this.userId;
     });
   }
   login(input: LoginInput, locale: string): Promise<string> {
-    if (!this.accountsEnabled || this.onlyRecoverOrders || this.pendingCleanup)
+    if (!this.accountsEnabled || this.onlyRecoverOrders || this.withdrawal.pending)
       return Promise.reject(new ApiFailure(401, 'refused'));
     const revision = ++this.revision;
     this.signingIn = true;
@@ -102,7 +114,10 @@ export class SessionController {
         this.assertCurrent(revision);
         const session = await signIn(this.client, this.context, captured, locale);
         this.assertCurrent(revision);
+        this.withdrawal.assertLoginOwner(session.userId);
         await this.repository.activate(this.context, session, () => this.isCurrent(revision));
+        this.assertCurrent(revision);
+        await this.withdrawal.dismiss();
         this.assertCurrent(revision);
         this.initialized = true;
         this.publish(session);
@@ -119,21 +134,11 @@ export class SessionController {
     if (this.disposed) throw new ApiFailure(401, 'refused');
     ++this.revision;
     this.signingIn = false;
-    const captured = this.pendingCleanup ?? this.session;
-    this.pendingCleanup = captured;
-    this.publish(null);
-    if (!this.accountsEnabled && !captured) return;
-    const session =
-      captured ?? (this.context.signal.aborted ? null : await this.repository.load(this.context));
-    if (session) await this.clearSession(session);
+    await this.withdrawal.logout(this.withdrawal.pending ?? this.session, () => this.publish(null));
   }
-  private async clearSession(session: CustomerSession): Promise<void> {
-    this.pendingCleanup = session;
-    this.publish(null);
-    const cleared = await this.repository.clear(this.context, session);
-    if (!cleared && !this.context.signal.aborted)
-      throw new Error('Secure session removal incomplete');
-    this.pendingCleanup = null;
+  async continueForAnotherCustomer(): Promise<void> {
+    await this.logout();
+    await this.withdrawal.dismiss();
     this.publish(null);
   }
   get<T>(userId: string, path: string, schema: z.ZodType<T>): Promise<T> {
@@ -142,18 +147,10 @@ export class SessionController {
       readSession(this.client, this.context, userId, path, schema, guard),
     );
   }
-  receipt(saved: OrderDecision, locale: string) {
-    const decision = orderDecisionSchema.parse(saved);
-    const read = (guard: () => void) =>
-      readOrderReceipt(this.client, this.context, decision, guard, locale);
-    if (decision.principal.kind === 'customer')
-      return this.readOwned(decision.principal.id, read, decisionProof(decision));
-    return read(this.captureRequestOwner(decision.principal));
-  }
   private async readOwned<T>(
     userId: string,
     read: (guard: () => void) => Promise<T>,
-    proof?: OrderOperationProof,
+    authority?: OrderReadAuthority,
   ): Promise<T> {
     const revision = this.revision;
     const captured = this.assertPrincipal(revision, userId);
@@ -161,7 +158,8 @@ export class SessionController {
     const renew = () =>
       this.tasks.run(async () => {
         guard();
-        if (this.session?.accessToken === captured.accessToken) await this.refresh(revision, proof);
+        if (this.session?.accessToken === captured.accessToken)
+          await this.renew(revision, authority);
       });
     return retryAuthenticatedRead(() => read(guard), renew, guard);
   }
@@ -181,7 +179,7 @@ export class SessionController {
       this.captureRequestOwner({ kind: 'customer', id: userId }),
     );
   }
-  private async refresh(revision: number, proof?: OrderOperationProof): Promise<void> {
+  private async renew(revision: number, authority?: OrderReadAuthority): Promise<void> {
     const captured = this.session;
     if (!captured) throw new ApiFailure(401, 'refused');
     const next = await renewStoredSession(
@@ -190,8 +188,8 @@ export class SessionController {
       this.repository,
       captured,
       () => this.isCurrent(revision),
-      () => this.clearSession(captured),
-      proof,
+      () => this.withdrawal.clear(captured, () => this.publish(null), true),
+      authority,
     );
     this.assertCurrent(revision);
     this.publish(next);

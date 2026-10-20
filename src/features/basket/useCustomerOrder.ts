@@ -29,6 +29,14 @@ export default function useCustomerOrder(
     retry: false,
     staleTime: Infinity,
   });
+  const holdKey = [...key, 'unresolved-purchase', version];
+  const hold = useQuery({
+    queryKey: holdKey,
+    queryFn: () => orders!.hasUnresolvedPurchase(),
+    enabled: Boolean(orders),
+    retry: false,
+    staleTime: Infinity,
+  });
   async function run(action: () => Promise<CustomerOrderResolution>) {
     if (
       !orders ||
@@ -50,6 +58,9 @@ export default function useCustomerOrder(
       setDecision({ owner: orders, value: result });
       if (result.outcome !== 'Unseen') {
         cache.setQueryData(pendingKey, null);
+        cache.setQueryData(holdKey, true);
+        void cache.invalidateQueries({ queryKey: holdKey });
+        void cache.invalidateQueries({ queryKey: [...key.slice(0, 3), 'payment'] });
         void cache.resetQueries({ queryKey: [...key, 'value'] }).catch(() => undefined);
       }
       return result;
@@ -58,7 +69,7 @@ export default function useCustomerOrder(
         orders.assertCurrent();
         if (mounted.current) {
           setFailedOwner(orders);
-          await pending.refetch();
+          await Promise.all([pending.refetch(), hold.refetch()]);
           orders.assertCurrent();
         }
       } catch {
@@ -72,22 +83,25 @@ export default function useCustomerOrder(
     }
   }
   return {
-    ready: Boolean(orders && pending.isSuccess && pending.data === null),
-    loading: Boolean(orders && pending.isPending),
+    ready: Boolean(
+      orders && pending.isSuccess && pending.data === null && hold.isSuccess && hold.data === false,
+    ),
+    hasUnresolvedPurchase: !hold.isSuccess || hold.data !== false,
+    loading: Boolean(orders && (pending.isPending || hold.isPending)),
     pending: pending.isSuccess ? pending.data : undefined,
     busy: Boolean(orders && busyOwner === orders),
-    failed: Boolean(orders && (failedOwner === orders || pending.isError)),
+    failed: Boolean(orders && (failedOwner === orders || pending.isError || hold.isError)),
     decision: orders && decision?.owner === orders ? decision.value : null,
     place: (input: Parameters<CustomerOrderController['submit']>[0]) =>
       run(() => orders!.submit(input)),
     recover: (locale: string) => run(() => orders!.recover(locale)),
     cancel: (locale: string) => run(() => orders!.cancel(locale)),
     refresh: async () => {
-      const result = await pending.refetch();
+      const [result, purchase] = await Promise.all([pending.refetch(), hold.refetch()]);
       orders?.assertCurrent();
-      if (!result.isError && mounted.current)
+      if (!result.isError && !purchase.isError && mounted.current)
         setFailedOwner((value) => (value === orders ? undefined : value));
-      return result;
+      return { isError: result.isError || purchase.isError };
     },
   };
 }

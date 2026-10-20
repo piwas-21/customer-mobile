@@ -1,4 +1,31 @@
 export const ordersEnglish = {
+  paymentAttention: {
+    message:
+      'Your sign-in expired while an order or payment was unresolved. Sign in to the same restaurant account to check it before placing another order. You can still browse the menu.',
+    accountsUnavailable:
+      'Your sign-in expired while an order or payment was unresolved. Account access is currently unavailable at this restaurant. Contact the restaurant to check the original order before placing another. You can still browse the menu.',
+    signIn: 'Sign in to check the original order',
+    separate: 'Use this device for another customer',
+    confirmation:
+      'The previous customer’s order or payment may still complete. Continuing does not cancel it or refund a payment. Only continue if you are placing a separate order for another customer. The original customer can sign in later to check their order.',
+    confirm: 'Continue for another customer',
+    keep: 'Keep the original order reminder',
+  },
+  hostedPayment: {
+    pending:
+      'Your payment is still being checked. Keep this order and check again before making another purchase.',
+    paid: 'Payment received. Order preparation is shown separately.',
+    expired:
+      'The original payment page has expired without a payment. Your order has not been cancelled.',
+    failed: 'The original payment did not complete. Your order has not been cancelled.',
+    unavailable:
+      'We could not confirm the original payment. Check again before making another purchase.',
+    open: 'Continue secure payment',
+    check: 'Check original payment',
+    returnOtherRestaurant:
+      'This payment belongs to another restaurant. Your current restaurant is still selected.',
+    returnRestaurant: 'Open the payment’s restaurant',
+  },
   accountOrderHistory: 'Your account orders',
   noAccountOrders: 'There are no orders for your account at this restaurant.',
   orderHistoryUnavailable: 'Your order history could not be loaded. Refresh to check again.',

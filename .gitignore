@@ -17,3 +17,4 @@ coverage/
 android/
 ios/
 .agent-worktrees/
+graphify-out/

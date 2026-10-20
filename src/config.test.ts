@@ -20,3 +20,22 @@ it.each([
     });
   },
 );
+
+it.each([
+  undefined,
+  'invalid',
+  '["http://checkout.example.test"]',
+  '["https://checkout.example.test"]',
+])('payment origin config %s cannot bypass the explicit browser allowlist', (value) => {
+  process.env.EXPO_PUBLIC_ENVIRONMENT = 'staging';
+  process.env.EXPO_PUBLIC_MOBILE_DIRECTORY_ORIGIN = 'https://directory.example';
+  process.env.EXPO_PUBLIC_MOBILE_LINK_ORIGIN = 'https://links.example';
+  if (value === undefined) delete process.env.EXPO_PUBLIC_HOSTED_CHECKOUT_ORIGINS;
+  else process.env.EXPO_PUBLIC_HOSTED_CHECKOUT_ORIGINS = value;
+  jest.isolateModules(() => {
+    const { runtimeConfig } = jest.requireActual<typeof import('./config')>('./config');
+    expect(runtimeConfig?.hostedCheckoutOrigins).toEqual(
+      value === '["https://checkout.example.test"]' ? ['https://checkout.example.test'] : [],
+    );
+  });
+});

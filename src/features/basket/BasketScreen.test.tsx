@@ -29,6 +29,7 @@ jest.mock('./useCheckoutSavedAddress', () => ({
   default: () => ({ available: false, current: undefined }),
 }));
 jest.mock('./useOrderTypes', () => ({ __esModule: true, default: jest.fn() }));
+jest.mock('../payments/PaymentAttentionNotice', () => ({ __esModule: true, default: () => null }));
 jest.mock('./BasketProvider', () => ({ useBasket: jest.fn() }));
 jest.mock('../restaurant/useBootstrap', () => ({ __esModule: true, default: jest.fn() }));
 jest.mock('expo-router', () => ({ useRouter: jest.fn(), Stack: { Screen: () => null } }));

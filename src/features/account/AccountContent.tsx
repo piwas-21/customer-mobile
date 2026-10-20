@@ -1,3 +1,4 @@
+import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { useTranslation } from 'react-i18next';
 import Feedback from '../../ui/Feedback';
 import AccountAccess from './AccountAccess';
@@ -22,7 +23,13 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
       />
     );
   }
-  if (session.unavailable) return <Feedback message={t('accountUnavailable')} />;
+  if (session.unavailable)
+    return (
+      <>
+        <PaymentAttentionNotice account />
+        <Feedback message={t('accountUnavailable')} />
+      </>
+    );
   if (session.userId)
     return (
       <ProfileCard
@@ -34,5 +41,10 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
         profileQueryKey={account.profileQueryKey}
       />
     );
-  return <AccountAccess account={account} />;
+  return (
+    <>
+      <PaymentAttentionNotice account />
+      <AccountAccess account={account} />
+    </>
+  );
 }

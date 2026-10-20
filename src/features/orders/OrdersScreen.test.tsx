@@ -3,6 +3,7 @@ import { useEffect, type PropsWithChildren } from 'react';
 import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
+import PaymentProvider from '../payments/PaymentProvider';
 import OrdersScreen from './OrdersScreen';
 import useOrderReceipts from './useOrderReceipts';
 import { useSession } from '../account/SessionProvider';
@@ -20,7 +21,7 @@ jest.mock('../../storage/sessions', () => ({
 }));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 jest.mock('../account/SessionProvider', () => ({ useSession: jest.fn() }));
-jest.mock('expo-router', () => ({ useFocusEffect: jest.fn() }));
+jest.mock('expo-router', () => ({ useFocusEffect: jest.fn(), useRouter: jest.fn() }));
 jest.mock(
   'react-native-safe-area-context',
   () =>
@@ -37,6 +38,7 @@ async function fixture(customer = false) {
     userId: f.sessions.userId,
     ownerVersion: f.sessions.ownerVersion,
     needsCleanup: false,
+    needsPaymentAttention: false,
     loading: false,
     unavailable: false,
     failed: false,
@@ -56,7 +58,11 @@ async function fixture(customer = false) {
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
   function Wrapper({ children }: PropsWithChildren) {
-    return <QueryClientProvider client={cache}>{children}</QueryClientProvider>;
+    return (
+      <QueryClientProvider client={cache}>
+        <PaymentProvider>{children}</PaymentProvider>
+      </QueryClientProvider>
+    );
   }
   f.fetcher.mockResolvedValue(response({ success: true, data: receiptResponse() }));
   return { ...f, state, cache, Wrapper };

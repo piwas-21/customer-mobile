@@ -33,6 +33,10 @@ fixtures and duplicate source blocks. Native coverage includes the runtime scree
 separate V8 coverage includes workflow/security scripts and their subprocesses. Both reports
 feed Sonar. Native and tooling gates require at least 85% lines/statements/functions and 80% branches.
 The tooling suite runs the full dependency audit, so network access is required. Pre-push refuses direct protected-branch updates, then runs dependency audit, verified native generation and both native bundle exports.
+Native export first verifies that node_modules, Expo Router and its entry resolve inside the current
+checkout. Dependency symlinks into sibling checkouts are refused: Expo can otherwise export the
+sibling's app while source tests pass locally. Install this checkout's pinned dependencies before
+exporting; the guard has independent real-directory and cross-checkout symlink controls.
 CI repeats these in a clean checkout. No lifecycle scripts
 run during dependency installation. EAS custom builds run the explicit install, source repair, verification and audit steps before
 prebuild, CocoaPods or Gradle. Native plugins are exercised by development builds.
@@ -63,7 +67,11 @@ Record cached-menu <2s and cold-menu <3s on named physical devices/network separ
 ## Security and review
 
 Threat model: malicious QR/redirect, tenant switch races, forged directory, stolen capability,
-logout races, unknown settlement and replayed submit. Negative tests must demonstrate each boundary.
+logout races, unknown settlement and replayed submit.
+A rejected refresh withdraws credentials while retaining a tenant-scoped unresolved-purchase
+reminder. Guest ownership stays unavailable across restart and cleanup retries. Same-owner sign-in
+restores access; a separately confirmed shared-device transition dismisses only the local reminder,
+never the original financial proof or server reconciliation. Negative tests must demonstrate each boundary.
 Do not trust a tenant ID in a token or link as authorization. Validate on server too.
 No analytics, Sentry or Expo Push activation until processors, consent and scrubbing are approved.
 No secrets in EAS public variables. Store/publisher credentials are external configuration.

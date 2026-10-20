@@ -1,6 +1,9 @@
+import { PaymentAttentionStorage } from './paymentAttentionStorage';
+import { scopedPaymentRecord } from './paymentOperationRecord';
 import { scopedOrderDecisions } from './orderDecisions';
 import { assertOrderProofScope, orderOperationProofSchema } from './orderOperationProof';
 import { OrderOperationRepository } from './orderOperationRepository';
+import { PaymentOperationRepository } from './paymentOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
 import { CredentialVault, secretKey, type CustomerSession, type SecretStore } from './credentials';
@@ -18,11 +21,21 @@ export class SessionRepository {
   readonly vault: CredentialVault;
   readonly baskets: BasketOperationRepository;
   readonly orders: OrderOperationRepository;
+  readonly payments: PaymentOperationRepository;
   private readonly writes = new SerialTasks();
+  private readonly attention: PaymentAttentionStorage;
   constructor(private readonly store: SecretStore) {
     this.vault = new CredentialVault(store);
+    this.attention = new PaymentAttentionStorage(store);
     this.baskets = new BasketOperationRepository(store, this.vault, this.writes);
     this.orders = new OrderOperationRepository(store, this.vault, this.writes);
+    this.payments = new PaymentOperationRepository(store, this.writes);
+  }
+  loadPaymentAttention(context: TenantContext): Promise<string | null> {
+    return this.writes.run(() => this.attention.load(context));
+  }
+  dismissPaymentAttention(context: TenantContext): Promise<void> {
+    return this.writes.run(() => this.attention.dismiss(context));
   }
   load(context: TenantContext): Promise<CustomerSession | null> {
     return this.writes.run(async () => {
@@ -50,7 +63,11 @@ export class SessionRepository {
           principal,
           saved === null ? [] : JSON.parse(saved),
         );
-        if (!records.some((record) => record.outcome === 'Applied')) return null;
+        if (!records.some((record) => record.outcome === 'Applied')) {
+          const payment = await this.store.get(secretKey(context, 'payment', principal));
+          if (payment === null) return null;
+          scopedPaymentRecord(context, principal, JSON.parse(payment));
+        }
       }
       // Account-disabled browsing reads a JWT only for its original pending/accepted order proof.
       return this.vault.session(context, principal.id);
@@ -101,12 +118,13 @@ export class SessionRepository {
       }
     });
   }
-  clear(context: TenantContext, expected: CustomerSession): Promise<boolean> {
+  clear(context: TenantContext, expected: CustomerSession, automatic = false): Promise<boolean> {
     const captured = { ...expected };
     return this.writes.run(async () => {
       await this.completePendingRemoval(context);
       const current = await this.vault.session(context, captured.userId);
       if (current && !sameSession(current, captured)) return false;
+      if (automatic) await this.attention.retainPending(context, captured.userId);
       // Persist the cleanup identity before withdrawing selection. A restart must finish it.
       await this.store.set(cleanupKey(context), captured.userId);
       await this.completePendingRemoval(context);

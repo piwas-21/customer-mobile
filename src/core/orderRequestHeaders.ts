@@ -1,4 +1,6 @@
 import { decisionProof, scopedOrderDecisions } from './orderDecisions';
+import { scopedPaymentRecord } from './paymentOperationRecord';
+import { canonicalUuidSchema } from './identifiers';
 import type { CredentialVault } from './credentials';
 import { ApiFailure } from './apiFailure';
 import type { RequestOptions } from './httpTypes';
@@ -12,13 +14,24 @@ export function captureOrderProof(
   context: TenantContext,
   options: RequestOptions,
 ): OrderOperationProof | null {
-  if (!['order', 'order-receipt', 'receipt-renewal'].includes(options.credentials ?? 'none')) {
+  if (options.credentials === 'order-payment' || options.credentials === 'payment-renewal') {
+    if (!canonicalUuidSchema.safeParse(options.expectedPaymentOrderId).success)
+      throw new ApiFailure(401, 'refused');
+  } else if (options.expectedPaymentOrderId !== undefined) throw new ApiFailure(401, 'refused');
+  if (
+    !['order', 'order-receipt', 'receipt-renewal', 'order-payment', 'payment-renewal'].includes(
+      options.credentials ?? 'none',
+    )
+  ) {
     if (options.expectedOrderProof !== undefined) throw new ApiFailure(401, 'refused');
     return null;
   }
   const proof = orderOperationProofSchema.parse(options.expectedOrderProof);
   assertOrderProofScope(context, proof);
-  if (options.credentials === 'receipt-renewal' && proof.principal.kind !== 'customer')
+  if (
+    (options.credentials === 'receipt-renewal' || options.credentials === 'payment-renewal') &&
+    proof.principal.kind !== 'customer'
+  )
     throw new ApiFailure(401, 'refused');
   if (
     proof.principal.kind !== options.principal?.kind ||
@@ -27,14 +40,22 @@ export function captureOrderProof(
     throw new ApiFailure(401, 'refused');
   return proof;
 }
+export type OrderProofSource = 'pending' | 'receipt' | 'payment';
 export async function orderRequestHeaders(
   context: TenantContext,
   vault: CredentialVault,
   expected: OrderOperationProof,
-  receipt = false,
+  source: OrderProofSource = 'pending',
+  paymentOrderId?: string,
 ) {
   let proof: OrderOperationProof;
-  if (receipt) {
+  if (source === 'payment') {
+    const raw = await vault.capability(context, 'payment', expected.principal);
+    if (raw === null) throw new ApiFailure(401, 'refused');
+    const record = scopedPaymentRecord(context, expected.principal, JSON.parse(raw));
+    if (record.orderId !== paymentOrderId) throw new ApiFailure(401, 'refused');
+    proof = record.proof;
+  } else if (source === 'receipt') {
     const value = await vault.orderReceiptRecords(context, expected.principal);
     const decisions = scopedOrderDecisions(
       context,

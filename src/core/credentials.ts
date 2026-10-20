@@ -94,11 +94,10 @@ export class CredentialVault {
       'guest-session',
       'table-participant',
       'guest-order',
-      'payment',
       'basket-operation',
       'order-contact',
       'order-decisions',
-      // Keep the minimal order decision proof until explicit acceptance/cancellation recovery.
+      // Keep minimal order/payment proofs until explicit financial recovery.
       // Contact, tokens and ordinary guest sessions are still purged on logout.
     ] as const;
     const removals = await Promise.allSettled(

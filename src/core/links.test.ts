@@ -1,5 +1,5 @@
 import { EntrySelection, resolveLink } from './links';
-import { fixtureDirectory, tenantA } from '../test/fixtures';
+import { fixtureDirectory, tenantA, tenantB } from '../test/fixtures';
 const origin = 'https://links.example';
 it('resolves tenant references only through the trusted directory', () => {
   expect(resolveLink(`${origin}/r/alpha/menu`, origin, fixtureDirectory())).toEqual({
@@ -7,9 +7,17 @@ it('resolves tenant references only through the trusted directory', () => {
     destination: 'menu',
   });
   expect(
-    resolveLink(`${origin}/r/alpha/payment-return?operation=op-1`, origin, fixtureDirectory())
-      .reference,
-  ).toBe('op-1');
+    resolveLink(
+      `${origin}/r/alpha/payment-return/${tenantA}?operation=${tenantB}`,
+      origin,
+      fixtureDirectory(),
+    ),
+  ).toEqual({
+    tenantId: tenantA,
+    destination: 'payment-return',
+    reference: tenantA,
+    operationId: tenantB,
+  });
 });
 it.each([
   'https://evil.example/r/alpha/menu',
@@ -33,4 +41,14 @@ it('consumes install referrer once and gives explicit selection precedence', () 
   expect(selected.consumeReferrer('tenant=alpha')).toBeUndefined();
   expect(new EntrySelection().consumeReferrer('tenant=https://evil.example')).toBeUndefined();
   expect(new EntrySelection().consumeReferrer('')).toBeUndefined();
+});
+
+it.each([
+  `${origin}/r/alpha/payment-return?operation=${tenantB}`,
+  `${origin}/r/alpha/payment-return/${tenantA}`,
+  `${origin}/r/alpha/payment-return/${tenantA}?operation=op-1`,
+  `${origin}/r/alpha/payment-return/${tenantA}?operation=${tenantB}&operation=${tenantB}`,
+  `${origin}/r/alpha/payment-return/${tenantA}?operation=${tenantB}&paid=true`,
+])('rejects missing or ambiguous payment navigation %s', (value) => {
+  expect(() => resolveLink(value, origin, fixtureDirectory())).toThrow();
 });
