@@ -39,8 +39,10 @@ export async function refreshSession(
   session: CustomerSession,
   assertCurrent?: () => void,
   receiptProof?: OrderOperationProof,
+  paymentOrderId?: string,
 ): Promise<CustomerSession> {
   const captured = { ...session };
+  if (paymentOrderId !== undefined && !receiptProof) throw new ApiFailure(401, 'refused');
   if (
     receiptProof &&
     (receiptProof.principal.kind !== 'customer' || receiptProof.principal.id !== captured.userId)
@@ -52,7 +54,8 @@ export async function refreshSession(
     ...(assertCurrent ? { assertCurrent } : {}),
     ...(receiptProof
       ? {
-          credentials: 'receipt-renewal' as const,
+          credentials: paymentOrderId ? ('payment-renewal' as const) : ('receipt-renewal' as const),
+          ...(paymentOrderId ? { expectedPaymentOrderId: paymentOrderId } : {}),
           principal: receiptProof.principal,
           expectedOrderProof: receiptProof,
         }

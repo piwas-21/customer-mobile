@@ -22,10 +22,13 @@ export type RequestOptions = {
     | 'basket'
     | 'order'
     | 'order-receipt'
-    | 'receipt-renewal';
+    | 'order-payment'
+    | 'receipt-renewal'
+    | 'payment-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
   expectedOrderProof?: OrderOperationProof;
+  expectedPaymentOrderId?: string;
 };

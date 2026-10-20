@@ -63,7 +63,7 @@ export class OrderReceiptController {
       (value) => value.operationId === operationId && value.outcome === 'Applied',
     );
     if (!saved) throw new ApiFailure(404, 'refused');
-    const result = await this.sessions.receipt(saved, locale);
+    const result = await this.sessions.orders.receipt(saved, locale);
     this.assertCurrent();
     return result;
   }

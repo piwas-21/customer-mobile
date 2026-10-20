@@ -52,13 +52,22 @@ export class CustomerTransport {
     assertOwner();
     const method = options.method ?? 'GET';
     const receiptRead = options.credentials === 'order-receipt';
-    const renewal = options.credentials === 'receipt-renewal';
+    const paymentRecovery = options.credentials === 'order-payment';
+    const renewal =
+      options.credentials === 'receipt-renewal' || options.credentials === 'payment-renewal';
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
     )
       throw new ApiFailure(401, 'refused');
     if (receiptRead && (method !== 'POST' || path !== '/api/customer-mobile/orders/receipt'))
+      throw new ApiFailure(401, 'refused');
+    if (
+      paymentRecovery &&
+      (method !== 'POST' ||
+        !options.assertCurrent ||
+        path !== '/api/customer-mobile/checkout/payment/recover')
+    )
       throw new ApiFailure(401, 'refused');
     const orderRecovery =
       method === 'POST' &&
@@ -70,6 +79,7 @@ export class CustomerTransport {
       context.tenant.status !== 'active' &&
       !orderRecovery &&
       !receiptRead &&
+      !paymentRecovery &&
       !renewal
     )
       throw new Error('Restaurant is read-only');

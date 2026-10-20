@@ -1,7 +1,5 @@
-import type { OrderOperationProof } from './orderOperationProof';
 import { renewStoredSession } from './sessionRenewal';
-import { readOrderReceipt } from '../api/orderReceipt';
-import { decisionProof, orderDecisionSchema, type OrderDecision } from './orderDecisions';
+import { CustomerOrderReads, type OrderReadAuthority } from './customerOrderReads';
 import { readSession, retryAuthenticatedRead, writeSession } from './sessionRead';
 import type { z } from 'zod';
 import { signIn, type LoginInput } from '../api/auth';
@@ -11,6 +9,7 @@ import type { TenantContext } from './tenantContext';
 import type { SessionRepository } from './sessionRepository';
 import { SerialTasks } from './serialTasks';
 export class SessionController {
+  readonly orders: CustomerOrderReads;
   private readonly tasks = new SerialTasks();
   private readonly listeners = new Set<() => void>();
   private revision = 0;
@@ -25,7 +24,13 @@ export class SessionController {
     private readonly repository: SessionRepository,
     private readonly accountsEnabled = true,
     private readonly recoveryOnly = false,
-  ) {}
+  ) {
+    this.orders = new CustomerOrderReads(context, client, (proof, read, paymentOrderId) =>
+      proof.principal.kind === 'customer'
+        ? this.readOwned(proof.principal.id, read, { proof, paymentOrderId })
+        : read(this.captureRequestOwner(proof.principal)),
+    );
+  }
   get onlyRecoverOrders(): boolean {
     return this.recoveryOnly || (!this.accountsEnabled && this.session !== null);
   }
@@ -142,18 +147,10 @@ export class SessionController {
       readSession(this.client, this.context, userId, path, schema, guard),
     );
   }
-  receipt(saved: OrderDecision, locale: string) {
-    const decision = orderDecisionSchema.parse(saved);
-    const read = (guard: () => void) =>
-      readOrderReceipt(this.client, this.context, decision, guard, locale);
-    if (decision.principal.kind === 'customer')
-      return this.readOwned(decision.principal.id, read, decisionProof(decision));
-    return read(this.captureRequestOwner(decision.principal));
-  }
   private async readOwned<T>(
     userId: string,
     read: (guard: () => void) => Promise<T>,
-    proof?: OrderOperationProof,
+    authority?: OrderReadAuthority,
   ): Promise<T> {
     const revision = this.revision;
     const captured = this.assertPrincipal(revision, userId);
@@ -161,7 +158,8 @@ export class SessionController {
     const renew = () =>
       this.tasks.run(async () => {
         guard();
-        if (this.session?.accessToken === captured.accessToken) await this.refresh(revision, proof);
+        if (this.session?.accessToken === captured.accessToken)
+          await this.renew(revision, authority);
       });
     return retryAuthenticatedRead(() => read(guard), renew, guard);
   }
@@ -181,7 +179,7 @@ export class SessionController {
       this.captureRequestOwner({ kind: 'customer', id: userId }),
     );
   }
-  private async refresh(revision: number, proof?: OrderOperationProof): Promise<void> {
+  private async renew(revision: number, authority?: OrderReadAuthority): Promise<void> {
     const captured = this.session;
     if (!captured) throw new ApiFailure(401, 'refused');
     const next = await renewStoredSession(
@@ -191,7 +189,8 @@ export class SessionController {
       captured,
       () => this.isCurrent(revision),
       () => this.clearSession(captured),
-      proof,
+      authority?.proof,
+      authority?.paymentOrderId,
     );
     this.assertCurrent(revision);
     this.publish(next);

@@ -1,3 +1,4 @@
+import { scopedPaymentRecord } from './paymentOperationRecord';
 import { scopedOrderDecisions } from './orderDecisions';
 import { assertOrderProofScope, orderOperationProofSchema } from './orderOperationProof';
 import { OrderOperationRepository } from './orderOperationRepository';
@@ -53,7 +54,11 @@ export class SessionRepository {
           principal,
           saved === null ? [] : JSON.parse(saved),
         );
-        if (!records.some((record) => record.outcome === 'Applied')) return null;
+        if (!records.some((record) => record.outcome === 'Applied')) {
+          const payment = await this.store.get(secretKey(context, 'payment', principal));
+          if (payment === null) return null;
+          scopedPaymentRecord(context, principal, JSON.parse(payment));
+        }
       }
       // Account-disabled browsing reads a JWT only for its original pending/accepted order proof.
       return this.vault.session(context, principal.id);

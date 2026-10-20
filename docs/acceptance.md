@@ -354,3 +354,10 @@ and zero cache retention. Refresh/foreground reads withdraw stale contents, and 
 withdrawal removes private queries. Back returns to the bounded history list; native modal escape
 and Close dismiss the flow. Real backend ownership, deployed readback, installed large-text/screen-
 reader behavior and full cancellation/reorder remain distinct acceptance gates.
+
+The source-only payment adapter reads the dedicated original-proof recovery decision. Its exact
+POST route and payment-only credential-renewal route require the retained payment record, original
+session/digest/operation/order and a current owner guard. A customer HTTP 401 can renew once through
+the existing serialized session authority; local refusals, other HTTP statuses, tenant changes and
+logout cannot replay it. Account-disabled restoration also recognizes the payment proof independently
+of receipt history. This does not establish deployed contract or installed browser acceptance.

@@ -59,10 +59,14 @@ export async function requestHeaders(
   const mode = options.credentials ?? 'none';
   const expectedSession = expectedBasketSession(options);
   const orderProof = captureOrderProof(context, options);
+  const paymentOrderId = options.expectedPaymentOrderId;
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
   if (
     mode === 'customer' ||
-    ((mode === 'basket' || mode === 'order' || mode === 'order-receipt') &&
+    ((mode === 'basket' ||
+      mode === 'order' ||
+      mode === 'order-receipt' ||
+      mode === 'order-payment') &&
       principal?.kind === 'customer')
   )
     Object.assign(headers, await customerHeaders(context, vault, principal));
@@ -73,7 +77,12 @@ export async function requestHeaders(
         context,
         vault,
         orderProof,
-        mode === 'order-receipt' || mode === 'receipt-renewal',
+        mode === 'order-payment' || mode === 'payment-renewal'
+          ? 'payment'
+          : mode === 'order-receipt' || mode === 'receipt-renewal'
+            ? 'receipt'
+            : 'pending',
+        paymentOrderId,
       ),
     );
   if (mode === 'guest' || mode === 'table' || mode === 'basket')
