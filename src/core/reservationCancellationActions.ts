@@ -88,8 +88,7 @@ export class ReservationCancellationActions {
     const id = canonicalUuidSchema.parse(operationId);
     this.assertStart();
     const candidate = this.candidate;
-    if (!candidate || candidate.preparation.request.operationId !== id)
-      throw new ApiFailure(409, 'refused');
+    if (candidate?.preparation.request.operationId !== id) throw new ApiFailure(409, 'refused');
     if (await this.scope.load()) throw new ApiFailure(409, 'refused');
     await this.scope.fresh(candidate.preparation.request.timeZone);
     this.assertStart();

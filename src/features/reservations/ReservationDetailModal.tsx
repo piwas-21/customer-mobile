@@ -32,6 +32,15 @@ export default function ReservationDetailModal(props: Props) {
   );
   const cancellation = useReservationCancellation(props.reservationId);
   const review = cancellation.review;
+  const unavailableLabel = result.loading ? 'loading' : 'reservationsUnavailable';
+  const details = result.data ? (
+    <>
+      <ReservationSummary item={result.data} requests />
+      <Feedback message={t('receiptTimeZone', { zone: props.zone })} />
+    </>
+  ) : (
+    <Feedback loading={result.loading} message={t(unavailableLabel)} />
+  );
   return (
     <BaseModal
       title={t(review ? 'reservationCancelReview' : 'reservationDetails')}
@@ -50,16 +59,8 @@ export default function ReservationDetailModal(props: Props) {
           />
           <Button label={t('back')} secondary onPress={cancellation.dismiss} />
         </>
-      ) : result.data ? (
-        <>
-          <ReservationSummary item={result.data} requests />
-          <Feedback message={t('receiptTimeZone', { zone: props.zone })} />
-        </>
       ) : (
-        <Feedback
-          loading={result.loading}
-          message={t(result.loading ? 'loading' : 'reservationsUnavailable')}
-        />
+        details
       )}
       {!review ? (
         <>

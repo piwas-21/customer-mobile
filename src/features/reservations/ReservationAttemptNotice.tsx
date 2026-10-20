@@ -50,6 +50,14 @@ export default function ReservationAttemptNotice({
       <Button secondary label={t('back')} onPress={() => setConfirm(undefined)} />
     </>
   ) : null;
+  let confirmationView = confirmationContent;
+  if (confirmation && !inlineConfirmation) {
+    confirmationView = (
+      <BaseModal title={t(actionLabel)} onClose={() => setConfirm(undefined)}>
+        {confirmationContent}
+      </BaseModal>
+    );
+  }
   return (
     <>
       {operations.failed ? (
@@ -82,13 +90,7 @@ export default function ReservationAttemptNotice({
           />
         </>
       ) : null}
-      {confirmation && inlineConfirmation ? (
-        confirmationContent
-      ) : confirmation ? (
-        <BaseModal title={t(actionLabel)} onClose={() => setConfirm(undefined)}>
-          {confirmationContent}
-        </BaseModal>
-      ) : null}
+      {confirmationView}
     </>
   );
 }
