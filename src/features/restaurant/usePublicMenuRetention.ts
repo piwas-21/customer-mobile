@@ -7,20 +7,22 @@ export function usePublicMenuRetention(directory: Directory | undefined, updated
   const client = useQueryClient();
   useEffect(() => {
     if (!directory) return;
-    let cleanup: Promise<void>;
-    try {
-      cleanup = reconcilePublicMenus(directory);
-    } catch {
-      // An expired or malformed observation cannot retire a restaurant.
-      return;
-    }
     const invalidate = () =>
       client
         .invalidateQueries({ queryKey: ['public', directory.environment, 'saved-menu-previews'] })
         .catch(() => undefined);
-    // Re-read through the synchronous retention fence even while disk cleanup is waiting.
-    void invalidate();
-    // A failed cleanup keeps that fence and retries on the next directory fetch.
-    void cleanup.then(invalidate, invalidate);
+    const reconcile = async () => {
+      let started = false;
+      try {
+        // Install the fence before refreshing previews; keep disk rejection inside this handler.
+        const cleanup = reconcilePublicMenus(directory);
+        started = true;
+        await Promise.all([invalidate(), cleanup]);
+      } catch {
+        // A failed cleanup keeps its fence and retries on the next fresh directory fetch.
+      }
+      if (started) await invalidate();
+    };
+    void reconcile();
   }, [client, directory, updatedAt]);
 }

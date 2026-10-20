@@ -14,6 +14,9 @@ export const publicMenuRetentionSchema = z
   })
   .refine((value) => new Set(value.tenantIds).size === value.tenantIds.length);
 export type PublicMenuRetention = z.infer<typeof publicMenuRetentionSchema>;
+function compareTenantIds(first: string, second: string) {
+  return first.localeCompare(second, 'en');
+}
 export function menuRetentionHasValidDate(policy: PublicMenuRetention, now: number) {
   return Date.parse(policy.publishedAt) <= now + DIRECTORY_CLOCK_SKEW_MS;
 }
@@ -25,7 +28,7 @@ export function menuRetentionFromDirectory(directory: Directory, now: number): P
     tenantIds: current.tenants
       .filter((tenant) => tenant.status !== 'disabled' && tenant.contractVersions.includes(1))
       .map((tenant) => tenant.id)
-      .sort(),
+      .sort(compareTenantIds),
   };
 }
 export function latestMenuRetention(
@@ -41,7 +44,7 @@ export function latestMenuRetention(
   // Conflicting observations of one publication may tighten, never widen, the saved-menu set.
   return {
     ...first,
-    tenantIds: first.tenantIds.filter((id) => second.tenantIds.includes(id)).sort(),
+    tenantIds: first.tenantIds.filter((id) => second.tenantIds.includes(id)).sort(compareTenantIds),
   };
 }
 export function menuIsRetained(policy: PublicMenuRetention | undefined, tenantId: string) {
