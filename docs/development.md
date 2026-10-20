@@ -149,3 +149,18 @@ The package is SDK-pinned and MIT licensed ([upstream](https://github.com/react-
 Native generation, both exports, dependency audit and installed iOS/Android date-picker, accessibility,
 large text and RTL checks remain independent gates. Source/JavaScript export does not prove a rebuilt
 native client or device behavior. Full localization and booking creation/changes remain open.
+
+## Native loyalty reads
+
+The Account points entry uses the native versioned owner-only balance and bounded ledger contract.
+Recorded totals are not spendability or money quotes; checkout recalculates current available points
+and discounts. Strict adapters reject extra private fields, unsupported kinds, malformed bounds,
+duplicate/unordered movements and cursor regression while preserving the exact UTC sort marker.
+Staff notes, audit data and order references are excluded.
+
+Balance and ledger queries are separate ephemeral reads with no cross-query snapshot claim. The
+shared Customer module entry also serves reservation history. Account/controller revision, tenant,
+capability, timezone and currency changes withdraw the modal; failed refresh hides retained data.
+Closing removes both private queries. Ledger rows are virtualized, points are localized and event
+timestamps use the restaurant timezone. English fallback is available; full locale/RTL review,
+backend acceptance/deployment, installed accessibility and redemption/discount journeys remain open.

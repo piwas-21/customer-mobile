@@ -532,3 +532,18 @@ retry after one minute or the next lifecycle event. Only the configured environm
 is touched; private sessions, purchase proof, history and other environment records are preserved.
 A suspended native app cannot guarantee background execution: the next foreground/startup repeats
 cleanup. Installed suspension/process-death and platform storage acceptance remain open.
+
+## Native loyalty reads
+
+The Account points entry uses the native versioned owner-only balance and bounded ledger contract.
+Recorded totals are not spendability or money quotes; checkout recalculates current available points
+and discounts. Strict adapters reject extra private fields, unsupported kinds, malformed bounds,
+duplicate/unordered movements and cursor regression while preserving the exact UTC sort marker.
+Staff notes, audit data and order references are excluded.
+
+Balance and ledger queries are separate ephemeral reads with no cross-query snapshot claim. The
+shared Customer module entry also serves reservation history. Account/controller revision, tenant,
+capability, timezone and currency changes withdraw the modal; failed refresh hides retained data.
+Closing removes both private queries. Ledger rows are virtualized, points are localized and event
+timestamps use the restaurant timezone. English fallback is available; full locale/RTL review,
+backend acceptance/deployment, installed accessibility and redemption/discount journeys remain open.

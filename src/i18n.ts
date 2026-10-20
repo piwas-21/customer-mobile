@@ -1,3 +1,4 @@
+import { loyaltyEnglish } from './translations/loyalty.en';
 import { nativeAccountEnglish } from './translations/nativeAccount.en';
 import { reservationsEnglish } from './translations/reservations.en';
 import { cancellationEnglish } from './translations/cancellation.en';
@@ -12,6 +13,7 @@ import { initReactI18next } from 'react-i18next';
 import { getLocales } from 'expo-localization';
 const i18n = createInstance();
 const en = {
+  ...loyaltyEnglish,
   ...reservationsEnglish,
   ...nativeAccountEnglish,
   ...cacheEnglish,
