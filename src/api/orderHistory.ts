@@ -4,10 +4,7 @@ import { canonicalUuidSchema } from '../core/identifiers';
 import { ApiFailure } from '../core/transport';
 import { checkoutMoney } from './checkoutMoney';
 import { orderReceiptSchema } from './orderReceipt';
-// Keep the original UTC precision for keyset cursors; JS Date would discard microseconds.
-const instant = z.iso
-  .datetime()
-  .refine((value) => (value.split('.')[1]?.replace('Z', '').length ?? 0) <= 7);
+import { utcSortMarkerSchema as instant, normalizedUtcSortMarker } from '../core/utcSortMarker';
 const cursorSchema = z.strictObject({ orderDate: instant, orderId: canonicalUuidSchema });
 const itemSchema = z
   .strictObject({
@@ -23,15 +20,9 @@ const itemSchema = z
   .refine((item) => (item.currency === null) === (item.payableTotal === null));
 export type OrderHistoryCursor = z.infer<typeof cursorSchema>;
 export type OrderHistoryItem = z.infer<typeof itemSchema>;
-function sortInstant(value: string) {
-  return value.replace(
-    /(?:\.(\d+))?Z$/,
-    (_match: string, fraction: string | undefined) => '.' + (fraction ?? '').padEnd(7, '0') + 'Z',
-  );
-}
 function follows(item: OrderHistoryCursor, cursor: OrderHistoryCursor) {
-  const date = sortInstant(item.orderDate);
-  const before = sortInstant(cursor.orderDate);
+  const date = normalizedUtcSortMarker(item.orderDate);
+  const before = normalizedUtcSortMarker(cursor.orderDate);
   return date < before || (date === before && item.orderId > cursor.orderId);
 }
 export const orderHistorySchema = z
