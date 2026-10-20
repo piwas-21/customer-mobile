@@ -4,8 +4,11 @@ import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
 import ReservationAttemptActions from './ReservationAttemptActions';
+import { reservationAttemptCopy } from './reservationAttemptCopy';
 import { useReservation } from './ReservationProvider';
-export default function ReservationAttemptNotice() {
+export default function ReservationAttemptNotice({
+  inlineConfirmation = false,
+}: Readonly<{ inlineConfirmation?: boolean }>) {
   const { t } = useTranslation();
   const operations = useReservation();
   const [confirm, setConfirm] = useState<{
@@ -22,9 +25,9 @@ export default function ReservationAttemptNotice() {
     value.outcome === 'Pending'
       ? confirm
       : undefined;
-  let message = 'reservationAttemptPending';
-  if (value?.outcome === 'Applied') message = 'reservationAttemptReceived';
-  else if (value?.outcome === 'Cancelled') message = 'reservationAttemptStopped';
+  const copy = reservationAttemptCopy(value);
+  const actionLabel = confirmation?.kind === 'retry' ? copy.retryLabel : copy.stopLabel;
+  const explanation = confirmation?.kind === 'retry' ? copy.retryExplanation : copy.stopExplanation;
   async function completeConfirmation() {
     if (!confirmation || !operations || busy) return;
     const captured = confirmation;
@@ -36,6 +39,25 @@ export default function ReservationAttemptNotice() {
       /* The shared pending view retains canonical recovery authority. */
     }
   }
+  const confirmationContent = confirmation ? (
+    <>
+      <Feedback message={t(explanation)} />
+      <Button
+        label={t(actionLabel)}
+        busy={operations.busy}
+        onPress={() => void completeConfirmation()}
+      />
+      <Button secondary label={t('back')} onPress={() => setConfirm(undefined)} />
+    </>
+  ) : null;
+  let confirmationView = confirmationContent;
+  if (confirmation && !inlineConfirmation) {
+    confirmationView = (
+      <BaseModal title={t(actionLabel)} onClose={() => setConfirm(undefined)}>
+        {confirmationContent}
+      </BaseModal>
+    );
+  }
   return (
     <>
       {operations.failed ? (
@@ -43,10 +65,12 @@ export default function ReservationAttemptNotice() {
       ) : null}
       {value ? (
         <>
-          <Feedback message={t(message)} />
+          <Feedback message={t(copy.message)} />
           <ReservationAttemptActions
             value={value}
             busy={busy}
+            retryLabel={copy.retryLabel}
+            stopLabel={copy.stopLabel}
             onCheck={() => void operations.check().catch(() => undefined)}
             onRetry={() =>
               setConfirm({
@@ -66,30 +90,7 @@ export default function ReservationAttemptNotice() {
           />
         </>
       ) : null}
-      {confirmation ? (
-        <BaseModal
-          title={t(
-            confirmation.kind === 'retry' ? 'reservationRetryOriginal' : 'reservationStopAttempt',
-          )}
-          onClose={() => setConfirm(undefined)}
-        >
-          <Feedback
-            message={t(
-              confirmation.kind === 'retry'
-                ? 'reservationRetryOriginalExplanation'
-                : 'reservationStopAttemptExplanation',
-            )}
-          />
-          <Button
-            label={t(
-              confirmation.kind === 'retry' ? 'reservationRetryOriginal' : 'reservationStopAttempt',
-            )}
-            busy={operations.busy}
-            onPress={() => void completeConfirmation()}
-          />
-          <Button secondary label={t('back')} onPress={() => setConfirm(undefined)} />
-        </BaseModal>
-      ) : null}
+      {confirmationView}
     </>
   );
 }

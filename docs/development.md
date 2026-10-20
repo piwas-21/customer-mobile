@@ -197,3 +197,28 @@ preserving minimal proof and requiring same-customer reauthentication or explici
 continuation. The reminder appears in Bookings as well as Orders and Account.
 
 Original reservation recovery preserves both the booking resource lifetime and the account owner guard through private header reads, token renewal, secure credential activation and retry. A withdrawn resource cannot dispatch a later recover/stop request or install a late renewal. App-state events dispose the current actor before queued React updates; layout cleanup withdraws committed account/bootstrap/tenant scope changes synchronously.
+
+## Owned reservation cancellation
+
+The dedicated `/api/customer-mobile/reservations/cancellation` family shares the durable attempt
+queue and mandatory Orders recovery surface. Customer-only preparation is read-only. A volatile
+candidate contains the protected server response; the detail modal shows its fresh customer
+snapshot before explicit destructive confirmation. Candidate operation IDs, owner/controller and
+target lifetime are checked before installation. No proof or review snapshot enters Query/router
+state. A stale confirmation cannot submit or discard a newer candidate.
+
+Confirmed cancellation persists minimal proof/session plus booking ID/zone metadata in acknowledged
+SecureStore, without contact input. Only the explicitly confirmed candidate submits once. Persisted cancellation attempts are recovery/stop-only,
+including across restart; they never offer another submit. A known
+HTTP409 records a diagnostic when secure storage permits; a failed diagnostic save keeps the current
+refusal visible and cannot enable retry. After restart without that diagnostic, the original remains
+uncertain and recovery-only. Check/stop remain available before a fresh review.
+Unseen never releases it. Stopping an unseen attempt does not cancel the booking; Applied records
+this cancellation's completion rather than the booking's later staff-controlled status. Detail is
+refreshed separately. The existing native modal contains review and recovery confirmations.
+
+New submit never renews or automatically replays. Original recover/stop alone may renew once after
+module withdrawal. Rejected renewal preserves the original-customer reminder and minimal authority
+through cleanup/restart and requires reauthentication or explicit separate-customer continuation.
+Backend contract acceptance, deployment, all ten locales/RTL and installed native verification remain
+required; this local implementation cannot activate a tenant or create a production booking.

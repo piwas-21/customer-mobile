@@ -1,6 +1,8 @@
+import { bootstrapSchema } from './capabilities';
 import { z } from 'zod';
 import {
   reservationCreateProofSchema,
+  type ReservationCreateProof,
   type ReservationBookingInput,
   reservationCreateResolutionSchema,
   reservationDraftSchema,
@@ -10,29 +12,40 @@ import { environmentSchema } from './directory';
 import { canonicalUuidSchema } from './identifiers';
 import type { TenantContext } from './tenantContext';
 import { ApiFailure } from './apiFailure';
-const scopeSchema = z.strictObject({
+export const reservationScopeSchema = z.strictObject({
   environment: environmentSchema,
   tenantId: canonicalUuidSchema,
   principal: principalSchema,
   sessionId: canonicalUuidSchema,
 });
-export const reservationPreparationSchema = scopeSchema
+export const reservationPreparationSchema = reservationScopeSchema
   .extend({ draft: reservationDraftSchema })
   .refine((record) => record.draft.tenantId === record.tenantId);
 export type ReservationPreparation = z.infer<typeof reservationPreparationSchema>;
-export const reservationOperationRecordSchema = scopeSchema
+export const reservationOperationRecordSchema = reservationScopeSchema
   .extend({
     schemaVersion: z.literal(1),
+    cancellation: z
+      .strictObject({
+        reservationId: canonicalUuidSchema,
+        timeZone: bootstrapSchema.shape.timezone,
+        retryBlocked: z.literal(true).optional(),
+      })
+      .optional(),
     proof: reservationCreateProofSchema,
     cancellationRequested: z.boolean(),
     resolution: reservationCreateResolutionSchema.nullable(),
   })
   .refine(
     (record) =>
+      (!record.cancellation || record.principal.kind === 'customer') &&
       record.tenantId === record.proof.tenantId &&
       (record.resolution === null ||
         (record.resolution.outcome !== 'Unseen' &&
-          record.resolution.operationId === record.proof.operationId)),
+          record.resolution.operationId === record.proof.operationId &&
+          (!record.cancellation ||
+            record.resolution.outcome !== 'Applied' ||
+            record.resolution.reservationId === record.cancellation.reservationId))),
   );
 export type ReservationOperationRecord = z.infer<typeof reservationOperationRecordSchema>;
 export const reservationContactSchema = z
@@ -41,7 +54,7 @@ export const reservationContactSchema = z
 export function assertReservationScope(
   context: TenantContext,
   principal: Principal,
-  record: z.infer<typeof scopeSchema>,
+  record: z.infer<typeof reservationScopeSchema>,
 ) {
   if (
     context.signal.aborted ||
@@ -80,5 +93,23 @@ export function createReservationPreparation(
     principal,
     sessionId: createId(),
     draft,
+  });
+}
+
+export function preparedReservationRecord(
+  scope: z.infer<typeof reservationScopeSchema>,
+  proof: ReservationCreateProof,
+  cancellation?: ReservationOperationRecord['cancellation'],
+): ReservationOperationRecord {
+  return reservationOperationRecordSchema.parse({
+    schemaVersion: 1,
+    environment: scope.environment,
+    tenantId: scope.tenantId,
+    principal: scope.principal,
+    sessionId: scope.sessionId,
+    proof,
+    cancellationRequested: false,
+    resolution: null,
+    ...(cancellation ? { cancellation } : {}),
   });
 }

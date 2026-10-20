@@ -7,14 +7,18 @@ import {
 import {
   assertReservationScope,
   reservationContactSchema,
-  reservationPreparationSchema,
   scopedReservationRecord,
 } from './reservationOperationRecord';
 import { ApiFailure } from './apiFailure';
 import type { CredentialVault, Principal } from './credentials';
 import type { RequestOptions } from './httpTypes';
 import type { TenantContext } from './tenantContext';
-export const reservationCreatePath = '/api/customer-mobile/reservations/create';
+import {
+  captureReservationPreparation,
+  anyReservationPreparationSchema,
+} from './reservationPreparationRequest';
+import { reservationOperationPath } from './reservationPaths';
+export { reservationCreatePath } from './reservationPaths';
 const renewalBodySchema = z.strictObject({
   accessToken: credentialSecretSchema,
   refreshToken: credentialSecretSchema,
@@ -44,8 +48,7 @@ export function captureReservationRequest(
   }
   if (options.method !== 'POST' || !options.principal || !options.assertCurrent)
     throw new ApiFailure(401, 'refused');
-  if (mode === 'reservation-prepare')
-    return capturePreparation(context, path, options, options.principal);
+  if (mode === 'reservation-prepare') return captureReservationPreparation(context, path, options);
   if (mode === 'reservation-renewal') {
     const record = scopedReservationRecord(
       context,
@@ -68,28 +71,6 @@ export function captureReservationRequest(
   }
   return captureOperation(context, path, options, options.principal);
 }
-function capturePreparation(
-  context: TenantContext,
-  path: string,
-  options: RequestOptions,
-  principal: Principal,
-): RequestOptions {
-  if (
-    path !== reservationCreatePath + '/prepare' ||
-    options.expectedReservationRecord !== undefined
-  )
-    throw new ApiFailure(401, 'refused');
-  const prepared = reservationPreparationSchema.parse(options.expectedReservationPreparation);
-  assertReservationScope(context, principal, prepared);
-  const body = reservationDraftSchema.parse(options.body);
-  if (JSON.stringify(body) !== JSON.stringify(prepared.draft)) throw new ApiFailure(401, 'refused');
-  return {
-    ...options,
-    principal: prepared.principal,
-    expectedReservationPreparation: prepared,
-    body,
-  };
-}
 function captureOperation(
   context: TenantContext,
   path: string,
@@ -98,16 +79,13 @@ function captureOperation(
 ): RequestOptions {
   if (options.expectedReservationPreparation !== undefined) throw new ApiFailure(401, 'refused');
   const record = scopedReservationRecord(context, principal, options.expectedReservationRecord);
-  if (
-    record.resolution ||
-    ![
-      reservationCreatePath,
-      reservationCreatePath + '/recover',
-      reservationCreatePath + '/cancel-attempt',
-    ].includes(path)
-  )
+  const base = reservationOperationPath(record.cancellation !== undefined);
+  const apply = base + (record.cancellation ? '/submit' : '');
+  if (record.resolution || ![apply, base + '/recover', base + '/cancel-attempt'].includes(path))
     throw new ApiFailure(401, 'refused');
-  const create = path === reservationCreatePath;
+  const create = !record.cancellation && path === apply;
+  if (path === apply && (record.cancellationRequested || record.cancellation?.retryBlocked))
+    throw new ApiFailure(401, 'refused');
   if (
     (create && record.cancellationRequested) ||
     (path.endsWith('/cancel-attempt') && !record.cancellationRequested)
@@ -134,7 +112,7 @@ export async function reservationRequestHeaders(
   if (!principal || !options.assertCurrent) throw new ApiFailure(401, 'refused');
   let sessionId: string;
   if (options.credentials === 'reservation-prepare') {
-    const prepared = reservationPreparationSchema.parse(options.expectedReservationPreparation);
+    const prepared = anyReservationPreparationSchema.parse(options.expectedReservationPreparation);
     assertReservationScope(context, principal, prepared);
     sessionId = prepared.sessionId;
   } else {

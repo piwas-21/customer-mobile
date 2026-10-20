@@ -5,6 +5,8 @@ import type { SessionRepository } from './sessionRepository';
 import type { TenantContext } from './tenantContext';
 export type ReservationAttemptView = Readonly<{
   operationId: string;
+  cancellation?: true;
+  retryBlocked?: true;
   outcome: 'Pending' | 'Applied' | 'Cancelled';
   reservationId: string | null;
   cancelling: boolean;
@@ -28,9 +30,16 @@ export async function reservationAttemptView(
   else if (record.resolution?.outcome === 'Cancelled') outcome = 'Cancelled';
   return {
     operationId: record.proof.operationId,
+    ...(record.cancellation ? { cancellation: true as const } : {}),
+    ...(record.cancellation?.retryBlocked ? { retryBlocked: true as const } : {}),
     outcome,
     reservationId: record.resolution?.reservationId ?? null,
     cancelling: record.cancellationRequested,
-    canRetry: draft !== null && canStartReservation(context, bootstrap, record.principal),
+    canRetry:
+      !record.resolution &&
+      !record.cancellationRequested &&
+      !record.cancellation &&
+      draft !== null &&
+      canStartReservation(context, bootstrap, record.principal),
   };
 }

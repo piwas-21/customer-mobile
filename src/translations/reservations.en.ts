@@ -1,4 +1,21 @@
 export const reservationsEnglish = {
+  reservationCancelReview: 'Review cancellation',
+  reservationCancelConfirm: 'Cancel this reservation',
+  reservationCancelExplanation:
+    'These are the current booking details. Confirm to cancel this reservation. This cannot be undone here.',
+  reservationCancellationUnavailable:
+    'We could not complete this cancellation action. Check the original attempt before starting another.',
+  reservationCancellationPending:
+    'The cancellation result is unknown. Check the original attempt before changing this booking.',
+  reservationCancellationChanged:
+    'The booking changed after your review. Check or stop this original attempt, then review the current booking before cancelling again.',
+  reservationCancellationApplied:
+    'This cancellation completed. Refresh the booking to see its current status, including any later restaurant changes.',
+  reservationCancellationStopped:
+    'This cancellation attempt was stopped. Stopping an attempt does not cancel the booking.',
+  reservationCancellationStop: 'Stop cancellation attempt',
+  reservationCancellationStopExplanation:
+    'Stop only an unreceived cancellation attempt. This does not cancel the booking or undo a completed cancellation.',
   reservationAttemptPending:
     'We have not confirmed whether the restaurant received this request. Check it before making another.',
   reservationAttemptReceived:
