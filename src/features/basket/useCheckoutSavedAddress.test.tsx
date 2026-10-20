@@ -14,6 +14,7 @@ async function setup() {
     userId: tenantA,
     ownerVersion: f.controller.ownerVersion,
     needsCleanup: false,
+    needsPaymentAttention: false,
     loading: false,
     unavailable: false,
     failed: false,

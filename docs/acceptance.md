@@ -4,15 +4,15 @@ Implementation follows ../docs/plans/CUSTOMER-MOBILE-APPS-PLAN.md in the workspa
 Source tests, deployment, native compiler output, signing and physical acceptance are separate evidence.
 Never enable tenants from fixture data or send production orders, payments or notifications for a test.
 
-| Phase | Current source                                                                                             | Remaining acceptance                                                                        |
-| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                    |
-| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys                |
-| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds   |
-| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, addresses/deletion, orders/reorder/hosted payment recovery |
-| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                         |
-| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance          |
-| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                             |
+| Phase | Current source                                                                                             | Remaining acceptance                                                                       |
+| ----- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| P0    | Company repository, pinned runtime, customer-only contracts, hooks/CI/review/Sonar                         | Two approved pilot tenants, company publisher accounts and EAS ownership                   |
+| P1    | Menu, guided standalone/bundle choices, owned basket state/read/add/recovery, QR and switching foundations | Hosted payment return, notification tap and physical iPhone/Android journeys               |
+| P2    | Trusted directory/bootstrap, context cancellation, scoped storage/transport and native generation          | Shared host deployment, verified links, full localization/RTL, signed reproducible builds  |
+| P3    | Email accounts, profile editing, durable basket operation contract and native ordering controls            | Social/verification/reset links, cancellation/reorder, deployed/installed payment recovery |
+| P4    | Customer contract inventory and capability boundaries                                                      | Reservations, loyalty, table rounds/payments and transactional push                        |
+| P5    | Source build and privacy foundations                                                                       | Website entry, signed APK/update flow, store submissions and two-tenant acceptance         |
+| P6    | Runtime directory/configuration foundations                                                                | Third-tenant activation, rollback and support/offboarding proof                            |
 
 ## Workflow and dependency gates
 
@@ -373,6 +373,15 @@ Close, launch failure, foreground and bounded pending polling reconcile the orig
 Canonical terminal decisions refresh purchase holds. Pending payments block recovery-only guest
 continuation in both basket and saved-order UI, including the final action after stale availability.
 
+Rejected refresh withdraws credentials without automatically selecting a purchase-ready guest.
+A minimal tenant/environment-scoped SecureStore reminder survives process death; account, basket
+and orders explain the unresolved original purchase. Cleanup retries preserve automatic withdrawal
+intent even after failed reminder save/readback or credential removal. The original account can
+reauthenticate; a different account needs an explicit separate-customer confirmation. That transition
+dismisses only the local reminder and allows a new guest basket, preserving the original private
+financial proof and unattended server reconciliation. No original proof is relabelled or sent as guest.
+Core restart/storage-failure controls and the rendered confirmation/cancel journey verify this boundary.
+
 `EXPO_PUBLIC_HOSTED_CHECKOUT_ORIGINS` is an explicit JSON array of approved canonical HTTPS origins,
 maximum ten unique entries. Missing/invalid configuration permits no hosted browser opening; ordinary
 browsing and payment-status recovery remain available. Server approval is independently required.
@@ -383,9 +392,9 @@ The central return route validates the configured origin, fresh directory tenant
 and operation references; duplicate or extra query data is refused. It navigates to original-proof
 Orders recovery only. A cold launch may restore the approved tenant. A callback cannot overwrite a
 newer different selection; switching back needs an explicit customer action. Link references grant no
-order, payment or login authority. Actual OS domain association, shared-service landing/deployment,
+order, payment or login authority. Opt-in association metadata and the shared-service landing are implemented in backend #743. Actual OS domain association and shared-service deployment,
 provider app switching, signed installations and device/process-death acceptance remain open. Backend
-#743 remains a draft until the required connected return contract is complete; no native payment
+#743 remains a draft pending final CI and merge gates; no native payment
 activation follows from these source tests.
 
 ## Native central-domain declarations

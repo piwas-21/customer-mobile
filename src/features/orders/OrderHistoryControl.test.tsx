@@ -26,6 +26,7 @@ async function setup(customer = true, data = historyPage()) {
     ownerVersion: f.controller.ownerVersion,
     unavailable: false,
     needsCleanup: false,
+    needsPaymentAttention: false,
     loading: false,
     failed: false,
     retry: jest.fn(),

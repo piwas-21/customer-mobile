@@ -1,3 +1,4 @@
+import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
@@ -49,6 +50,7 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <>
+            <PaymentAttentionNotice />
             <BasketNotice basket={basket} />
             <CustomerOrderNotice basket={basket} />
             <BasketChannelControl basket={basket} />

@@ -19,6 +19,7 @@ type SessionState = Readonly<{
   userId: string | null;
   ownerVersion: string;
   needsCleanup: boolean;
+  needsPaymentAttention: boolean;
   loading: boolean;
   unavailable: boolean;
   failed: boolean;
@@ -52,6 +53,11 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
   const userId = useSyncExternalStore(subscribe, snapshot);
   const cleanupSnapshot = useCallback(() => controller?.needsCleanup ?? false, [controller]);
   const needsCleanup = useSyncExternalStore(subscribe, cleanupSnapshot);
+  const attentionSnapshot = useCallback(
+    () => controller?.needsPaymentAttention ?? false,
+    [controller],
+  );
+  const needsPaymentAttention = useSyncExternalStore(subscribe, attentionSnapshot);
   const versionSnapshot = useCallback(
     () => controller?.ownerVersion ?? 'unavailable',
     [controller],
@@ -101,6 +107,7 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
       userId,
       ownerVersion,
       needsCleanup,
+      needsPaymentAttention,
       loading:
         bootstrap.isPending || Boolean((available || recoveryAvailable) && !controller && !error),
       unavailable: !accountsAvailable,
@@ -112,6 +119,7 @@ export default function SessionProvider({ children }: Readonly<PropsWithChildren
       userId,
       ownerVersion,
       needsCleanup,
+      needsPaymentAttention,
       bootstrap.isPending,
       error,
       available,

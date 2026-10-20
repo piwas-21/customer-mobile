@@ -21,7 +21,7 @@ jest.mock('../../storage/sessions', () => ({
 }));
 jest.mock('../restaurant/RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
 jest.mock('../account/SessionProvider', () => ({ useSession: jest.fn() }));
-jest.mock('expo-router', () => ({ useFocusEffect: jest.fn() }));
+jest.mock('expo-router', () => ({ useFocusEffect: jest.fn(), useRouter: jest.fn() }));
 jest.mock(
   'react-native-safe-area-context',
   () =>
@@ -38,6 +38,7 @@ async function fixture(customer = false) {
     userId: f.sessions.userId,
     ownerVersion: f.sessions.ownerVersion,
     needsCleanup: false,
+    needsPaymentAttention: false,
     loading: false,
     unavailable: false,
     failed: false,

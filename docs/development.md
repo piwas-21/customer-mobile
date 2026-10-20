@@ -67,7 +67,11 @@ Record cached-menu <2s and cold-menu <3s on named physical devices/network separ
 ## Security and review
 
 Threat model: malicious QR/redirect, tenant switch races, forged directory, stolen capability,
-logout races, unknown settlement and replayed submit. Negative tests must demonstrate each boundary.
+logout races, unknown settlement and replayed submit.
+A rejected refresh withdraws credentials while retaining a tenant-scoped unresolved-purchase
+reminder. Guest ownership stays unavailable across restart and cleanup retries. Same-owner sign-in
+restores access; a separately confirmed shared-device transition dismisses only the local reminder,
+never the original financial proof or server reconciliation. Negative tests must demonstrate each boundary.
 Do not trust a tenant ID in a token or link as authorization. Validate on server too.
 No analytics, Sentry or Expo Push activation until processors, consent and scrubbing are approved.
 No secrets in EAS public variables. Store/publisher credentials are external configuration.

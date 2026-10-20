@@ -1,5 +1,7 @@
+import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
+import { basketResponse } from '../../test/basketApi';
 import { useEffect } from 'react';
-import { act, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import SessionProvider, { useSession } from '../account/SessionProvider';
 import BasketProvider, { useBasket } from './BasketProvider';
@@ -22,6 +24,13 @@ import { response } from '../../test/transport';
 import { PaymentOperationStorage } from '../../core/paymentOperationStorage';
 let basket: ReturnType<typeof useBasket>;
 let owner: ReturnType<typeof useSession>;
+jest.mock(
+  'react-native-safe-area-context',
+  () =>
+    jest.requireActual<typeof import('react-native-safe-area-context/jest/mock')>(
+      'react-native-safe-area-context/jest/mock',
+    ).default,
+);
 jest.mock('../../storage/sessions', () => ({
   deviceSessions:
     jest.requireActual<typeof import('../../test/accounts')>('../../test/accounts')
@@ -122,3 +131,78 @@ it.each(['pending', 'late-pending'] as const)(
     }
   },
 );
+
+it('keeps the pending warning and blocks automatic guest purchasing after rejected refresh', async () => {
+  const f = accountFixture();
+  const principal = { kind: 'customer', id: session.userId } as const;
+  await accountRepository.activate(f.context, session, () => true);
+  await accountRepository.vault.saveCapability(
+    f.context,
+    'guest-session',
+    principal,
+    basketSessionId,
+  );
+  await accountRepository.orders.prepare(
+    f.context,
+    principal,
+    {
+      intent: { ...checkoutIntent(), paymentMethod: 'OnlinePayment' },
+      payloadHash: 'c'.repeat(64),
+    },
+    () => basketOperationId,
+    currentBasketOwner,
+  );
+  await accountRepository.orders.finish(f.context, principal, appliedOrder(), currentBasketOwner);
+  const record = (await accountRepository.payments.load(f.context, principal, currentBasketOwner))!;
+  jest.mocked(useRestaurant).mockReturnValue(f.state);
+  jest.mocked(useBootstrap).mockReturnValue({
+    ...accountBootstrap,
+    data: {
+      ...accountBootstrap.data,
+      capabilities: { accounts: 'enabled', ordering: 'enabled' },
+    },
+  } as unknown as ReturnType<typeof useBootstrap>);
+  f.fetcher.mockResolvedValue(response({}, 401));
+  const view = render(
+    <QueryClientProvider client={f.queryClient}>
+      <SessionProvider>
+        <BasketProvider>
+          <Probe />
+          <PaymentAttentionNotice />
+        </BasketProvider>
+      </SessionProvider>
+    </QueryClientProvider>,
+  );
+  try {
+    await waitFor(() => expect(owner.controller).toBeTruthy());
+    await act(async () => {
+      await expect(owner.controller!.orders.payment(record, 'en')).rejects.toMatchObject({
+        status: 401,
+      });
+    });
+    await waitFor(() => expect(owner.needsPaymentAttention).toBe(true));
+    expect(owner.userId).toBeNull();
+    expect(basket.canAdd).toBe(false);
+    expect(
+      view.getByText(/Your sign-in expired while an order or payment was unresolved/),
+    ).toBeTruthy();
+    fireEvent.press(view.getByRole('button', { name: 'Use this device for another customer' }));
+    expect(
+      view.getByText(/The previous customer’s order or payment may still complete/),
+    ).toBeTruthy();
+    fireEvent.press(view.getByRole('button', { name: 'Keep the original order reminder' }));
+    expect(owner.needsPaymentAttention).toBe(true);
+    expect(basket.canAdd).toBe(false);
+    fireEvent.press(view.getByRole('button', { name: 'Use this device for another customer' }));
+    f.fetcher.mockResolvedValue(response({ success: true, data: basketResponse() }));
+    fireEvent.press(view.getByRole('button', { name: 'Continue for another customer' }));
+    await waitFor(() => expect(owner.needsPaymentAttention).toBe(false));
+    await waitFor(() => expect(basket.canAdd).toBe(true));
+    expect(await accountRepository.payments.load(f.context, principal, currentBasketOwner)).toEqual(
+      record,
+    );
+  } finally {
+    view.unmount();
+    f.queryClient.clear();
+  }
+});

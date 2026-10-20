@@ -36,6 +36,7 @@ export async function productJourneyFixture(product: ProductDetail = composition
     userId: null,
     ownerVersion: f.sessions.ownerVersion,
     needsCleanup: false,
+    needsPaymentAttention: false,
     loading: false,
     unavailable: false,
     failed: false,

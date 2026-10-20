@@ -1,4 +1,16 @@
 export const ordersEnglish = {
+  paymentAttention: {
+    message:
+      'Your sign-in expired while an order or payment was unresolved. Sign in to the same restaurant account to check it before placing another order. You can still browse the menu.',
+    accountsUnavailable:
+      'Your sign-in expired while an order or payment was unresolved. Account access is currently unavailable at this restaurant. Contact the restaurant to check the original order before placing another. You can still browse the menu.',
+    signIn: 'Sign in to check the original order',
+    separate: 'Use this device for another customer',
+    confirmation:
+      'The previous customer’s order or payment may still complete. Continuing does not cancel it or refund a payment. Only continue if you are placing a separate order for another customer. The original customer can sign in later to check their order.',
+    confirm: 'Continue for another customer',
+    keep: 'Keep the original order reminder',
+  },
   hostedPayment: {
     pending:
       'Your payment is still being checked. Keep this order and check again before making another purchase.',

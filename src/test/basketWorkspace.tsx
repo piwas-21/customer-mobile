@@ -17,6 +17,7 @@ export async function basketWorkspaceFixture(customer = false) {
     userId: f.sessions.userId,
     ownerVersion: f.sessions.ownerVersion,
     needsCleanup: false,
+    needsPaymentAttention: false,
     loading: false,
     unavailable: false,
     failed: false,

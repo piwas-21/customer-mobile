@@ -1,3 +1,4 @@
+import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Screen from '../../ui/Screen';
@@ -35,6 +36,7 @@ export default function OrdersScreen() {
             </Text>
             <Text style={[styles.body, { color: theme.secondary }]}>{t('savedOrdersIntro')}</Text>
             <OrderHistoryControl />
+            <PaymentAttentionNotice />
             <PaymentNotice />
             {cleanup ? (
               <Feedback
