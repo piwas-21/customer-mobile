@@ -135,6 +135,14 @@ export class CustomerOrderController {
       return this.resolve(proof, locale);
     });
   }
+  hasUnresolvedPurchase() {
+    this.assertCurrent();
+    return this.repository.orders.hasUnresolvedPurchase(
+      this.context,
+      this.principal,
+      this.assertCurrent,
+    );
+  }
   private async resolve(proof: OrderOperationProof, locale: string) {
     const result = await recoverCustomerOrder(
       this.client,

@@ -6,6 +6,7 @@ import Feedback from '../../ui/Feedback';
 import { spacing, typography, useTheme } from '../../ui/theme';
 import useOrderReceipts from './useOrderReceipts';
 import ReceiptModal from './ReceiptModal';
+import PaymentNotice from '../payments/PaymentNotice';
 import OrderHistoryControl from './OrderHistoryControl';
 export default function OrdersScreen() {
   const { t, i18n } = useTranslation();
@@ -34,6 +35,7 @@ export default function OrdersScreen() {
             </Text>
             <Text style={[styles.body, { color: theme.secondary }]}>{t('savedOrdersIntro')}</Text>
             <OrderHistoryControl />
+            <PaymentNotice />
             {cleanup ? (
               <Feedback
                 message={t('accountFailure.logout')}

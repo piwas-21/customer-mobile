@@ -33,6 +33,10 @@ fixtures and duplicate source blocks. Native coverage includes the runtime scree
 separate V8 coverage includes workflow/security scripts and their subprocesses. Both reports
 feed Sonar. Native and tooling gates require at least 85% lines/statements/functions and 80% branches.
 The tooling suite runs the full dependency audit, so network access is required. Pre-push refuses direct protected-branch updates, then runs dependency audit, verified native generation and both native bundle exports.
+Native export first verifies that node_modules, Expo Router and its entry resolve inside the current
+checkout. Dependency symlinks into sibling checkouts are refused: Expo can otherwise export the
+sibling's app while source tests pass locally. Install this checkout's pinned dependencies before
+exporting; the guard has independent real-directory and cross-checkout symlink controls.
 CI repeats these in a clean checkout. No lifecycle scripts
 run during dependency installation. EAS custom builds run the explicit install, source repair, verification and audit steps before
 prebuild, CocoaPods or Gradle. Native plugins are exercised by development builds.

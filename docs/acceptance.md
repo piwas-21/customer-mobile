@@ -182,8 +182,8 @@ sign out and continue as a guest; failed secure logout retains a visible cleanup
 
 The additive backend acceptance contract depends on the accepted operation-store migration and the
 native endpoints accepted in backend #736. Its final server money comparison and strict points debit
-remain authoritative. The native online-payment capability stays unavailable until hosted provider
-recovery is connected. Current native source does not claim payment settlement; private receipts/history
+remain authoritative. The native online-payment capability stays unavailable until central return
+association and the release gates pass. Source-only canonical payment decisions and private receipts/history
 are described below. Migration application, deployment/readback, installed secure recovery and
 physical checkout acceptance remain separate release gates.
 
@@ -201,7 +201,8 @@ source-only dedicated payment decision contract can release the hold with paid/e
 ready and unknown outcomes remain pending, and neither local expiry, fulfillment nor browser closure
 proves a payment outcome. Late or contradictory owner/order/operation/expiry decisions are refused.
 The old unused order-status-derived scaffold has been removed. Native online payment remains
-unavailable while API adaptation, browser/foreground recovery and verified central returns are connected.
+unavailable until central link association and release acceptance pass. The connected source flow is
+described below.
 Storage source checks are separate from deployed backend, provider and installed-device acceptance.
 
 ## Native and device evidence
@@ -238,10 +239,10 @@ and virtualizes bounded composition. Unknown status values show a neutral unavai
 Removing a receipt requires confirmation, blocks its unresolved pending identity, clears its query
 value and local proof, and never cancels an order or refunds money. Logout/tenant/controller changes
 withdraw late responses and old private data. Recovery-only customers may explicitly sign out and
-continue as guests after pending order resolution; secure-cleanup failure keeps a usable retry.
+continue as guests after pending order and payment resolution; secure-cleanup failure keeps a usable retry.
 Backend #737 and the operation migrations must be released before connected device acceptance.
 Installed status updates, font/RTL/screen-reader behavior, process death and receipt privacy remain
-required physical acceptance. Hosted payment, reorder and complete account history remain open.
+required physical acceptance. Provider payment acceptance, cancellation/reorder and module completion remain open.
 
 ## Native account deletion
 
@@ -361,3 +362,28 @@ session/digest/operation/order and a current owner guard. A customer HTTP 401 ca
 the existing serialized session authority; local refusals, other HTTP statuses, tenant changes and
 logout cannot replay it. Account-disabled restoration also recognizes the payment proof independently
 of receipt history. This does not establish deployed contract or installed browser acceptance.
+
+## Connected hosted payment source flow
+
+The root payment provider restores the original SecureStore record, requests its dedicated canonical
+decision, durably verifies it and exposes only masked order/operation/state/action data to queries and
+UI. Orders shows separate payment and fulfillment messages. Ready may open the same hosted page in
+the system browser; pending/unknown exposes only a check action. A browser result never books money.
+Close, launch failure, foreground and bounded pending polling reconcile the original operation.
+Canonical terminal decisions refresh purchase holds. Pending payments block recovery-only guest
+continuation in both basket and saved-order UI, including the final action after stale availability.
+
+`EXPO_PUBLIC_HOSTED_CHECKOUT_ORIGINS` is an explicit JSON array of approved canonical HTTPS origins,
+maximum ten unique entries. Missing/invalid configuration permits no hosted browser opening; ordinary
+browsing and payment-status recovery remain available. Server approval is independently required.
+Hosted pages reject userinfo, fragments, nonstandard ports, whitespace/control/backslash input,
+unapproved origins and the original local deadline. URLs remain ephemeral and are never persisted.
+
+The central return route validates the configured origin, fresh directory tenant and exact UUID order
+and operation references; duplicate or extra query data is refused. It navigates to original-proof
+Orders recovery only. A cold launch may restore the approved tenant. A callback cannot overwrite a
+newer different selection; switching back needs an explicit customer action. Link references grant no
+order, payment or login authority. Actual OS domain association, shared-service landing/deployment,
+provider app switching, signed installations and device/process-death acceptance remain open. Backend
+#743 remains a draft until the required connected return contract is complete; no native payment
+activation follows from these source tests.

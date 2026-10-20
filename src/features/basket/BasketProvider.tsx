@@ -133,6 +133,7 @@ function useBasketState() {
       (sessionController.onlyRecoverOrders &&
         sessionController.userId &&
         order.pending === null &&
+        !order.hasUnresolvedPurchase &&
         order.decision &&
         order.decision.outcome !== 'Unseen')),
   );
@@ -143,7 +144,7 @@ function useBasketState() {
       if (!sessionController.needsCleanup) {
         if (!orders) throw new ApiFailure(409, 'refused');
         orders.assertCurrent();
-        if (await orders.pending()) throw new ApiFailure(409, 'refused');
+        if (await orders.hasUnresolvedPurchase()) throw new ApiFailure(409, 'refused');
       }
       await sessionController.logout();
     },

@@ -1,3 +1,4 @@
+import { canonicalUuidSchema } from './identifiers';
 import { z } from 'zod';
 import { type Directory, originSchema, resolveTenant } from './directory';
 const destinationSchema = z.enum([
@@ -12,6 +13,7 @@ export type AppDestination = {
   tenantId: string;
   destination: z.infer<typeof destinationSchema>;
   reference?: string;
+  operationId?: string;
 };
 export function resolveLink(
   value: string,
@@ -34,14 +36,15 @@ export function resolveLink(
   if (reference && !/^[a-zA-Z0-9_-]{1,128}$/.test(reference)) throw new Error('Invalid reference');
   if ([...url.searchParams.keys()].some((key) => key !== 'operation'))
     throw new Error('Unexpected link data');
+  if (url.searchParams.getAll('operation').length > 1) throw new Error('Ambiguous operation');
   const operation = url.searchParams.get('operation');
-  if (operation && (destination !== 'payment-return' || !/^[a-zA-Z0-9_-]{1,128}$/.test(operation)))
-    throw new Error('Invalid operation');
-  return {
-    tenantId: tenant.id,
-    destination,
-    ...(reference || operation ? { reference: reference || operation || '' } : {}),
-  };
+  if (destination === 'payment-return') {
+    const orderId = canonicalUuidSchema.parse(reference);
+    const operationId = canonicalUuidSchema.parse(operation);
+    return { tenantId: tenant.id, destination, reference: orderId, operationId };
+  }
+  if (operation !== null) throw new Error('Unexpected operation');
+  return { tenantId: tenant.id, destination, ...(reference ? { reference } : {}) };
 }
 export class EntrySelection {
   private explicitlySelected = false;

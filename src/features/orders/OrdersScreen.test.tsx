@@ -3,6 +3,7 @@ import { useEffect, type PropsWithChildren } from 'react';
 import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
+import PaymentProvider from '../payments/PaymentProvider';
 import OrdersScreen from './OrdersScreen';
 import useOrderReceipts from './useOrderReceipts';
 import { useSession } from '../account/SessionProvider';
@@ -56,7 +57,11 @@ async function fixture(customer = false) {
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
   function Wrapper({ children }: PropsWithChildren) {
-    return <QueryClientProvider client={cache}>{children}</QueryClientProvider>;
+    return (
+      <QueryClientProvider client={cache}>
+        <PaymentProvider>{children}</PaymentProvider>
+      </QueryClientProvider>
+    );
   }
   f.fetcher.mockResolvedValue(response({ success: true, data: receiptResponse() }));
   return { ...f, state, cache, Wrapper };

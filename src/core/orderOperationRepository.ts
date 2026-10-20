@@ -83,6 +83,14 @@ export class OrderOperationRepository {
       return { proof, intent };
     });
   }
+  hasUnresolvedPurchase(context: TenantContext, principal: Principal, assertCurrent: () => void) {
+    const owner = principalSchema.parse(principal);
+    return this.tasks.run(
+      async () =>
+        Boolean(await this.storage.read(context, owner, assertCurrent)) ||
+        (await this.payments.read(context, owner, assertCurrent))?.state === 'pending',
+    );
+  }
   requestCancellation(
     context: TenantContext,
     principal: Principal,
