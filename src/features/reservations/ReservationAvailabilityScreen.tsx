@@ -54,6 +54,10 @@ function AvailabilityBody({
     date: day,
     numberOfGuests: party,
   });
+  let emptyMessage = 'reservationChooseTimeInputs';
+  if (page.loading) emptyMessage = 'loading';
+  else if (page.failed) emptyMessage = 'reservationTimesFailed';
+  else if (page.data) emptyMessage = 'reservationNoTimes';
   const hour = (time: string) =>
     time === '1.00:00:00'
       ? t('reservationMidnight')
@@ -100,20 +104,7 @@ function AvailabilityBody({
             </Text>
           </View>
         )}
-        ListEmptyComponent={
-          <Feedback
-            loading={page.loading}
-            message={t(
-              page.loading
-                ? 'loading'
-                : page.failed
-                  ? 'reservationTimesFailed'
-                  : page.data
-                    ? 'reservationNoTimes'
-                    : 'reservationChooseTimeInputs',
-            )}
-          />
-        }
+        ListEmptyComponent={<Feedback loading={page.loading} message={t(emptyMessage)} />}
       />
       {choosing ? (
         <ReservationDatePicker
