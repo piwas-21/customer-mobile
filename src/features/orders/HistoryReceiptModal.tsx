@@ -1,3 +1,5 @@
+import CancellationEntry from './CancellationEntry';
+import CancellationModal from './CancellationModal';
 import { useState } from 'react';
 import ReorderEntry from './ReorderEntry';
 import ReorderModal from './ReorderModal';
@@ -30,11 +32,20 @@ export default function HistoryReceiptModal(props: Props) {
     () => null,
   );
   const [reorder, setReorder] = useState<HistoryReceipt>();
+  const [decline, setDecline] = useState<HistoryReceipt>();
   if (reorder === page.data && page.data && !page.loading && !page.failed)
     return (
       <ReorderModal
         receipt={page.data}
         onBack={() => setReorder(undefined)}
+        onClose={props.onClose}
+      />
+    );
+  if (decline === page.data && page.data && !page.loading && !page.failed)
+    return (
+      <CancellationModal
+        orderId={page.data.orderId}
+        onBack={() => setDecline(undefined)}
         onClose={props.onClose}
       />
     );
@@ -49,6 +60,13 @@ export default function HistoryReceiptModal(props: Props) {
           <View>
             {page.data && !page.loading && !page.failed ? (
               <ReorderEntry onPress={() => setReorder(page.data)} />
+            ) : null}
+            {page.data && !page.loading && !page.failed ? (
+              <CancellationEntry
+                status={page.data.status}
+                confirmationFlow={page.data.confirmationFlow}
+                onPress={() => setDecline(page.data)}
+              />
             ) : null}
             <Button label={t('refreshReceipt')} disabled={page.loading} onPress={page.refresh} />
             <Button label={t('backToOrderHistory')} secondary onPress={props.onBack} />

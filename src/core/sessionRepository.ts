@@ -1,3 +1,5 @@
+import { CancellationOperationRepository } from './cancellationOperationRepository';
+import { CancellationOperationStorage } from './cancellationOperationStorage';
 import { PaymentAttentionStorage } from './paymentAttentionStorage';
 import { scopedPaymentRecord } from './paymentOperationRecord';
 import { scopedOrderDecisions } from './orderDecisions';
@@ -22,6 +24,7 @@ export class SessionRepository {
   readonly baskets: BasketOperationRepository;
   readonly orders: OrderOperationRepository;
   readonly payments: PaymentOperationRepository;
+  readonly cancellations: CancellationOperationRepository;
   private readonly writes = new SerialTasks();
   private readonly attention: PaymentAttentionStorage;
   constructor(private readonly store: SecretStore) {
@@ -30,6 +33,7 @@ export class SessionRepository {
     this.baskets = new BasketOperationRepository(store, this.vault, this.writes);
     this.orders = new OrderOperationRepository(store, this.vault, this.writes);
     this.payments = new PaymentOperationRepository(store, this.writes);
+    this.cancellations = new CancellationOperationRepository(store, this.writes);
   }
   loadPaymentAttention(context: TenantContext): Promise<string | null> {
     return this.writes.run(() => this.attention.load(context));
@@ -65,8 +69,12 @@ export class SessionRepository {
         );
         if (!records.some((record) => record.outcome === 'Applied')) {
           const payment = await this.store.get(secretKey(context, 'payment', principal));
-          if (payment === null) return null;
-          scopedPaymentRecord(context, principal, JSON.parse(payment));
+          if (payment !== null) scopedPaymentRecord(context, principal, JSON.parse(payment));
+          else if (
+            (await new CancellationOperationStorage(this.store).read(context, principal, () => {}))
+              ?.resolution !== null
+          )
+            return null;
         }
       }
       // Account-disabled browsing reads a JWT only for its original pending/accepted order proof.
@@ -125,6 +133,7 @@ export class SessionRepository {
       const current = await this.vault.session(context, captured.userId);
       if (current && !sameSession(current, captured)) return false;
       if (automatic) await this.attention.retainPending(context, captured.userId);
+      else await this.attention.retainCancellation(context, captured.userId);
       // Persist the cleanup identity before withdrawing selection. A restart must finish it.
       await this.store.set(cleanupKey(context), captured.userId);
       await this.completePendingRemoval(context);
@@ -139,7 +148,12 @@ export class SessionRepository {
     try {
       if (pointer === userId) await this.store.remove(pointerKey(context));
     } finally {
-      await this.vault.clear(context, { kind: 'customer', id: userId });
+      const owner = { kind: 'customer', id: userId } as const;
+      try {
+        await new CancellationOperationStorage(this.store).clearResolvedForCleanup(context, owner);
+      } finally {
+        await this.vault.clear(context, owner);
+      }
     }
     await this.store.remove(cleanupKey(context));
   }

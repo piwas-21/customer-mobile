@@ -1,3 +1,4 @@
+import { restoreOrderController } from '../../core/restoreOrderController';
 import { useEffect, useMemo, useState } from 'react';
 import { openBrowserAsync } from 'expo-web-browser';
 import { CustomerPaymentController } from '../../core/customerPaymentController';
@@ -48,17 +49,7 @@ export default function usePaymentResource() {
     } catch {
       return;
     }
-    let active = true;
-    void controller
-      .saved()
-      .catch(() => undefined)
-      .then(() => {
-        if (active) setResource({ scope, controller });
-      });
-    return () => {
-      active = false;
-      controller.dispose();
-    };
+    return restoreOrderController(controller, () => setResource({ scope, controller }));
   }, [scope]);
   return { controller: resource?.scope === scope ? resource.controller : undefined, key };
 }

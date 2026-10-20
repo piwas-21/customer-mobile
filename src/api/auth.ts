@@ -1,3 +1,4 @@
+import type { CancellationOperationRecord } from '../core/cancellationOperationRecord';
 import type { OrderOperationProof } from '../core/orderOperationProof';
 import { z } from 'zod';
 import { ApiFailure, type CustomerTransport } from '../core/transport';
@@ -40,8 +41,17 @@ export async function refreshSession(
   assertCurrent?: () => void,
   receiptProof?: OrderOperationProof,
   paymentOrderId?: string,
+  cancellation?: CancellationOperationRecord,
 ): Promise<CustomerSession> {
   const captured = { ...session };
+  if (
+    cancellation &&
+    (receiptProof ||
+      paymentOrderId ||
+      cancellation.principal.kind !== 'customer' ||
+      cancellation.principal.id !== captured.userId)
+  )
+    throw new ApiFailure(401, 'refused');
   if (paymentOrderId !== undefined && !receiptProof) throw new ApiFailure(401, 'refused');
   if (
     receiptProof &&
@@ -52,6 +62,13 @@ export async function refreshSession(
     method: 'POST',
     body: { accessToken: captured.accessToken, refreshToken: captured.refreshToken },
     ...(assertCurrent ? { assertCurrent } : {}),
+    ...(cancellation
+      ? {
+          credentials: 'cancellation-renewal' as const,
+          principal: cancellation.principal,
+          expectedCancellationRecord: cancellation,
+        }
+      : {}),
     ...(receiptProof
       ? {
           credentials: paymentOrderId ? ('payment-renewal' as const) : ('receipt-renewal' as const),

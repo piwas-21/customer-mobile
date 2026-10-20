@@ -398,7 +398,7 @@ Orders recovery only. A cold launch may restore the approved tenant. A callback 
 newer different selection; switching back needs an explicit customer action. Link references grant no
 order, payment or login authority. Opt-in association metadata and the shared-service landing are implemented in backend #743. Actual OS domain association and shared-service deployment,
 provider app switching, signed installations and device/process-death acceptance remain open. Backend
-#743 remains a draft pending final CI and merge gates; no native payment
+#743 and dependent mobile #41 are accepted on develop; no native payment
 activation follows from these source tests.
 
 ## Native central-domain declarations
@@ -435,4 +435,37 @@ withdrawn ordering keep the basket guard in force. No offline or automatic reord
 Source tests cover fresh reads, cache/owner withdrawal, current standalone/bundle projection, both
 receipt entries, duplicate taps and navigation failure. Physical iPhone/Android large text, scrolling,
 RTL, screen-reader, restart and current-menu changes remain installed acceptance; accepted-order
-cancellation still needs its own customer contract and policy.
+cancellation uses the narrow delay-rejection source contract below; broader cancellation policy remains separate.
+
+## Native preparation-delay rejection source flow
+
+Backend #745 defines an additive customer/original-checkout-proof preparation, submission and recovery
+contract. It permits only an eligible unpaid local standalone order awaiting the customer’s delay
+decision in the direct flow. The restaurant checks ownership, current version, enabled capability,
+order state and financial evidence under its existing order/account locks. It retains terminal
+cancellation/refusal decisions and never invokes a refund, provider operation or loyalty adjustment.
+One ordinary uncollected restaurant cash/card intent remains unchanged. Backend merge/deployment,
+the unapplied migration and installed acceptance remain separate gates.
+
+Saved receipt and account-history entries replace the receipt with a native confirmation modal.
+Opening it prepares only a read; explicit confirmation saves the exact intent and authority in
+SecureStore before dispatch. A shared storage queue prevents a cancellation and competing basket,
+checkout or payment claim. Unknown and Unseen outcomes retain the original nonce and purchase hold.
+The Orders and Basket screens expose recovery; a separately confirmed retry binds to the exact
+operation ID and sends only the original request. Canonical decisions refresh the basket and receipts
+only after durable local acknowledgement. Interrupted terminal persistence recovers the same operation.
+
+Dedicated transport modes bind the persisted capsule, owner, original session and wire intent to
+exact cancellation routes. Customer authentication cannot fall back to guest authority. Only the
+read-only recovery path may renew a Customer session and repeat its read; submission is never retried
+automatically. Logout removes credentials and ordinary local history, retains pending recovery proof
+and a minimal owner reminder, and requires explicit confirmation before a different customer uses
+the device. Resolved capsules are removed on logout; interrupted cleanup resumes after restart.
+Owner/restaurant withdrawal hides callbacks and private query state. Cached UI contains only minimal
+operation/order IDs, outcome and reason; no proof, nonce payload, token or session capability is cached.
+
+Source tests cover both connected receipt/history confirmation entries, restored basket recovery,
+wrong-owner/route/payload refusal, initial and terminal save failures, rejected refresh continuity,
+shared-queue claim races and stale retry confirmation. Full release gates, physical process death,
+secure-store behavior, large text/screen readers and every enabled tenant remain required. This flow
+does not implement general accepted-order cancellation or prove a provider refund.

@@ -14,6 +14,10 @@ jest.mock('../features/account/SessionProvider', () => ({
   default: ({ children }: PropsWithChildren) => children,
   useSession: () => ({ unavailable: true }),
 }));
+jest.mock('../features/restaurant/useBootstrap', () => ({
+  __esModule: true,
+  default: () => ({ data: undefined }),
+}));
 jest.mock('../features/basket/BasketProvider', () => ({
   __esModule: true,
   default: ({ children }: PropsWithChildren) => children,

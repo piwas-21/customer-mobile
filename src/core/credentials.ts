@@ -32,7 +32,8 @@ export type CredentialKind =
   | 'basket-operation'
   | 'order-operation-proof'
   | 'order-contact'
-  | 'order-decisions';
+  | 'order-decisions'
+  | 'order-cancellation';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,

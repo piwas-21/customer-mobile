@@ -1,10 +1,9 @@
+import { mockWorkspaceOwner } from './workspaceOwner';
 import '../i18n';
 import { bootstrapSchema } from '../core/capabilities';
 import type { PropsWithChildren } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BasketProvider from '../features/basket/BasketProvider';
-import { useRestaurant } from '../features/restaurant/RestaurantProvider';
-import { useSession } from '../features/account/SessionProvider';
 import useBootstrap from '../features/restaurant/useBootstrap';
 import { basketControllerFixture } from './basketController';
 export async function basketWorkspaceFixture(customer = false) {
@@ -12,27 +11,7 @@ export async function basketWorkspaceFixture(customer = false) {
   const cache = new QueryClient({
     defaultOptions: { queries: { gcTime: Infinity, retry: false } },
   });
-  const state = {
-    controller: f.sessions,
-    userId: f.sessions.userId,
-    ownerVersion: f.sessions.ownerVersion,
-    needsCleanup: false,
-    needsPaymentAttention: false,
-    loading: false,
-    unavailable: false,
-    failed: false,
-    retry: jest.fn(),
-  };
-  jest.mocked(useSession).mockReturnValue(state);
-  jest.mocked(useRestaurant).mockReturnValue({
-    context: f.context,
-    client: f.client,
-    directory: undefined,
-    loading: false,
-    select: jest.fn(),
-    clear: jest.fn(),
-    refresh: jest.fn(),
-  });
+  const state = mockWorkspaceOwner(f);
   jest
     .mocked(useBootstrap)
     .mockReturnValue({ data: bootstrapSchema.parse(f.bootstrap), isPending: false } as ReturnType<

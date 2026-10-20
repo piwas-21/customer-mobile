@@ -184,11 +184,11 @@ it('keeps the pending warning and blocks automatic guest purchasing after reject
     expect(owner.userId).toBeNull();
     expect(basket.canAdd).toBe(false);
     expect(
-      view.getByText(/Your sign-in expired while an order or payment was unresolved/),
+      view.getByText(/An earlier order, payment or cancellation needs confirmation/),
     ).toBeTruthy();
     fireEvent.press(view.getByRole('button', { name: 'Use this device for another customer' }));
     expect(
-      view.getByText(/The previous customer’s order or payment may still complete/),
+      view.getByText(/The previous customer’s order, payment or cancellation may still complete/),
     ).toBeTruthy();
     fireEvent.press(view.getByRole('button', { name: 'Keep the original order reminder' }));
     expect(owner.needsPaymentAttention).toBe(true);
