@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+export const DIRECTORY_MAX_TENANTS = 1000;
 export const environmentSchema = z.enum(['staging', 'production']);
 export type Environment = z.infer<typeof environmentSchema>;
 export const originSchema = z.url().refine((value) => {
@@ -36,14 +37,14 @@ const directorySchema = z
     environment: environmentSchema,
     publishedAt: z.iso.datetime(),
     expiresAt: z.iso.datetime(),
-    tenants: z.array(tenantSchema).max(1000),
+    tenants: z.array(tenantSchema).max(DIRECTORY_MAX_TENANTS),
   })
   .strict();
 export type Directory = Readonly<
   Omit<z.infer<typeof directorySchema>, 'tenants'> & { tenants: readonly Tenant[] }
 >;
 export const DIRECTORY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-const CLOCK_SKEW_MS = 60_000;
+export const DIRECTORY_CLOCK_SKEW_MS = 60_000;
 export function parseDirectory(
   input: unknown,
   environment: Environment,
@@ -54,7 +55,7 @@ export function parseDirectory(
   const expires = Date.parse(directory.expiresAt);
   if (
     directory.environment !== environment ||
-    published > now + CLOCK_SKEW_MS ||
+    published > now + DIRECTORY_CLOCK_SKEW_MS ||
     expires <= now ||
     expires <= published ||
     expires - published > DIRECTORY_MAX_AGE_MS

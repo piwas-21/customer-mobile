@@ -16,6 +16,7 @@ import { fetchDirectory, CustomerTransport } from '../../core/transport';
 import { deviceSessions } from '../../storage/sessions';
 import { TenantBoundary, type TenantContext } from '../../core/tenantContext';
 import { readPreferences, savePreferences } from '../../storage/publicPreferences';
+import { usePublicMenuRetention } from './usePublicMenuRetention';
 type RestaurantState = {
   directory: Directory | undefined;
   context: TenantContext | undefined;
@@ -48,6 +49,7 @@ export default function RestaurantProvider({ children }: Readonly<PropsWithChild
     staleTime: REFRESH_INTERVAL_MS,
     refetchInterval: REFRESH_INTERVAL_MS,
   });
+  usePublicMenuRetention(directory.data, directory.dataUpdatedAt);
   const clear = useCallback(() => {
     boundary.current?.clear();
     setContext(undefined);

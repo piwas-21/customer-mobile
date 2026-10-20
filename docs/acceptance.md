@@ -325,22 +325,32 @@ Successful current menu browsing may persist a public text-only projection for o
 The entry is explicit from restaurant discovery, including when the live directory cannot be
 reached. It never restores a trusted tenant context or supplies a network origin, capability,
 session, checkout option, monetary amount or availability decision. Known current directory
-removal/disablement/incompatibility hides a preview. Ordering requires the normal fresh online gates.
+removal/disablement/incompatibility hides a preview. Each fresh validated directory also reconciles
+the public cache: a durable per-environment publication/tenant allowlist removes retired records
+and refuses delayed saves, including after restart. Read-only tenants remain eligible. Older
+publications cannot widen that set; conflicting observations of one publication intersect it,
+and a newer publication can reactivate a restaurant. Ordering requires the normal fresh online gates.
 
 The cache has strict versioned per-environment storage, tenant/locale record identities, at most
 8 previews and 200 unique public dishes per preview, a 262144 UTF-16-code-unit envelope budget and
 7-day display/read TTL. Expired bytes are filtered from reads; replacement and explicit removal
-clear stored records. Automatic physical purge remains open. Old/future/invalid/oversized/extra-private data is rejected. Writes/removals serialize;
+clear stored records. Directory reconciliation also removes expired records; background-only TTL
+purge remains open. Old/future/invalid/oversized/extra-private data is rejected. Writes/removals serialize;
 older replies cannot replace a newer saved record. Oversized single records fail without changing
-storage. Storage failures leave online browsing available and are visible for explicit preview reads.
+storage. Cleanup acknowledges only an exact storage readback. Failed cleanup keeps an in-memory
+retention fence and retries on the next directory fetch, including an unchanged publication.
+Saved-preview queries re-read when the fence is installed and after cleanup settles. Missing,
+expired or malformed directory observations never infer offboarding. Storage failures leave online
+browsing available and are visible for explicit preview reads. This public cleanup does not touch
+account sessions, purchase recovery or historical receipts.
 
 Each preview shows its saved date/language and incomplete-state explanation. The oldest saved page
 date is retained across pagination. Names/descriptions and recorded allergens are text only; no
 remote images or links are requested. Prices/options remain online because the public catalogue
 response does not bind a historical amount to an immutable currency. Search, scalable text and
 back/removal/refresh use shared controls and scrollable virtualized lists. Expiry is checked again
-on foreground. Physical cached-menu timing, full locales/RTL and offboarding/purge acceptance remain
-separate plan requirements.
+on foreground. Physical cached-menu timing, full locales/RTL and installed offboarding/purge acceptance
+remain separate plan requirements.
 
 ## Owned historical receipt detail
 
