@@ -114,8 +114,9 @@ UTC/TimeSpan/ID cursor strings, including database fractional precision and lega
 values. Displayed booking days remain calendar dates; wall times are not converted through a device
 or restaurant offset. Unknown statuses and legacy non-wall-clock durations have explicit fallbacks.
 
-Account entry requires fresh enabled Reservations capability and an active customer. Private pages
-and details are ephemeral, scoped to tenant/environment/principal/controller revision and modal
+Account entry requires an enabled Reservations capability from the current bootstrap observer and
+an active customer. Private pages and details are ephemeral, scoped to tenant/environment/principal/
+controller revision and modal
 instance. Logout, context/capability/zone withdrawal and failed refresh hide data; dismissal removes
 the query cache. A withdrawn modal requires a new explicit open action after capability returns.
 
