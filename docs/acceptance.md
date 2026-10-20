@@ -381,6 +381,10 @@ reauthenticate; a different account needs an explicit separate-customer confirma
 dismisses only the local reminder and allows a new guest basket, preserving the original private
 financial proof and unattended server reconciliation. No original proof is relabelled or sent as guest.
 Core restart/storage-failure controls and the rendered confirmation/cancel journey verify this boundary.
+The shared-device confirmation belongs to its original controller and owner revision. Tenant/account
+changes withdraw it, and former-owner completions cannot dismiss or overwrite a newer confirmation.
+A per-controller synchronous guard keeps separation busy through its own revision change; a paused
+SecureStore removal control verifies that another separation cannot start during cleanup.
 
 `EXPO_PUBLIC_HOSTED_CHECKOUT_ORIGINS` is an explicit JSON array of approved canonical HTTPS origins,
 maximum ten unique entries. Missing/invalid configuration permits no hosted browser opening; ordinary

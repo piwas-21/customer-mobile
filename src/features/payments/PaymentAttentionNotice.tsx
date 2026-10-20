@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import type { SessionController } from '../../core/sessionController';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -12,21 +13,50 @@ export default function PaymentAttentionNotice({
   const session = useSession();
   const router = useRouter();
   const { t } = useTranslation();
-  const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const scope = useMemo(
+    () => ({ controller: session.controller, version: session.ownerVersion }),
+    [session.controller, session.ownerVersion],
+  );
+  const current = useRef<typeof scope | undefined>(undefined);
+  useLayoutEffect(() => {
+    current.current = scope;
+    return () => {
+      current.current = undefined;
+    };
+  }, [scope]);
+  const [confirming, setConfirming] = useState<typeof scope>();
+  const inFlight = useRef(new WeakSet<SessionController>());
+  const [active, setActive] = useState<ReadonlySet<SessionController>>(() => new Set());
+  const [failed, setFailed] = useState<typeof scope>();
+  const busy = Boolean(scope.controller && active.has(scope.controller));
   if (!session.needsPaymentAttention) return null;
   async function separateCustomer() {
-    if (busy || !session.controller) return;
-    setBusy(true);
-    setFailed(false);
+    const controller = scope.controller;
+    if (
+      current.current !== scope ||
+      busy ||
+      confirming !== scope ||
+      !controller ||
+      inFlight.current.has(controller) ||
+      controller.ownerVersion !== scope.version ||
+      !controller.needsPaymentAttention
+    )
+      return;
+    inFlight.current.add(controller);
+    setActive((value) => new Set(value).add(controller));
+    setFailed(undefined);
     try {
-      await session.controller.continueForAnotherCustomer();
-      setConfirming(false);
+      await controller.continueForAnotherCustomer();
+      setConfirming((value) => (value === scope ? undefined : value));
     } catch {
-      setFailed(true);
+      if (current.current === scope) setFailed(scope);
     } finally {
-      setBusy(false);
+      inFlight.current.delete(controller);
+      setActive((value) => {
+        const next = new Set(value);
+        next.delete(controller);
+        return next;
+      });
     }
   }
   return (
@@ -42,17 +72,18 @@ export default function PaymentAttentionNotice({
       <Button
         secondary
         label={t('paymentAttention.separate')}
-        onPress={() => setConfirming(true)}
+        disabled={busy}
+        onPress={() => setConfirming(scope)}
       />
-      {confirming ? (
+      {confirming === scope ? (
         <BaseModal
           title={t('paymentAttention.separate')}
           onClose={() => {
-            if (!busy) setConfirming(false);
+            if (!busy) setConfirming(undefined);
           }}
         >
           <Feedback message={t('paymentAttention.confirmation')} />
-          {failed ? <Feedback message={t('savedOrdersActionFailed')} /> : null}
+          {failed === scope ? <Feedback message={t('savedOrdersActionFailed')} /> : null}
           <Button
             label={t('paymentAttention.confirm')}
             busy={busy}
@@ -64,7 +95,7 @@ export default function PaymentAttentionNotice({
             secondary
             label={t('paymentAttention.keep')}
             disabled={busy}
-            onPress={() => setConfirming(false)}
+            onPress={() => setConfirming(undefined)}
           />
         </BaseModal>
       ) : null}
