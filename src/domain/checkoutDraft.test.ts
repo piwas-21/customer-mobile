@@ -19,6 +19,7 @@ it('preserves mandatory contact and decimal tip while ignoring optional delivery
     contact: { name: 'Guest', email: 'native@example.test', phone: '+41000000000' },
     address: undefined,
     tip: 3.5,
+    pointsToRedeem: 0,
   });
   expect(inspectCheckoutDraft(contact(), fields).values?.tip).toBe(0);
 });
@@ -57,3 +58,31 @@ it('requires current delivery floors and configured optional values without inve
       ?.address?.street,
   ).toBe('Street');
 });
+
+it.each(['-1', '1.5', '1,5', '1e2', '1 000', 'Infinity', '2147483648', '00000000000', 'invalid'])(
+  'refuses unsupported loyalty point input %s',
+  (pointsToRedeem) => {
+    const result = inspectCheckoutDraft(
+      { ...contact(), pointsToRedeem },
+      checkoutFields(customerForms(), 'Takeaway'),
+    );
+    expect(result.errors.has('pointsToRedeem')).toBe(true);
+    expect(result.values).toBeNull();
+  },
+);
+it.each([
+  ['', 0],
+  ['0', 0],
+  [' 100 ', 100],
+  ['2147483647', 2147483647],
+] as const)(
+  'accepts whole requested points %s without computing a monetary value',
+  (pointsToRedeem, expected) => {
+    expect(
+      inspectCheckoutDraft(
+        { ...contact(), pointsToRedeem },
+        checkoutFields(customerForms(), 'Takeaway'),
+      ).values?.pointsToRedeem,
+    ).toBe(expected);
+  },
+);

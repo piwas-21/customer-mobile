@@ -35,6 +35,7 @@ export function basketState(
     cancelling: false,
     resolution: null,
     canAdd: true,
+    canRedeemPoints: false,
     failed: false,
     busy: false,
     add: jest.fn(async () => undefined),

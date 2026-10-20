@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type useCheckoutFlow from './useCheckoutFlow';
 import { checkoutDraftFields } from '../../domain/checkoutSavedAddress';
 import Field from '../../ui/Field';
+import CheckoutPointsField from './CheckoutPointsField';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
 import { typography, useTheme } from '../../ui/theme';
@@ -50,6 +51,7 @@ export default function CheckoutFields({
         onChangeText={(value) => flow.change('tip', value)}
         {...(flow.invalid('tip') ? { error: t('checkoutTipInvalid') } : {})}
       />
+      <CheckoutPointsField flow={flow} />
       <Button label={t('reviewOrder')} onPress={() => void flow.showReview()} busy={flow.busy} />
     </>
   );

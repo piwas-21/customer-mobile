@@ -222,3 +222,18 @@ module withdrawal. Rejected renewal preserves the original-customer reminder and
 through cleanup/restart and requires reauthentication or explicit separate-customer continuation.
 Backend contract acceptance, deployment, all ten locales/RTL and installed native verification remain
 required; this local implementation cannot activate a tenant or create a production booking.
+
+## Checkout points selection
+
+A ready Customer basket with enabled loyalty can request a whole number of points while entering
+checkout details. A recorded balance is never treated as a spendable or monetary guarantee. The
+existing native checkout quote confirms eligible points, customer discounts and totals. Review shows
+requested and applied points separately; the original requested number and exact quote fingerprint
+continue into the durable order intent even when the server applies fewer points. Confirmation still
+uses the existing one-operation order journal and recovery path.
+
+The points field is volatile and clears with checkout details. Guests and unavailable capabilities
+cannot select points. Withdrawal hides an outstanding quote, including after re-enablement; a fresh
+explicit review is required. An entered request must be explicitly removed before zero-point review
+when loyalty becomes unavailable. No new provider, settlement, schema or production activation is
+introduced. Full locale/RTL, deployment and installed acceptance remain required.

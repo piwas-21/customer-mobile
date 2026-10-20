@@ -21,6 +21,14 @@ export default function CheckoutSummary({
       <Text style={[styles.body, { color: theme.secondary }]}>
         {t(quote.priceChanged ? 'checkoutPriceChanged' : 'serverPricedBasket')}
       </Text>
+      {flow.reviewedPoints > 0 ? (
+        <Text style={[styles.body, { color: theme.secondary }]}>
+          {t('checkoutPointsApplied', {
+            requested: new Intl.NumberFormat(i18n.language).format(flow.reviewedPoints),
+            applied: new Intl.NumberFormat(i18n.language).format(quote.money.pointsRedeemed),
+          })}
+        </Text>
+      ) : null}
       <MoneySummary
         value={quote.money}
         price={(amount) =>
