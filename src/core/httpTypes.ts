@@ -1,4 +1,6 @@
 import type { TableVisitRecord } from './tableVisitRecord';
+import type { TableRoundPreparation } from './tableRoundPreparation';
+import type { TableRoundRecord } from './tableRoundRecord';
 import type { ReservationCancellationPreparation } from './reservationCancellationPreparation';
 import type {
   ReservationOperationRecord,
@@ -37,12 +39,17 @@ export type RequestOptions = {
     | 'cancellation-renewal'
     | 'reservation-prepare'
     | 'reservation-operation'
-    | 'reservation-renewal';
+    | 'reservation-renewal'
+    | 'table-round-prepare'
+    | 'table-round-operation'
+    | 'table-round-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
   expectedTableVisit?: TableVisitRecord;
+  expectedRoundPreparation?: TableRoundPreparation;
+  expectedRoundRecord?: TableRoundRecord;
   expectedOrderProof?: OrderOperationProof;
   expectedPaymentOrderId?: string;
   expectedCancellationRecord?: CancellationOperationRecord;

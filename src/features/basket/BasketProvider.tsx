@@ -1,3 +1,4 @@
+import { useTableRound } from '../tables/RoundProvider';
 import useCustomerOrder from './useCustomerOrder';
 import type { CheckoutIntent } from '../../api/checkoutIntent';
 import { createContext, type PropsWithChildren, useContext, useRef, useState } from 'react';
@@ -14,8 +15,19 @@ import { canUse } from '../../core/capabilities';
 import useMounted from '../../core/useMounted';
 import useBootstrap from '../restaurant/useBootstrap';
 import useBasketScope from './useBasketScope';
+function roundHoldsPurchases(round: ReturnType<typeof useTableRound>) {
+  return Boolean(
+    round &&
+    (!round.controller ||
+      round.busy ||
+      round.loading ||
+      round.failed ||
+      round.value?.outcome === 'Pending'),
+  );
+}
 function useBasketState() {
   const { workspace, orders, key, revision, recoveryOnly, sessionController } = useBasketScope();
+  const round = useTableRound();
   const cache = useQueryClient();
   const mounted = useMounted();
   const { i18n } = useTranslation();
@@ -50,6 +62,7 @@ function useBasketState() {
   const ready = Boolean(
     workspace &&
     ordering &&
+    !roundHoldsPurchases(round) &&
     pending.isSuccess &&
     pending.data === null &&
     order.ready &&

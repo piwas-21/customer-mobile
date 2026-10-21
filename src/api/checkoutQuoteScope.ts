@@ -1,3 +1,4 @@
+import { checkoutRootBinding } from './checkoutRootBinding';
 import { bootstrapSchema, canUse, type Bootstrap } from '../core/capabilities';
 import { principalSchema, type Principal } from '../core/credentials';
 import { canonicalUuidSchema } from '../core/identifiers';
@@ -40,19 +41,7 @@ export function checkoutQuoteScope(context: TenantContext, request: QuoteRequest
     throw new ApiFailure(0, 'contract');
   const currency = bootstrap.currency;
   const online = canUse(bootstrap, 'online-payments');
-  const roots = new Map(
-    request.reviewed.items.map((row) => [
-      canonicalUuidSchema.parse(row.id),
-      {
-        productId: row.productId ?? null,
-        menuId: row.menuId ?? null,
-        variationId: row.productVariationId ?? null,
-        quantity: row.quantity,
-        instructions: row.specialInstructions ?? null,
-      },
-    ]),
-  );
-  if (roots.size !== request.reviewed.items.length) throw new ApiFailure(0, 'contract');
+  const assertRoots = checkoutRootBinding(request.reviewed);
   return {
     principal: owner,
     sessionId,
@@ -67,22 +56,12 @@ export function checkoutQuoteScope(context: TenantContext, request: QuoteRequest
         quote.money.tip !== body.tip ||
         quote.money.pointsRedeemed > body.pointsToRedeem ||
         (quote.money.pointsRedeemed === 0 && quote.money.pointsDiscount !== 0) ||
-        quote.items.length !== roots.size ||
         !quote.availablePaymentMethods.includes('Cash') ||
         quote.availablePaymentMethods.includes('CreditCard') !== (body.type === 'Takeaway') ||
-        (!online && quote.availablePaymentMethods.includes('OnlinePayment')) ||
-        quote.items.some((row) => {
-          const reviewed = roots.get(row.basketItemId!);
-          return (
-            (row.productId ?? null) !== reviewed?.productId ||
-            (row.menuId ?? null) !== reviewed?.menuId ||
-            (row.productVariationId ?? null) !== reviewed?.variationId ||
-            row.quantity !== reviewed?.quantity ||
-            (row.specialInstructions ?? null) !== reviewed?.instructions
-          );
-        })
+        (!online && quote.availablePaymentMethods.includes('OnlinePayment'))
       )
         throw new ApiFailure(200, 'contract');
+      assertRoots(quote.items);
       return quote;
     },
   };

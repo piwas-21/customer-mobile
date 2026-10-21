@@ -76,6 +76,7 @@ export class TableVisitController {
         throw new ApiFailure(409, 'refused');
     };
     await this.fresh(guard);
+    await this.requireRoundResolved(guard);
     if (await this.repository.tableVisits.read(this.context, this.owner, guard))
       throw new ApiFailure(409, 'refused');
     guard();
@@ -94,6 +95,7 @@ export class TableVisitController {
         if (this.candidate !== candidate) throw new ApiFailure(409, 'refused');
       };
       const bootstrap = await this.fresh(before);
+      await this.requireRoundResolved(before);
       if (await this.repository.tableVisits.read(this.context, this.owner, before))
         throw new ApiFailure(409, 'refused');
       before();
@@ -150,6 +152,11 @@ export class TableVisitController {
   private assertStart() {
     this.assertCurrent();
     if (this.sessions.onlyRecoverOrders) throw new ApiFailure(409, 'refused');
+  }
+  private async requireRoundResolved(guard: () => void) {
+    const round = await this.repository.tableRounds.load(this.context, this.owner, guard);
+    guard();
+    if (round?.resolution === null) throw new ApiFailure(409, 'refused');
   }
   private async fresh(guard: () => void) {
     guard();

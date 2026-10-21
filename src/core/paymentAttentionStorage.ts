@@ -1,3 +1,4 @@
+import { TableRoundStorage } from './tableRoundStorage';
 import { ReservationOperationStorage } from './reservationOperationStorage';
 import { z } from 'zod';
 import type { SecretStore } from './credentials';
@@ -27,7 +28,8 @@ export class PaymentAttentionStorage {
       (await new CancellationOperationStorage(this.store).read(context, principal, guard))
         ?.resolution !== null &&
       (await new ReservationOperationStorage(this.store).read(context, principal, guard))
-        ?.resolution !== null
+        ?.resolution !== null &&
+      (await new TableRoundStorage(this.store).read(context, principal, guard))?.resolution !== null
     )
       return;
     await this.save(context, userId);
@@ -36,7 +38,9 @@ export class PaymentAttentionStorage {
     const principal = { kind: 'customer', id: z.uuid().parse(userId) } as const;
     if (
       (await new CancellationOperationStorage(this.store).readForCleanup(context, principal))
-        ?.resolution === null
+        ?.resolution === null ||
+      (await new TableRoundStorage(this.store).readForCleanup(context, principal))?.resolution ===
+        null
     )
       await this.save(context, userId);
   }

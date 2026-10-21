@@ -1,3 +1,5 @@
+import TableMenuEntry from './TableMenuEntry';
+import RoundAttemptNotice from './RoundAttemptNotice';
 import { useState } from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
@@ -28,6 +30,8 @@ export default function TableScreen() {
   return (
     <Screen bottom top={false}>
       <Stack.Screen options={{ title: t('tableTitle') }} />
+      <RoundAttemptNotice />
+      <TableMenuEntry enabled={Boolean(flow.value && !flow.value.expired && !flow.busy)} />
       {flow.loading ? <Feedback loading message={t('loading')} /> : null}
       {flow.busy ? <Feedback loading message={t('tableJoining')} /> : null}
       {flow.failed ? <Feedback message={t('tableAccessFailed')} retry={flow.refresh} /> : null}

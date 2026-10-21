@@ -8,6 +8,7 @@ import { isReservationRecoveryPath } from './reservationPaths';
 import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
 import { captureTableAccountRequest } from './tableAccountRequest';
+import { captureTableRoundRequest, isTableRoundRecovery } from './tableRoundRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
 export { ApiFailure } from './apiFailure';
@@ -52,6 +53,7 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureTableRoundRequest(context, path, options);
     options = captureTableAccountRequest(context, path, options);
     options = captureCancellationRequest(context, path, options);
     options = captureReservationRequest(context, path, options);
@@ -65,7 +67,8 @@ export class CustomerTransport {
       options.credentials === 'receipt-renewal' ||
       options.credentials === 'payment-renewal' ||
       options.credentials === 'cancellation-renewal' ||
-      options.credentials === 'reservation-renewal';
+      options.credentials === 'reservation-renewal' ||
+      options.credentials === 'table-round-renewal';
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
@@ -87,18 +90,10 @@ export class CustomerTransport {
         path !== '/api/customer-mobile/checkout/payment/recover')
     )
       throw new ApiFailure(401, 'refused');
-    const reservationRecovery =
-      options.credentials === 'reservation-operation' && isReservationRecoveryPath(path);
-    const orderRecovery =
-      method === 'POST' &&
-      options.credentials === 'order' &&
-      (path === '/api/customer-mobile/checkout/recover' ||
-        path === '/api/customer-mobile/checkout/cancel');
     if (
       method !== 'GET' &&
       context.tenant.status !== 'active' &&
-      !orderRecovery &&
-      !reservationRecovery &&
+      !isOriginalRecovery(path, method, options) &&
       !receiptRead &&
       !paymentRecovery &&
       !cancellation &&
@@ -137,6 +132,16 @@ export class CustomerTransport {
       context.signal.removeEventListener('abort', cancel);
     }
   }
+}
+function isOriginalRecovery(path: string, method: string, options: RequestOptions) {
+  if (options.credentials === 'reservation-operation') return isReservationRecoveryPath(path);
+  if (options.credentials === 'table-round-operation') return isTableRoundRecovery(path);
+  return (
+    method === 'POST' &&
+    options.credentials === 'order' &&
+    (path === '/api/customer-mobile/checkout/recover' ||
+      path === '/api/customer-mobile/checkout/cancel')
+  );
 }
 export async function fetchDirectory(origin: string, fetcher: Fetch = expoFetch): Promise<unknown> {
   originSchema.parse(origin);

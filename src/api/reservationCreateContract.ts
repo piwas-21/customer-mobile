@@ -3,6 +3,7 @@ import { bootstrapSchema } from '../core/capabilities';
 import { canonicalUuidSchema } from '../core/identifiers';
 import { ApiFailure } from '../core/apiFailure';
 import { availabilityInputSchema, reservationSlotSchema } from './reservationAvailability';
+import { originalOperationProofSchema } from './originalOperationProof';
 
 export const reservationContactLimits = {
   customerName: 100,
@@ -37,17 +38,7 @@ export const reservationBookingInputSchema = z
   .refine(validSlot);
 export type ReservationBookingInput = z.infer<typeof reservationBookingInputSchema>;
 export type ReservationDraft = z.infer<typeof reservationDraftSchema>;
-export const reservationCreateProofSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  operationId: canonicalUuidSchema,
-  tenantId: canonicalUuidSchema,
-  payloadHash: z.string().regex(/^[a-f0-9]{64}$/),
-  ownerProof: z
-    .string()
-    .min(1)
-    .max(4096)
-    .regex(/^[a-zA-Z0-9_-]+$/),
-});
+export const reservationCreateProofSchema = originalOperationProofSchema;
 export type ReservationCreateProof = z.infer<typeof reservationCreateProofSchema>;
 const resolutionScope = { schemaVersion: z.literal(1), operationId: canonicalUuidSchema };
 export const reservationCreateResolutionSchema = z.discriminatedUnion('outcome', [

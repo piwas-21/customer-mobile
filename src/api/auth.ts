@@ -1,3 +1,4 @@
+import { customerAuthResponseSchema as authSchema } from './customerAuthResponse';
 import {
   scopedReservationRecord,
   type ReservationOperationRecord,
@@ -8,13 +9,7 @@ import type { OrderOperationProof } from '../core/orderOperationProof';
 import { z } from 'zod';
 import { ApiFailure, type CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
-import { credentialSecretSchema, type CustomerSession } from '../core/credentials';
-const authSchema = z.object({
-  userId: z.uuid(),
-  role: z.literal('Customer'),
-  accessToken: credentialSecretSchema,
-  refreshToken: credentialSecretSchema,
-});
+import { type CustomerSession } from '../core/credentials';
 export const loginSchema = z
   .object({
     email: z.string().trim().max(254).pipe(z.email()),

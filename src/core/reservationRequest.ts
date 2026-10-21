@@ -1,6 +1,6 @@
 import { reservationEditInputSchema } from '../api/reservationEditContract';
 import { z } from 'zod';
-import { credentialSecretSchema } from './credentials';
+import { refreshCredentialsSchema as renewalBodySchema } from './refreshCredentials';
 import {
   reservationDraftSchema,
   reservationCreateProofSchema,
@@ -20,10 +20,6 @@ import {
 } from './reservationPreparationRequest';
 import { reservationOperationPath } from './reservationPaths';
 export { reservationCreatePath } from './reservationPaths';
-const renewalBodySchema = z.strictObject({
-  accessToken: credentialSecretSchema,
-  refreshToken: credentialSecretSchema,
-});
 const proofFields = {
   payloadHash: reservationCreateProofSchema.shape.payloadHash,
   ownerProof: reservationCreateProofSchema.shape.ownerProof,

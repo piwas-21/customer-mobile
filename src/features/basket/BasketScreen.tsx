@@ -1,3 +1,5 @@
+import RoundControl from '../tables/RoundControl';
+import RoundAttemptNotice from '../tables/RoundAttemptNotice';
 import CancellationNotice from '../orders/CancellationNotice';
 import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { useMemo } from 'react';
@@ -51,6 +53,7 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <>
+            <RoundAttemptNotice />
             <PaymentAttentionNotice />
             <CancellationNotice />
             <BasketNotice basket={basket} />
@@ -93,6 +96,7 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
         />
       ) : null}
       {basket.unavailable ? <Text style={{ color: theme.secondary }}>{t('webHelp')}</Text> : null}
+      <RoundControl basket={basket} />
       <CheckoutControl basket={basket} currency={currency ?? undefined} />
       <Button
         secondary
