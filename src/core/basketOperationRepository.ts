@@ -1,3 +1,4 @@
+import { TableRoundStorage } from './tableRoundStorage';
 import { type BasketAddInput } from '../api/basketRequest';
 import { canonicalUuidSchema, emptyUuid } from './identifiers';
 import {
@@ -77,6 +78,7 @@ export class BasketOperationRepository {
           throw new Error('Recover the pending basket change before preparing another.');
         return immutableBasketOperation(previous);
       }
+      await new TableRoundStorage(this.store).assertResolved(context, owner, assertCurrent);
       await new CancellationOperationStorage(this.store).assertResolved(
         context,
         owner,

@@ -1,3 +1,5 @@
+import { TableRoundRepository } from './tableRoundRepository';
+import { TableRoundStorage } from './tableRoundStorage';
 import { scopedTableVisit } from './tableVisitRecord';
 import { TableVisitRepository } from './tableVisitRepository';
 import { ReservationOperationStorage } from './reservationOperationStorage';
@@ -31,6 +33,7 @@ export class SessionRepository {
   readonly cancellations: CancellationOperationRepository;
   readonly reservations: ReservationOperationRepository;
   readonly tableVisits: TableVisitRepository;
+  readonly tableRounds: TableRoundRepository;
   private readonly writes = new SerialTasks();
   private readonly attention: PaymentAttentionStorage;
   constructor(private readonly store: SecretStore) {
@@ -42,6 +45,7 @@ export class SessionRepository {
     this.cancellations = new CancellationOperationRepository(store, this.writes);
     this.reservations = new ReservationOperationRepository(store, this.writes);
     this.tableVisits = new TableVisitRepository(store, this.writes);
+    this.tableRounds = new TableRoundRepository(store, this.writes);
   }
   loadPaymentAttention(context: TenantContext): Promise<string | null> {
     return this.writes.run(() => this.attention.load(context));
@@ -101,7 +105,8 @@ export class SessionRepository {
     const tableRaw = await this.store.get(secretKey(context, 'table-participant', principal));
     const table =
       tableRaw === null ? null : scopedTableVisit(context, principal, JSON.parse(tableRaw));
-    return cancellation?.resolution === null || Boolean(reservation || table);
+    const round = await new TableRoundStorage(this.store).read(context, principal, () => {});
+    return cancellation?.resolution === null || Boolean(reservation || table || round);
   }
   activate(
     context: TenantContext,

@@ -24,6 +24,10 @@ export class TableRoundStorage {
     this.check(context, guard);
     return record;
   }
+  async assertResolved(context: TenantContext, principal: Principal, guard: () => void) {
+    if ((await this.read(context, principal, guard))?.resolution === null)
+      throw new ApiFailure(409, 'refused');
+  }
   async forgetResolved(context: TenantContext, input: TableRoundRecord, guard: () => void) {
     const expected = scopedTableRound(context, input.principal, input);
     const current = await this.read(context, expected.principal, guard);
