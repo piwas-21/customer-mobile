@@ -4,6 +4,7 @@ import {
   type OrderProofSource,
 } from './orderRequestHeaders';
 import { tableAccountHeaders } from './tableAccountRequest';
+import { tablePaymentAccountHeaders } from './tablePaymentAccountRequest';
 import { tableRoundHeaders } from './tableRoundHeaders';
 import { reservationRequestHeaders } from './reservationRequest';
 import { cancellationRequestHeaders } from './cancellationRequest';
@@ -89,6 +90,8 @@ export async function requestHeaders(
     Object.assign(headers, await reservationRequestHeaders(context, vault, options));
   if (mode === 'table-account')
     Object.assign(headers, await tableAccountHeaders(context, vault, options));
+  if (mode === 'table-payment-account')
+    Object.assign(headers, await tablePaymentAccountHeaders(context, vault, options));
   if (mode === 'order-cancellation' || mode === 'cancellation-renewal')
     Object.assign(headers, await cancellationRequestHeaders(context, vault, options));
   if (

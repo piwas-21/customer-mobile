@@ -338,5 +338,29 @@ retaining the original round proof and an explicit Customer reminder, including 
 cleanup. Review and pending state exclude raw proof/participant from navigation and Query caches.
 Fresh configuration, owner revision, SecureStore readback and synchronous AppState withdrawal fence
 late work. Shared bill, basket and history reads refresh after original operations; a displayed bill
-cannot release an unresolved operation. Backend #761 must pass acceptance before dependent mobile
-publication. No tenant activation, real round, payment, notification or deployment is performed.
+cannot release an unresolved operation. Backend #761 must be accepted on develop before dependent
+mobile source publication; deployed/installed acceptance remains separate. No tenant activation,
+real round, payment, notification or deployment is performed.
+
+## Native table payment account reads
+
+The table's explicit Payment details view reads backend #762's schema1 current participant account.
+Its private scope captures the original visit, canonical local session, owner, tenant/environment and
+currency. Customer JWTs remain additional to the participant grant; missing credentials never fall
+back or automatically renew. The transport binds the exact GET path, current saved participant and
+original session before sending. Current module flags, expiry and resource lifetime fence reads;
+the modal requires the same displayed bill revision/currency and withdraws failed or late results.
+Closing the modal withdraws its guard even while the root table controller stays alive. Returned
+account data stays in local modal state and never enters Query or persistent storage.
+
+A diner who only ordered through staff can have no native basket session. The shared secure queue
+acknowledges a local correlation UUID without creating a basket or replacing an existing session.
+An interrupted basket installation prevents a new UUID so its original recovery remains intact.
+The response reports server-held and unreserved amounts and optional server share positions; none
+of these grant payment authority. Known two-decimal currencies mirror CheckoutAmount's allow-list;
+BigInt formatting preserves even the largest safe minor-unit integer without floating-point cents.
+English fallback is present. Backend source must be accepted before dependent mobile publication.
+
+Durable native item/amount/equal-share quote/reserve/start/recovery, charge actions and provider
+navigation remain separate required work. No provider, activation, tenant, signing or deployment
+action is performed by these reads.

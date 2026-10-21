@@ -33,4 +33,16 @@ export const tablesEnglish = {
   tableIngredientExtra: 'Extra {{name}}',
   tableLine: '{{quantity}} × {{name}}',
   tableNoOrders: 'No orders have been added to this table yet.',
+  tablePaymentDetails: 'Payment details',
+  tablePaymentOutstanding: 'Still to pay: {{amount}}',
+  tablePaymentReserved: 'Reserved by payments: {{amount}}',
+  tablePaymentAvailable: 'Not reserved: {{amount}}',
+  tablePaymentReservationHint:
+    'Reserved amounts stay on the bill while their payment outcome is being confirmed.',
+  tablePaymentReadFailed:
+    'Payment details could not be confirmed. Refresh your bill or ask the restaurant.',
+  tablePaymentRefreshBill: 'Close and refresh bill',
+  tablePaymentShare: 'Part {{position}}: {{amount}} · {{status}}',
+  tablePaymentShareAvailable: 'Available',
+  tablePaymentShareUnavailable: 'Currently unavailable',
 };

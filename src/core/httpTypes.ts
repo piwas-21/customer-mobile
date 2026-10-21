@@ -1,4 +1,5 @@
 import type { TableVisitRecord } from './tableVisitRecord';
+import type { TablePaymentReadScope } from './tablePaymentReadScope';
 import type { TableRoundPreparation } from './tableRoundPreparation';
 import type { TableRoundRecord } from './tableRoundRecord';
 import type { ReservationCancellationPreparation } from './reservationCancellationPreparation';
@@ -29,6 +30,7 @@ export type RequestOptions = {
     | 'guest'
     | 'table'
     | 'table-account'
+    | 'table-payment-account'
     | 'basket'
     | 'order'
     | 'order-receipt'
@@ -48,6 +50,7 @@ export type RequestOptions = {
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
   expectedTableVisit?: TableVisitRecord;
+  expectedTablePaymentAccount?: TablePaymentReadScope;
   expectedRoundPreparation?: TableRoundPreparation;
   expectedRoundRecord?: TableRoundRecord;
   expectedOrderProof?: OrderOperationProof;

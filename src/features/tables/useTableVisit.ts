@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { tableAdmissionInbox } from '../../core/tableAdmissionInbox';
 import type { TableVisitController, TableVisitView } from '../../core/tableVisitController';
+import { ApiFailure } from '../../core/apiFailure';
 import useMounted from '../../core/useMounted';
 import { canUse } from '../../core/capabilities';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
@@ -18,7 +19,7 @@ import useBootstrap from '../restaurant/useBootstrap';
 import useTableResource from './useTableResource';
 import useTableDeadline from './useTableDeadline';
 export default function useTableVisit() {
-  const { controller, key, loading, unavailable } = useTableResource();
+  const { controller, key, loading, unavailable, allowPaymentReads } = useTableResource();
   const { context } = useRestaurant();
   const bootstrap = useBootstrap().data;
   const { i18n } = useTranslation();
@@ -122,6 +123,13 @@ export default function useTableVisit() {
     [controller, cache, key, mounted],
   );
   const currentReview = controller && review?.scope === reviewScope ? review : undefined;
+  const paymentAccount = useCallback(
+    (guard: () => void) => {
+      if (!controller) throw new ApiFailure(409, 'refused');
+      return controller.paymentAccount(i18n.language, guard);
+    },
+    [controller, i18n.language],
+  );
   return {
     allowed,
     scope: key,
@@ -145,6 +153,10 @@ export default function useTableVisit() {
         : undefined,
     accountLoading: account.isFetching,
     accountFailed: account.isError,
+    paymentAccount:
+      allowed && allowPaymentReads && bootstrap?.flags.tableAccountPaymentsV1 === true
+        ? paymentAccount
+        : undefined,
     dismissReview: () => {
       if (currentReview) controller?.dismiss(currentReview.reviewId);
       setReview(undefined);

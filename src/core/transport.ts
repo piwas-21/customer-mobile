@@ -8,6 +8,7 @@ import { isReservationRecoveryPath } from './reservationPaths';
 import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
 import { captureTableAccountRequest } from './tableAccountRequest';
+import { captureTablePaymentAccountRequest } from './tablePaymentAccountRequest';
 import { captureTableRoundRequest, isTableRoundRecovery } from './tableRoundRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
@@ -53,6 +54,7 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureTablePaymentAccountRequest(context, path, options);
     options = captureTableRoundRequest(context, path, options);
     options = captureTableAccountRequest(context, path, options);
     options = captureCancellationRequest(context, path, options);

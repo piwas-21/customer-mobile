@@ -6,6 +6,7 @@ import Feedback from '../../ui/Feedback';
 import { typography, useTheme } from '../../ui/theme';
 import type useTableVisit from './useTableVisit';
 import TableBill from './TableBill';
+import TablePaymentAccountControl from './TablePaymentAccountControl';
 
 type Flow = ReturnType<typeof useTableVisit>;
 export default function TableVisitContent({
@@ -27,6 +28,7 @@ export default function TableVisitContent({
   return (
     <>
       <AccountContent flow={flow} />
+      <TablePaymentAccountControl flow={flow} />
       <Button label={t('tableRefresh')} secondary onPress={flow.refresh} disabled={flow.busy} />
       <Button
         label={t('tableLeave')}

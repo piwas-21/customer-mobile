@@ -1,4 +1,6 @@
 import { readBootstrap } from '../api/bootstrap';
+import { readTablePaymentAccount } from '../api/tablePaymentAccount';
+import { captureTablePaymentScope } from './tablePaymentReadScope';
 import { assertTableVisitEnabled, joinTableVisit, readTableAccount } from '../api/tableVisits';
 import { tableQrSchema } from '../api/tableVisitContract';
 import { canonicalUuidSchema } from './identifiers';
@@ -128,6 +130,31 @@ export class TableVisitController {
       throw new ApiFailure(410, 'refused');
     const bootstrap = await this.fresh(guard);
     return readTableAccount(this.client, this.context, bootstrap, record, guard, locale);
+  }
+  async paymentAccount(locale: string, assertView: () => void) {
+    const visitGuard = this.visitGuard();
+    const guard = () => {
+      this.assertStart();
+      visitGuard();
+      assertView();
+    };
+    guard();
+    const visit = await this.repository.tableVisits.read(this.context, this.owner, guard);
+    if (!visit) throw new ApiFailure(410, 'refused');
+    const bootstrap = await this.fresh(guard);
+    const sessionId = await this.repository.tableVisits.paymentSession(
+      this.context,
+      visit,
+      this.createId,
+      guard,
+    );
+    guard();
+    const scope = captureTablePaymentScope(this.context, this.owner, {
+      visit,
+      sessionId,
+      currency: bootstrap.currency,
+    });
+    return readTablePaymentAccount(this.client, this.context, bootstrap, scope, guard, locale);
   }
   async leave(serviceSessionId: string) {
     this.assertCurrent();
