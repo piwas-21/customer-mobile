@@ -39,16 +39,7 @@ export async function tableRoundHeaders(
     );
     scopedRoundPreparation(context, principal, preparation);
   }
-  if (principal.kind === 'customer') {
-    const session = await vault.session(context, principal.id);
-    options.assertCurrent();
-    if (!session) throw new ApiFailure(401, 'refused');
-    if (options.credentials === 'table-round-renewal') {
-      const body = refreshCredentialsSchema.parse(options.body);
-      if (body.accessToken !== session.accessToken || body.refreshToken !== session.refreshToken)
-        throw new ApiFailure(401, 'refused');
-    } else headers.Authorization = `Bearer ${session.accessToken}`;
-  }
+  Object.assign(headers, await customerHeaders(context, vault, options));
   if (record) {
     const raw = await vault.capability(context, 'table-round-operation', principal);
     options.assertCurrent();
@@ -58,4 +49,21 @@ export async function tableRoundHeaders(
   if (preparation) scopedRoundPreparation(context, principal, preparation);
   options.assertCurrent();
   return headers;
+}
+
+async function customerHeaders(
+  context: TenantContext,
+  vault: CredentialVault,
+  options: RequestOptions,
+) {
+  if (options.principal?.kind !== 'customer') return {};
+  const session = await vault.session(context, options.principal.id);
+  options.assertCurrent!();
+  if (!session) throw new ApiFailure(401, 'refused');
+  if (options.credentials !== 'table-round-renewal')
+    return { Authorization: `Bearer ${session.accessToken}` };
+  const body = refreshCredentialsSchema.parse(options.body);
+  if (body.accessToken !== session.accessToken || body.refreshToken !== session.refreshToken)
+    throw new ApiFailure(401, 'refused');
+  return {};
 }

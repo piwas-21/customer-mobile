@@ -24,11 +24,8 @@ export async function installTableRound(
   const prepared = bindPreparedTableRound(intent, preparation.currency, response);
   if (await storage.read(context, principal, guard)) throw new ApiFailure(409, 'refused');
   // A malformed or partially saved original claim must also prevent a competing purchase.
-  for (const kind of ['basket-operation', 'order-operation-proof'] as const) {
-    const raw = await store.get(secretKey(context, kind, principal));
-    guard();
-    if (raw !== null) throw new ApiFailure(409, 'refused');
-  }
+  await assertUnclaimed(store, secretKey(context, 'basket-operation', principal), guard);
+  await assertUnclaimed(store, secretKey(context, 'order-operation-proof', principal), guard);
   await new CancellationOperationStorage(store).assertResolved(context, principal, guard);
   await new PaymentOperationStorage(store).assertResolved(context, principal, guard);
   const session = canonicalUuidSchema.parse(
@@ -60,4 +57,10 @@ export async function installTableRound(
     }),
     guard,
   );
+}
+
+async function assertUnclaimed(store: SecretStore, key: string, guard: () => void) {
+  const raw = await store.get(key);
+  guard();
+  if (raw !== null) throw new ApiFailure(409, 'refused');
 }

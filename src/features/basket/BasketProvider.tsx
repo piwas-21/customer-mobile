@@ -15,6 +15,16 @@ import { canUse } from '../../core/capabilities';
 import useMounted from '../../core/useMounted';
 import useBootstrap from '../restaurant/useBootstrap';
 import useBasketScope from './useBasketScope';
+function roundHoldsPurchases(round: ReturnType<typeof useTableRound>) {
+  return Boolean(
+    round &&
+    (!round.controller ||
+      round.busy ||
+      round.loading ||
+      round.failed ||
+      round.value?.outcome === 'Pending'),
+  );
+}
 function useBasketState() {
   const { workspace, orders, key, revision, recoveryOnly, sessionController } = useBasketScope();
   const round = useTableRound();
@@ -52,14 +62,7 @@ function useBasketState() {
   const ready = Boolean(
     workspace &&
     ordering &&
-    !(
-      round &&
-      (!round.controller ||
-        round.busy ||
-        round.loading ||
-        round.failed ||
-        round.value?.outcome === 'Pending')
-    ) &&
+    !roundHoldsPurchases(round) &&
     pending.isSuccess &&
     pending.data === null &&
     order.ready &&

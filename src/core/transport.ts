@@ -90,19 +90,10 @@ export class CustomerTransport {
         path !== '/api/customer-mobile/checkout/payment/recover')
     )
       throw new ApiFailure(401, 'refused');
-    const reservationRecovery =
-      options.credentials === 'reservation-operation' && isReservationRecoveryPath(path);
-    const orderRecovery =
-      method === 'POST' &&
-      options.credentials === 'order' &&
-      (path === '/api/customer-mobile/checkout/recover' ||
-        path === '/api/customer-mobile/checkout/cancel');
     if (
       method !== 'GET' &&
       context.tenant.status !== 'active' &&
-      !orderRecovery &&
-      !reservationRecovery &&
-      !(options.credentials === 'table-round-operation' && isTableRoundRecovery(path)) &&
+      !isOriginalRecovery(path, method, options) &&
       !receiptRead &&
       !paymentRecovery &&
       !cancellation &&
@@ -141,6 +132,16 @@ export class CustomerTransport {
       context.signal.removeEventListener('abort', cancel);
     }
   }
+}
+function isOriginalRecovery(path: string, method: string, options: RequestOptions) {
+  if (options.credentials === 'reservation-operation') return isReservationRecoveryPath(path);
+  if (options.credentials === 'table-round-operation') return isTableRoundRecovery(path);
+  return (
+    method === 'POST' &&
+    options.credentials === 'order' &&
+    (path === '/api/customer-mobile/checkout/recover' ||
+      path === '/api/customer-mobile/checkout/cancel')
+  );
 }
 export async function fetchDirectory(origin: string, fetcher: Fetch = expoFetch): Promise<unknown> {
   originSchema.parse(origin);
