@@ -36,7 +36,8 @@ export type CredentialKind =
   | 'order-decisions'
   | 'order-cancellation'
   | 'reservation-operation'
-  | 'reservation-contact';
+  | 'reservation-contact'
+  | 'table-round-operation';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,
@@ -105,7 +106,7 @@ export class CredentialVault {
       'order-contact',
       'reservation-contact',
       'order-decisions',
-      // Keep minimal order/payment/reservation proofs for original recovery.
+      // Keep minimal order/payment/reservation/table-round proofs for original recovery.
       // Contact, tokens and ordinary guest sessions are still purged on logout.
     ] as const;
     const removals = await Promise.allSettled(
