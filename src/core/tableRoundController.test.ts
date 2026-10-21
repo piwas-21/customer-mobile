@@ -139,3 +139,18 @@ it('a late Applied decision still wins an explicit stop without creating a new o
     tableRoundPath + '/cancel-attempt',
   ]);
 });
+
+it('a dropped original secure save consumes the review even when no durable record can be restored', async () => {
+  const f = await tableRoundControllerFixture();
+  const review = await f.actor.prepare('en');
+  const key = secretKey(f.context, 'table-round-operation', f.principal);
+  const set = f.store.set;
+  const write = jest.spyOn(f.store, 'set').mockImplementation(async (k, v) => {
+    if (k !== key) await set(k, v);
+  });
+  await expect(f.actor.confirm(review.operationId, 'en')).rejects.toThrow('save incomplete');
+  write.mockRestore();
+  expect(await f.actor.saved()).toBeNull();
+  await expect(f.actor.confirm(review.operationId, 'en')).rejects.toThrow();
+  expect(f.fetcher.mock.calls.some(([url]) => url.endsWith('/submit'))).toBe(false);
+});

@@ -39,7 +39,7 @@ export class PaymentAttentionStorage {
     if (
       (await new CancellationOperationStorage(this.store).readForCleanup(context, principal))
         ?.resolution === null ||
-      (await new TableRoundStorage(this.store).read(context, principal, () => {}))?.resolution ===
+      (await new TableRoundStorage(this.store).readForCleanup(context, principal))?.resolution ===
         null
     )
       await this.save(context, userId);

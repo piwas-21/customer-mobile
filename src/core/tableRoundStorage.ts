@@ -13,6 +13,10 @@ export class TableRoundStorage {
     this.check(context, guard);
     return raw === null ? null : scopedTableRound(context, principal, JSON.parse(raw));
   }
+  async readForCleanup(context: TenantContext, principal: Principal) {
+    const raw = await this.store.get(secretKey(context, 'table-round-operation', principal));
+    return raw === null ? null : scopedTableRound(context, principal, JSON.parse(raw));
+  }
   async save(context: TenantContext, input: TableRoundRecord, guard: () => void) {
     const record = scopedTableRound(context, input.principal, input);
     this.check(context, guard);

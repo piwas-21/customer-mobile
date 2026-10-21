@@ -575,3 +575,18 @@ Full ten-locale/RTL, installed SecureStore/keyboard/back/accessibility, API depl
 protection keys and real restaurant confirmation/mail remain separate acceptance gates.
 
 Original reservation recovery preserves both the booking resource lifetime and the account owner guard through private header reads, token renewal, secure credential activation and retry. A withdrawn resource cannot dispatch a later recover/stop request or install a late renewal. App-state events dispose the current actor before queued React updates; layout cleanup withdraws committed account/bootstrap/tenant scope changes synchronously.
+
+## Native unpaid table rounds
+
+Source checks cover explicit server-priced Dine-in review, one initial round, independent participant
+and basket credentials, exact original operation custody, concurrent claims, lost transport/storage
+acknowledgements, restart, Unseen/stop races, canonical decisions, local leaving and disabled table
+capability. Customer renewal remains original-only; rejected/foreign renewal, same-owner revision,
+resource/tenant withdrawal and late callbacks cannot install credentials or publish private state.
+Rendered tests cover exact money, no contact/tender fields, explicit stopping, review close,
+background withdrawal and Orders/Basket-accessible recovery. English fallback is present.
+
+Full locale/RTL, physical SecureStore/process death, camera/keyboard/back/screen-reader/large-text,
+API deployment/key retention and restaurant acceptance remain open. Table item/amount/equal-share
+payments, transactional push, verified OS table links and the website installation bridge are
+separate required work; this unpaid round does not collect payment or complete P4.

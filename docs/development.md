@@ -318,3 +318,25 @@ background/tenant/capability withdrawal, private handoff, secure-store acknowled
 header binding. English fallback is present. General verified OS table links, the printed-QR/web
 installation bridge, rounds and table payments, ten locales/RTL, physical SecureStore/camera/accessibility,
 deployment and installed multi-tenant acceptance remain separate required work.
+
+## Original native table rounds
+
+The Dine-in basket reviews a fresh owned basket and current participant-only table account, then
+shows the bounded server-priced shared composition before explicit confirmation. The original
+no-contact intent and purpose-bound proof are acknowledged in environment/tenant/principal-scoped
+SecureStore before one initial submit. Review authority is volatile and consumed before installation.
+No submit retry or new operation is exposed after uncertainty; Check and confirmed Stop use only the
+original proof, session and Customer/guest owner. Canonical Applied/Cancelled decisions are saved
+before acknowledged dismissal; Unseen retains the hold. The shared storage queue arbitrates basket,
+checkout, cancellation, table admission and round claims. Local leaving cannot erase round recovery.
+
+The root round provider restores only minimal local state. Orders, Basket and Table show pending
+recovery independently of current table capability. Original customer recover/stop may renew once
+with the same private owner/resource lifetime after participant/current-session removal. New
+submission never automatically renews. Logout removes credentials and participant authority while
+retaining the original round proof and an explicit Customer reminder, including withdrawn-tenant
+cleanup. Review and pending state exclude raw proof/participant from navigation and Query caches.
+Fresh configuration, owner revision, SecureStore readback and synchronous AppState withdrawal fence
+late work. Shared bill, basket and history reads refresh after original operations; a displayed bill
+cannot release an unresolved operation. Backend #761 must pass acceptance before dependent mobile
+publication. No tenant activation, real round, payment, notification or deployment is performed.

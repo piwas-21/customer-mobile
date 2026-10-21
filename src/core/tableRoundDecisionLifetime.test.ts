@@ -142,3 +142,15 @@ it.each([false, true])(
     ).toEqual(record);
   },
 );
+
+it('manual cleanup retains the original customer reminder even after restaurant withdrawal', async () => {
+  const f = await tableRoundFixture(true);
+  const record = await f.install();
+  const session = await f.repository.load(f.context);
+  f.boundary.clear();
+  await f.repository.clear(f.context, session!);
+  expect(await f.repository.vault.session(f.context, f.principal.id)).toBeNull();
+  expect(await f.repository.loadPaymentAttention(f.context)).toBe(f.principal.id);
+  const context = f.boundary.select(f.context.tenant.id);
+  expect(await f.repository.tableRounds.load(context, f.principal, roundGuard)).toEqual(record);
+});

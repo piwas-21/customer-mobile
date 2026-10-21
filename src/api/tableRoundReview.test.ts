@@ -97,3 +97,12 @@ it('refuses duplicate reviewed roots before any request', async () => {
   f.request.basket.items.push({ ...f.request.basket.items[0]! });
   expect(() => tableRoundReview(f.context, f.request)).toThrow();
 });
+
+it('rejects duplicate response identities that replace a different reviewed root without changing row count', async () => {
+  const f = await tableRoundFixture();
+  f.request.basket.items.push({ ...f.request.basket.items[0]!, id: tenantB });
+  const review = tableRoundReview(f.context, f.request);
+  const response = preparedRound();
+  response.quote.items.push({ ...response.quote.items[0]! });
+  expect(() => review.accept(response)).toThrow();
+});

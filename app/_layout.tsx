@@ -1,3 +1,4 @@
+import RoundProvider from '../src/features/tables/RoundProvider';
 import '../src/i18n';
 import { useState } from 'react';
 import { Stack } from 'expo-router';
@@ -29,17 +30,19 @@ export default function RootLayout() {
             <ReservationProvider>
               <CancellationProvider>
                 <PaymentProvider>
-                  <BasketProvider>
-                    <Stack
-                      screenOptions={{
-                        headerStyle: { backgroundColor: theme.background },
-                        headerTintColor: theme.text,
-                      }}
-                    >
-                      <Stack.Screen name="index" options={{ headerShown: false }} />
-                      <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
-                    </Stack>
-                  </BasketProvider>
+                  <RoundProvider>
+                    <BasketProvider>
+                      <Stack
+                        screenOptions={{
+                          headerStyle: { backgroundColor: theme.background },
+                          headerTintColor: theme.text,
+                        }}
+                      >
+                        <Stack.Screen name="index" options={{ headerShown: false }} />
+                        <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
+                      </Stack>
+                    </BasketProvider>
+                  </RoundProvider>
                 </PaymentProvider>
               </CancellationProvider>
             </ReservationProvider>

@@ -38,7 +38,6 @@ export function scopedTableRound(context: TenantContext, principal: Principal, i
   const owner = principalSchema.parse(principal);
   const record = tableRoundRecordSchema.parse(input);
   if (
-    context.signal.aborted ||
     record.environment !== context.environment ||
     record.tenantId !== context.tenant.id ||
     record.principal.kind !== owner.kind ||
