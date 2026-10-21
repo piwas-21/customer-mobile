@@ -56,6 +56,36 @@ export class TableVisitRepository {
       guard();
     });
   }
+  paymentSession(
+    context: TenantContext,
+    input: TableVisitRecord,
+    createId: () => string,
+    guard: () => void,
+  ) {
+    const owner = principalSchema.parse(input.principal);
+    const expected = scopedTableVisit(context, owner, input);
+    return this.writes.run(async () => {
+      const visit = await this.readInside(context, owner, guard);
+      if (
+        JSON.stringify(visit) !== JSON.stringify(expected) ||
+        Date.parse(expected.identity.expiresAt) <= Date.now()
+      )
+        throw new ApiFailure(409, 'refused');
+      const key = secretKey(context, 'guest-session', owner);
+      const existing = await this.store.get(key);
+      guard();
+      if (existing !== null) return canonicalUuidSchema.parse(existing);
+      const basketClaim = await this.store.get(secretKey(context, 'basket-operation', owner));
+      guard();
+      if (basketClaim !== null) throw new ApiFailure(409, 'refused');
+      // A diner can inspect staff-entered food without having created a native basket. This
+      // local correlation ID grants no table authority and never replaces an existing session.
+      const session = canonicalUuidSchema.parse(createId());
+      await saveAcknowledgedSecret(this.store, key, session);
+      guard();
+      return session;
+    });
+  }
   private async readInside(
     context: TenantContext,
     principal: Principal,

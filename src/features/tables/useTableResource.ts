@@ -6,6 +6,7 @@ import { deviceSessions } from '../../storage/sessions';
 import { useSession } from '../account/SessionProvider';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import useBootstrap from '../restaurant/useBootstrap';
+import { canUse } from '../../core/capabilities';
 export default function useTableResource() {
   const { context, client } = useRestaurant();
   const {
@@ -43,5 +44,15 @@ export default function useTableResource() {
       ] as const,
     [context, userId, ownerVersion, resource.lifecycleRevision, resource.version],
   );
-  return { controller: resource.controller, key, loading, unavailable: failed || needsCleanup };
+  return {
+    controller: resource.controller,
+    key,
+    loading,
+    unavailable: failed || needsCleanup,
+    allowPaymentReads: Boolean(
+      resource.controller &&
+      !sessions?.onlyRecoverOrders &&
+      (!userId || canUse(bootstrap, 'accounts')),
+    ),
+  };
 }

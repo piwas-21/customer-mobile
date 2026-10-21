@@ -590,3 +590,18 @@ Full locale/RTL, physical SecureStore/process death, camera/keyboard/back/screen
 API deployment/key retention and restaurant acceptance remain open. Table item/amount/equal-share
 payments, transactional push, verified OS table links and the website installation bridge are
 separate required work; this unpaid round does not collect payment or complete P4.
+
+## Native table payment account reads
+
+Source checks cover strict native account shape, exact session/participant credentials, Customer
+no-downgrade, current flags, original path/response identity/currency, saved credential substitution,
+expiry during requests, owner/local-leave/view withdrawal and failed-read privacy. Correlation
+creation is acknowledged under the shared secure queue and preserves interrupted basket recovery.
+Payment details show server-held/unreserved amounts and share availability without a charge action,
+guessed settlement or private IDs in visible/accessibility text. The same displayed bill revision
+is required; refresh closes the view and reloads the bill. Minor-unit formatting has independent
+one-cent, large-safe-integer, unsupported-scale and Arabic-digit controls.
+
+Physical Hermes Intl/BigInt, native back, font scaling, screen readers, all locales/RTL, actual API
+deployment and restaurant acceptance remain open. Durable quote/reserve/start/original recovery and
+the full item/amount/equal-share provider/concurrency acceptance gates are not completed by this read.
