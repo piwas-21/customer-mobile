@@ -48,7 +48,8 @@ export async function dispatchReservationCreation(
   assertCurrent: () => void,
   locale: string,
 ) {
-  if (record.cancellationRequested || record.resolution) throw new ApiFailure(409, 'refused');
+  if (record.cancellation || record.edit || record.cancellationRequested || record.resolution)
+    throw new ApiFailure(409, 'refused');
   const draft = await repository.reservations.intent(context, record.principal, assertCurrent);
   if (!draft) throw new ApiFailure(409, 'refused');
   await requireFreshReservationConfiguration(

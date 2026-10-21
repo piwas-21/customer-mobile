@@ -1,3 +1,4 @@
+import type { ReservationEditInput } from '../api/reservationEditContract';
 import { secretKey, type Principal, type SecretStore } from './credentials';
 import { removeAcknowledgedSecret, saveAcknowledgedSecret } from './acknowledgedSecret';
 import {
@@ -33,7 +34,11 @@ export class ReservationOperationStorage {
     const contact = reservationContactSchema.parse(JSON.parse(raw));
     if (
       contact.operationId !== record.proof.operationId ||
-      contact.draft.tenantId !== record.tenantId
+      contact.draft.tenantId !== record.tenantId ||
+      (record.edit
+        ? !('reservationId' in contact.draft) ||
+          contact.draft.reservationId !== record.edit.reservationId
+        : 'reservationId' in contact.draft)
     )
       throw new Error('Reservation intent changed');
     return contact.draft;
@@ -51,7 +56,7 @@ export class ReservationOperationStorage {
   async saveIntent(
     context: TenantContext,
     principal: Principal,
-    draft: ReservationDraft,
+    draft: ReservationDraft | ReservationEditInput,
     assertCurrent: () => void,
   ) {
     const contact = reservationContactSchema.parse({ operationId: draft.operationId, draft });

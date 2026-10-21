@@ -1,14 +1,7 @@
-import { randomUUID } from 'expo-crypto';
-import { reservationUiFixture } from './reservationUi';
-import ReservationDetailModal from '../features/reservations/ReservationDetailModal';
+import { ownedReservationUiFixture } from './reservationOwnedUi';
 import { reservationCancellationPath } from '../core/reservationPaths';
 export async function reservationCancellationUiFixture() {
-  const f = await reservationUiFixture(true);
-  jest
-    .mocked(randomUUID)
-    .mockReset()
-    .mockReturnValueOnce(f.prepared.sessionId)
-    .mockReturnValueOnce(f.proof.operationId);
+  const f = await ownedReservationUiFixture();
   const item = {
     reservationId: f.applied.reservationId,
     reservationDate: '2030-05-17',
@@ -42,19 +35,5 @@ export async function reservationCancellationUiFixture() {
       ),
     ),
   );
-  const close = jest.fn();
-  const back = jest.fn();
-  const view = (id = item.reservationId) => (
-    <ReservationDetailModal
-      context={f.context}
-      controller={f.sessions}
-      userId={f.principal.id}
-      ownerVersion={f.sessions.ownerVersion}
-      reservationId={id}
-      zone={f.bootstrap.data!.timezone}
-      onBack={back}
-      onClose={close}
-    />
-  );
-  return { ...f, item, prepared, close, back, view };
+  return { ...f, item, prepared };
 }

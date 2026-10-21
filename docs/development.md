@@ -237,3 +237,22 @@ cannot select points. Withdrawal hides an outstanding quote, including after re-
 explicit review is required. An entered request must be explicitly removed before zero-point review
 when loyalty becomes unavailable. No new provider, settlement, schema or production activation is
 introduced. Full locale/RTL, deployment and installed acceptance remain required.
+
+## Owned reservation editor contracts
+
+Private editor contact and assigned-arrangement availability use separate strict adapters bound to
+the requested customer, restaurant, booking, zone, date and party. Existing contact remains editable;
+these reads never grant write authority or enter the deployed OpenAPI capture. Preparation binds the
+original and proposed minimal bookings to the exact request and preserves the server approval rule.
+The connected editor replaces reservation detail and its date picker replaces the editor. Private contact
+stays in component memory and a separate acknowledged SecureStore intent; it never enters routing,
+Query state or the minimal recovery record. Existing optional phone/requests remain visible and preserved
+when the current form hides them. Explicit review shows original/proposed dates, time, party, status,
+requests and the exact proposed contact before confirmation.
+
+Owned edits and cancellations share one volatile candidate lifetime. Confirmation consumes that exact
+candidate before saving; one initial edit submission uses original full input and proof. Uncertain and
+Unseen results retain the original operation and allow only checking/stopping, including after restart.
+The original Customer proof can renew once during module/account withdrawal; initial submission never
+renews or retries. Known Applied results refresh the exact owned detail and history. Native exports,
+independent exact review, backend publication/deployment, full locales/RTL and installed acceptance remain gates.

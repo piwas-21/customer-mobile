@@ -1,3 +1,4 @@
+import { reservationEditInputSchema } from '../api/reservationEditContract';
 import { bootstrapSchema, type Bootstrap } from './capabilities';
 import { CustomerOperationOwner } from './customerOperationOwner';
 import { reservationAttemptView } from './reservationAttemptView';
@@ -14,7 +15,7 @@ import type { SessionController } from './sessionController';
 import type { TenantContext } from './tenantContext';
 import { ApiFailure, type CustomerTransport } from './transport';
 export class ReservationOperationScope {
-  private refusedCancellation: string | undefined;
+  private refusedMutation: string | undefined;
   readonly owner: CustomerOperationOwner;
   readonly configuration: Bootstrap;
   constructor(
@@ -87,9 +88,19 @@ export class ReservationOperationScope {
     return this.sessions.recovery.reservation(record, phase, locale, this.assertCurrent);
   }
   private async submit(record: ReservationOperationRecord, locale: string) {
-    if (!record.cancellation || record.cancellationRequested || record.cancellation.retryBlocked)
+    const target = record.cancellation ?? record.edit;
+    if (!target || record.cancellationRequested || target.retryBlocked)
       throw new ApiFailure(409, 'refused');
-    await this.fresh(record.cancellation.timeZone);
+    await this.fresh(target.timeZone);
+    const draft = record.edit
+      ? reservationEditInputSchema.parse(
+          await this.repository.reservations.intent(
+            this.context,
+            record.principal,
+            this.assertCurrent,
+          ),
+        )
+      : undefined;
     try {
       return await resolveReservationAttempt(
         this.client,
@@ -98,18 +109,19 @@ export class ReservationOperationScope {
         'submit',
         this.assertCurrent,
         locale,
+        draft,
       );
     } catch (error) {
       if (error instanceof ApiFailure && error.status === 409 && error.reason === 'http') {
-        this.refusedCancellation = record.proof.operationId;
+        this.refusedMutation = record.proof.operationId;
         try {
-          await this.repository.reservations.blockCancellationRetry(
+          await this.repository.reservations.blockMutationRetry(
             this.context,
             record,
             this.assertCurrent,
           );
         } catch {
-          // Pending cancellations are recovery-only even if this diagnostic cannot persist.
+          // Pending booking changes are recovery-only even if this diagnostic cannot persist.
         }
       }
       throw error;
@@ -123,9 +135,9 @@ export class ReservationOperationScope {
       this.assertCurrent,
       this.configuration,
     );
-    if (record.proof.operationId !== this.refusedCancellation) return value;
+    if (record.proof.operationId !== this.refusedMutation) return value;
     if (!record.resolution) return { ...value, retryBlocked: true as const };
-    this.refusedCancellation = undefined;
+    this.refusedMutation = undefined;
     return value;
   }
 }

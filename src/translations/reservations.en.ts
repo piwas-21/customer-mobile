@@ -1,4 +1,29 @@
 export const reservationsEnglish = {
+  reservationNoContactValue: 'Not provided',
+  reservationEditTitle: 'Change reservation',
+  reservationEditReview: 'Review booking changes',
+  reservationEditConfirm: 'Send these changes',
+  reservationEditOriginal: 'Current booking',
+  reservationEditProposed: 'Your proposed booking',
+  reservationEditApproval:
+    'A changed day, time or party size needs restaurant approval again. Contact-only corrections keep the current booking status.',
+  reservationEditUnavailable:
+    'We could not review this booking change. Refresh the current details and try again.',
+  reservationKeepCurrentTime: 'Keep current time: {{start}}–{{end}}',
+  reservationChooseSlot: 'Choose {{start}}–{{end}}',
+  reservationChosenTime: 'Selected: {{start}}–{{end}}',
+  reservationEditPending:
+    'This booking change is unresolved. Check the original attempt before making another change.',
+  reservationEditApplied:
+    'The restaurant received your booking changes. Check its current confirmation status.',
+  reservationEditStopped:
+    'This unreceived booking change was stopped. The existing booking was not cancelled.',
+  reservationEditChanged:
+    'The booking changed before this request was accepted. Check or stop this original attempt before reviewing it again.',
+  reservationEditStop: 'Stop this unreceived change',
+  reservationEditStopExplanation:
+    'This stops only this change if the restaurant has not received it. An already accepted change keeps its result. Your reservation is not cancelled.',
+
   reservationCancelReview: 'Review cancellation',
   reservationCancelConfirm: 'Cancel this reservation',
   reservationCancelExplanation:

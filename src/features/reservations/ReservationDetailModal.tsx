@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import ReservationEditModal from './ReservationEditModal';
 import { useTranslation } from 'react-i18next';
 import { readReservation } from '../../api/reservations';
 import type { SessionController } from '../../core/sessionController';
@@ -22,6 +24,7 @@ type Props = Readonly<{
 }>;
 export default function ReservationDetailModal(props: Props) {
   const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
   const result = usePrivatePages(
     props.context,
     props.userId,
@@ -41,6 +44,14 @@ export default function ReservationDetailModal(props: Props) {
   ) : (
     <Feedback loading={result.loading} message={t(unavailableLabel)} />
   );
+  if (editing)
+    return (
+      <ReservationEditModal
+        reservationId={props.reservationId}
+        onBack={() => setEditing(false)}
+        onClose={props.onClose}
+      />
+    );
   return (
     <BaseModal
       title={t(review ? 'reservationCancelReview' : 'reservationDetails')}
@@ -71,13 +82,20 @@ export default function ReservationDetailModal(props: Props) {
           {cancellation.available &&
           result.data &&
           ['Pending', 'Confirmed'].includes(result.data.status) ? (
-            <Button
-              label={t('reservationCancelReview')}
-              destructive
-              disabled={cancellation.blocked}
-              busy={cancellation.busy}
-              onPress={() => void cancellation.prepare()}
-            />
+            <>
+              <Button
+                label={t('reservationEditTitle')}
+                disabled={cancellation.blocked || cancellation.busy}
+                onPress={() => setEditing(true)}
+              />
+              <Button
+                label={t('reservationCancelReview')}
+                destructive
+                disabled={cancellation.blocked}
+                busy={cancellation.busy}
+                onPress={() => void cancellation.prepare()}
+              />
+            </>
           ) : null}
           <Button
             label={t('refreshReservations')}

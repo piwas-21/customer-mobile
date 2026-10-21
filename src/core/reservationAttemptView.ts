@@ -6,6 +6,7 @@ import type { TenantContext } from './tenantContext';
 export type ReservationAttemptView = Readonly<{
   operationId: string;
   cancellation?: true;
+  edit?: true;
   retryBlocked?: true;
   outcome: 'Pending' | 'Applied' | 'Cancelled';
   reservationId: string | null;
@@ -21,7 +22,7 @@ export async function reservationAttemptView(
   bootstrap: Bootstrap,
 ): Promise<ReservationAttemptView> {
   const draft =
-    record.resolution || record.cancellationRequested
+    record.resolution || record.cancellationRequested || record.edit
       ? null
       : await repository.reservations.intent(context, record.principal, assertCurrent);
   assertCurrent();
@@ -31,7 +32,8 @@ export async function reservationAttemptView(
   return {
     operationId: record.proof.operationId,
     ...(record.cancellation ? { cancellation: true as const } : {}),
-    ...(record.cancellation?.retryBlocked ? { retryBlocked: true as const } : {}),
+    ...(record.edit ? { edit: true as const } : {}),
+    ...((record.cancellation ?? record.edit)?.retryBlocked ? { retryBlocked: true as const } : {}),
     outcome,
     reservationId: record.resolution?.reservationId ?? null,
     cancelling: record.cancellationRequested,
@@ -39,6 +41,7 @@ export async function reservationAttemptView(
       !record.resolution &&
       !record.cancellationRequested &&
       !record.cancellation &&
+      !record.edit &&
       draft !== null &&
       canStartReservation(context, bootstrap, record.principal),
   };
