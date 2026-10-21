@@ -52,20 +52,7 @@ export async function resolveReservationAttempt(
   draft?: ReservationDraft,
 ) {
   const record = scopedReservationRecord(context, input.principal, input);
-  if (record.resolution) throw new ApiFailure(409, 'refused');
-  if (
-    phase === 'submit' &&
-    (record.cancellationRequested || (record.cancellation ?? record.edit)?.retryBlocked)
-  )
-    throw new ApiFailure(409, 'refused');
-  if (
-    (record.cancellation && draft !== undefined) ||
-    ((record.cancellation || record.edit) && phase === 'create') ||
-    (!(record.cancellation || record.edit) && phase === 'submit') ||
-    (record.edit && phase === 'submit' && !draft)
-  )
-    throw new ApiFailure(409, 'refused');
-  if (phase === 'create' && !draft) throw new ApiFailure(409, 'refused');
+  assertAttemptPhase(record, phase, draft);
   assertCurrent();
   const suffix = phase === 'create' ? '' : '/' + phase;
   const body =
@@ -99,4 +86,25 @@ export async function resolveReservationAttempt(
   )
     throw new ApiFailure(200, 'contract');
   return bound;
+}
+
+function assertAttemptPhase(
+  record: ReservationOperationRecord,
+  phase: 'create' | 'submit' | 'recover' | 'cancel-attempt',
+  draft: ReservationDraft | undefined,
+) {
+  if (record.resolution) throw new ApiFailure(409, 'refused');
+  if (phase === 'submit') assertSubmissionPhase(record, draft);
+  if (phase === 'create' && (record.cancellation || record.edit || !draft))
+    throw new ApiFailure(409, 'refused');
+  if (record.cancellation && draft !== undefined) throw new ApiFailure(409, 'refused');
+}
+
+function assertSubmissionPhase(
+  record: ReservationOperationRecord,
+  draft: ReservationDraft | undefined,
+) {
+  const owned = record.cancellation ?? record.edit;
+  if (record.cancellationRequested || owned?.retryBlocked || !owned || (record.edit && !draft))
+    throw new ApiFailure(409, 'refused');
 }

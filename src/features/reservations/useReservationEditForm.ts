@@ -56,15 +56,7 @@ export default function useReservationEditForm(
     endTime: original.endTime,
   });
   const [invalid, setInvalid] = useState<ReadonlySet<ReservationContactKey>>(new Set());
-  const fields = configured.fields?.slice();
-  if (fields) {
-    for (const key of ['customerPhone', 'specialRequests'] as const) {
-      const existing =
-        key === 'customerPhone' ? data.contact.customerPhone : original.specialRequests;
-      if (existing && !fields.some((field) => field.key === key))
-        fields.push({ key, required: false });
-    }
-  }
+  const fields = editableFields(configured.fields, data);
   const selection = selected?.date === date && selected.numberOfGuests === party ? selected : null;
   const parsed = fields ? parseReservationContact(draft, fields) : null;
   const wire = JSON.stringify(
@@ -125,4 +117,22 @@ export default function useReservationEditForm(
     canReview: Boolean(selection && fields && !unsupportedSelection),
     busy: review.busy || times.loading,
   };
+}
+
+export type ReservationEditForm = ReturnType<typeof useReservationEditForm>;
+
+function editableFields(
+  configured: ReturnType<typeof useReservationFields>['fields'],
+  data: ReservationEditContext,
+) {
+  const fields = configured?.slice();
+  if (fields) {
+    for (const key of ['customerPhone', 'specialRequests'] as const) {
+      const existing =
+        key === 'customerPhone' ? data.contact.customerPhone : data.reservation.specialRequests;
+      if (existing && !fields.some((field) => field.key === key))
+        fields.push({ key, required: false });
+    }
+  }
+  return fields;
 }

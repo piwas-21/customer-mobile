@@ -1,23 +1,21 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReservationEditContext } from '../../api/reservationEditReads';
-import { reservationContactLimits } from '../../api/reservationCreateContract';
 import { reservationPartyBounds } from '../../api/reservationAvailability';
 import type { CustomerReservationController } from '../../core/customerReservationController';
-import { customerInputOptions } from '../../ui/customerInputOptions';
 import BaseModal from '../../ui/BaseModal';
 import Button from '../../ui/Button';
-import Field from '../../ui/Field';
 import Feedback from '../../ui/Feedback';
 import QuantityStepper from '../../ui/QuantityStepper';
 import ReservationDatePicker from './ReservationDatePicker';
-import ReservationSummary from './ReservationSummary';
 import ReservationAttemptNotice from './ReservationAttemptNotice';
 import { useReservation } from './ReservationProvider';
 import { reservationDay, reservationHour } from './reservationPresentation';
 import { reservationToday } from './reservationCalendar';
 import useReservationEditContext from './useReservationEditContext';
 import useReservationEditForm from './useReservationEditForm';
+import ReservationEditReview from './ReservationEditReview';
+import ReservationEditFields from './ReservationEditFields';
 type Props = Readonly<{ reservationId: string; onBack: () => void; onClose: () => void }>;
 export default function ReservationEditModal(props: Props) {
   const { t } = useTranslation();
@@ -78,31 +76,7 @@ function Editor({
     >
       {review ? (
         <>
-          <Feedback message={t('reservationEditOriginal')} />
-          <ReservationSummary item={review.original} requests />
-          <Feedback message={t('reservationEditProposed')} />
-          <ReservationSummary item={review.proposed} requests />
-          {form.fields?.map((field) => (
-            <Feedback
-              key={field.key}
-              message={
-                t('reservationField.' + field.key) +
-                ': ' +
-                (form.input?.[field.key] ?? t('reservationNoContactValue'))
-              }
-            />
-          ))}
-          <Feedback message={t('reservationEditApproval')} />
-          <Feedback message={t('receiptTimeZone', { zone: review.timeZone })} />
-          <Button
-            label={t('reservationEditConfirm')}
-            busy={busy}
-            onPress={() => {
-              void form.review.confirm();
-              onBack();
-            }}
-          />
-          <Button label={t('back')} secondary onPress={form.review.dismiss} />
+          <ReservationEditReview form={form} onBack={onBack} />
         </>
       ) : (
         <>
@@ -167,32 +141,7 @@ function Editor({
               ) : (
                 <Feedback message={t('reservationChooseTimeInputs')} />
               )}
-              {!form.fields ? (
-                <Feedback
-                  loading={form.configured.isPending}
-                  message={t('reservationFieldsUnavailable')}
-                  retry={() => void form.configured.refetch()}
-                />
-              ) : (
-                form.fields.map((field) => (
-                  <Field
-                    key={field.key}
-                    label={
-                      t('reservationField.' + field.key) +
-                      (field.required ? '' : t('optionalSuffix'))
-                    }
-                    value={form.draft[field.key]}
-                    onChangeText={(value) => form.change(field.key, value)}
-                    editable={!disabled}
-                    multiline={field.key === 'specialRequests'}
-                    maxLength={reservationContactLimits[field.key]}
-                    {...customerInputOptions(field.key)}
-                    {...(form.invalid.has(field.key)
-                      ? { error: t('reservationFieldInvalid') }
-                      : {})}
-                  />
-                ))
-              )}
+              <ReservationEditFields form={form} disabled={disabled} />
               {form.review.failed || form.unsupportedSelection ? (
                 <Feedback message={t('reservationEditUnavailable')} />
               ) : null}
