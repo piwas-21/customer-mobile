@@ -1,6 +1,5 @@
+import { CustomerOperationScope } from './customerOperationScope';
 import { reservationEditInputSchema } from '../api/reservationEditContract';
-import { bootstrapSchema, type Bootstrap } from './capabilities';
-import { CustomerOperationOwner } from './customerOperationOwner';
 import { reservationAttemptView } from './reservationAttemptView';
 import {
   dispatchReservationCreation,
@@ -9,27 +8,9 @@ import {
 } from './reservationCreationPolicy';
 import { resolveReservationAttempt } from '../api/reservationCreate';
 import type { ReservationOperationRecord } from './reservationOperationRecord';
-import type { Principal } from './credentials';
-import type { SessionRepository } from './sessionRepository';
-import type { SessionController } from './sessionController';
-import type { TenantContext } from './tenantContext';
-import { ApiFailure, type CustomerTransport } from './transport';
-export class ReservationOperationScope {
+import { ApiFailure } from './transport';
+export class ReservationOperationScope extends CustomerOperationScope {
   private refusedMutation: string | undefined;
-  readonly owner: CustomerOperationOwner;
-  readonly configuration: Bootstrap;
-  constructor(
-    readonly context: TenantContext,
-    readonly client: CustomerTransport,
-    readonly repository: SessionRepository,
-    readonly sessions: SessionController,
-    principal: Principal,
-    bootstrap: Bootstrap,
-  ) {
-    this.owner = new CustomerOperationOwner(context, sessions, principal);
-    this.configuration = bootstrapSchema.parse(bootstrap);
-  }
-  readonly assertCurrent = () => this.owner.assertCurrent();
   load() {
     this.assertCurrent();
     return this.repository.reservations.load(

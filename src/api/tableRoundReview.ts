@@ -3,7 +3,8 @@ import { assertOwnedBasket } from './basketOwnership';
 import type { CustomerBasket } from './basketResponse';
 import { tableAccountSchema } from './tableAccountContract';
 import { bindPreparedTableRound } from './tableRoundContract';
-import { bootstrapSchema, canUse, type Bootstrap } from '../core/capabilities';
+import type { Bootstrap } from '../core/capabilities';
+import { requireTableRoundEnabled } from '../core/tableRoundPolicy';
 import type { Principal } from '../core/credentials';
 import { ApiFailure } from '../core/apiFailure';
 import { scopedRoundPreparation } from '../core/tableRoundPreparation';
@@ -23,17 +24,11 @@ export function tableRoundReview(
     operationId: string;
   },
 ) {
-  const bootstrap = bootstrapSchema.parse(request.bootstrap);
+  const bootstrap = requireTableRoundEnabled(context, request.bootstrap, request.principal);
   const account = tableAccountSchema.parse(request.account);
   const basket = request.basket;
   assertOwnedBasket(basket, request.principal, request.sessionId);
   if (
-    bootstrap.tenantId !== context.tenant.id ||
-    !canUse(bootstrap, 'ordering') ||
-    !canUse(bootstrap, 'table-visits') ||
-    bootstrap.flags.tableGuestVisitsV1 !== true ||
-    (request.principal.kind === 'customer' && !canUse(bootstrap, 'accounts')) ||
-    !bootstrap.currency ||
     account.currency !== bootstrap.currency ||
     account.serviceSessionId !== request.visit.identity.serviceSessionId ||
     basket.orderType !== 'DineIn' ||

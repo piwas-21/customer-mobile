@@ -34,7 +34,7 @@ it.each(['owner', 'resource', 'tenant'])(
     );
   },
 );
-it('stopping during a paused customer token read prevents dispatch of the old first-submit record', async () => {
+it('stopping during a paused customer token read prevents dispatch of the old original recovery record', async () => {
   const f = await tableRoundRenewalFixture();
   const entered = deferred<void>();
   const release = deferred<void>();
