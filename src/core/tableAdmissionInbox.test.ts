@@ -46,3 +46,7 @@ it('withdraws old authority and publishes a change when clearing or rejecting a 
   expect(inbox.take(tenantA)).toBeNull();
   expect(changed).toHaveBeenCalledTimes(4);
 });
+
+it('an empty handoff remains empty even for an invalid tenant identity', () => {
+  expect(new TableAdmissionInbox().take('invalid')).toBeNull();
+});

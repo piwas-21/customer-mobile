@@ -1,3 +1,4 @@
+import { tableIngredientRows } from './tableIngredientRows';
 import { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -94,12 +95,12 @@ function BillRow({
       </Text>
       {row.item.variationName ? <Text style={body}>{row.item.variationName}</Text> : null}
       <Text style={body}>{price(row.item.itemTotal)}</Text>
-      {row.item.ingredientCustomizations.map((ingredient, index) => {
+      {tableIngredientRows(row.item).map(({ ingredient, key }) => {
         let name = ingredient.name;
         if (ingredient.removed) name = t('withoutIngredient', { name });
         else if (ingredient.addOn) name = t('tableIngredientExtra', { name });
         return (
-          <Text key={index} style={[styles.body, { color: theme.secondary }]}>
+          <Text key={key} style={[styles.body, { color: theme.secondary }]}>
             {t('tableLine', {
               quantity: new Intl.NumberFormat(i18n.language).format(ingredient.quantity),
               name,

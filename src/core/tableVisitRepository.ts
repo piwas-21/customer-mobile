@@ -48,8 +48,7 @@ export class TableVisitRepository {
     const id = canonicalUuidSchema.parse(serviceSessionId);
     return this.writes.run(async () => {
       const current = await this.readInside(context, owner, guard);
-      if (!current || current.identity.serviceSessionId !== id)
-        throw new ApiFailure(409, 'refused');
+      if (current?.identity.serviceSessionId !== id) throw new ApiFailure(409, 'refused');
       guard();
       await removeAcknowledgedSecret(this.store, secretKey(context, 'table-participant', owner));
       guard();

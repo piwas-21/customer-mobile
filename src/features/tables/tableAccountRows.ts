@@ -7,12 +7,7 @@ export type TableAccountRow =
 export function tableAccountRows(account: TableAccount): TableAccountRow[] {
   if (account.orders.length + account.items.length > MAX_VISIBLE_ACCOUNT_ROWS)
     throw new Error('Table display budget exceeded');
-  const groups = new Map<string, TableAccount['items']>();
-  for (const line of account.items) {
-    const group = groups.get(line.orderId) ?? [];
-    group.push(line);
-    groups.set(line.orderId, group);
-  }
+  const groups = groupItems(account);
   const rows: TableAccountRow[] = [];
   const append = (row: TableAccountRow) => {
     if (rows.length === MAX_VISIBLE_ACCOUNT_ROWS) throw new Error('Table display budget exceeded');
@@ -39,4 +34,14 @@ export function tableAccountRows(account: TableAccount): TableAccountRow[] {
     }
   }
   return rows;
+}
+
+function groupItems(account: TableAccount) {
+  const groups = new Map<string, TableAccount['items']>();
+  for (const line of account.items) {
+    const group = groups.get(line.orderId) ?? [];
+    group.push(line);
+    groups.set(line.orderId, group);
+  }
+  return groups;
 }

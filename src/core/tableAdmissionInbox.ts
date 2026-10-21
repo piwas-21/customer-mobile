@@ -30,8 +30,8 @@ export class TableAdmissionInbox {
   take(tenantId: string) {
     const pending = this.pending;
     this.pending = undefined;
+    if (!pending) return null;
     if (
-      !pending ||
       pending.tenantId !== canonicalUuidSchema.parse(tenantId) ||
       Date.now() - pending.receivedAt >= QR_REVIEW_LIFETIME_MS ||
       Date.now() < pending.receivedAt
