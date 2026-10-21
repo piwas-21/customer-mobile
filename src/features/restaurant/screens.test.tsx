@@ -98,19 +98,25 @@ it('shows directory outage recovery without stale restaurants', () => {
   expect(state.refresh).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole('button', { name: 'Alpha' })).toBeNull();
 });
-it('hands an accepted physical QR to volatile table review without putting authority in navigation', () => {
-  const state = setup();
-  const screen = render(<ScanScreen />);
-  fireEvent(screen.UNSAFE_getByType(CameraView), 'barcodeScanned', {
-    data: 'https://links.example/r/alpha/table/private-physical-qr',
-  });
-  expect(state.select).toHaveBeenCalledWith(tenantA);
-  expect(router.replace).toHaveBeenCalledTimes(1);
-  expect(router.replace).toHaveBeenCalledWith('/table');
-  expect(JSON.stringify(router.replace.mock.calls)).not.toContain('private-physical-qr');
-  expect(tableAdmissionInbox.take(tenantA)).toBe('private-physical-qr');
-  expect(tableAdmissionInbox.take(tenantA)).toBeNull();
-});
+it.each([
+  'https://links.example/r/alpha/table/private-physical-qr',
+  'https://alpha.example/scan?qr=private-physical-qr',
+])(
+  'hands an accepted physical QR to volatile review without authority in navigation: %s',
+  (data) => {
+    const state = setup();
+    const screen = render(<ScanScreen />);
+    fireEvent(screen.UNSAFE_getByType(CameraView), 'barcodeScanned', {
+      data,
+    });
+    expect(state.select).toHaveBeenCalledWith(tenantA);
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/table');
+    expect(JSON.stringify(router.replace.mock.calls)).not.toContain('private-physical-qr');
+    expect(tableAdmissionInbox.take(tenantA)).toBe('private-physical-qr');
+    expect(tableAdmissionInbox.take(tenantA)).toBeNull();
+  },
+);
 it.each([
   'https://hostile.example/r/alpha/table/qr',
   'https://links.example/r/alpha/table',

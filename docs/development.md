@@ -280,7 +280,10 @@ notifications or deployed/installed acceptance. Those journeys and full locale/R
 
 ## Native table admission and bill
 
-The camera accepts trusted central restaurant table references and hands QR authority to a single
+The camera accepts trusted central restaurant table references and existing printed `/scan?qr=…`
+links only at one unambiguous registered restaurant web origin. Missing/duplicate/extra query data,
+foreign origins, withdrawn or expired directory entries are refused. It never fetches the scanned
+URL. Both forms hand QR authority to a single
 volatile, two-minute slot. Only a change counter is observable; QR bytes never enter navigation,
 Query, persistent storage or logs. A new capture, invalid capture, tenant mismatch or expiry withdraws
 the prior slot. The Table screen requires a fresh explicit Join confirmation and current module,
@@ -306,8 +309,8 @@ integer account revisions, legacy daily-number/date values, customer-only nested
 and duplicate/order identity binding are checked. The native view is virtualized and refuses more
 than 5,000 rows instead of silently omitting charges; this does not bound server queries or payloads.
 
-Source coverage includes rendered admission/local leaving, failed refresh, same-owner revision,
+Source coverage includes existing printed-code origin/query controls, rendered admission/local leaving, failed refresh, same-owner revision,
 background/tenant/capability withdrawal, private handoff, secure-store acknowledgement and original
 header binding. English fallback is present. General verified OS table links, the printed-QR/web
-bridge, rounds and table payments, ten locales/RTL, physical SecureStore/camera/accessibility,
+installation bridge, rounds and table payments, ten locales/RTL, physical SecureStore/camera/accessibility,
 deployment and installed multi-tenant acceptance remain separate required work.
