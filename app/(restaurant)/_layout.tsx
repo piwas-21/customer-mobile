@@ -6,7 +6,9 @@ import useBootstrap from '../../src/features/restaurant/useBootstrap';
 export default function RestaurantLayout() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const available = canUse(useBootstrap().data, 'reservations');
+  const bootstrap = useBootstrap().data;
+  const available = canUse(bootstrap, 'reservations');
+  const tables = canUse(bootstrap, 'table-visits') && bootstrap?.flags.tableGuestVisitsV1 === true;
   return (
     <Tabs
       screenOptions={{
@@ -21,6 +23,10 @@ export default function RestaurantLayout() {
       <Tabs.Screen
         name="reservations"
         options={{ title: t('reservationTab'), href: available ? '/reservations' : null }}
+      />
+      <Tabs.Screen
+        name="table"
+        options={{ title: t('tableTitle'), href: tables ? '/table' : null }}
       />
       <Tabs.Screen name="orders" options={{ title: t('orders') }} />
       <Tabs.Screen name="account" options={{ title: t('account') }} />

@@ -7,6 +7,7 @@ import RestaurantScreen from './RestaurantScreen';
 import ScanScreen from './ScanScreen';
 import { useRestaurant } from './RestaurantProvider';
 import { fixtureDirectory, tenantA } from '../../test/fixtures';
+import { tableAdmissionInbox } from '../../core/tableAdmissionInbox';
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('expo-camera', () => ({ CameraView: 'CameraView', useCameraPermissions: jest.fn() }));
 jest.mock('./RestaurantProvider', () => ({ useRestaurant: jest.fn() }));
@@ -38,6 +39,7 @@ function setup(granted = true) {
   return state;
 }
 beforeEach(() => jest.clearAllMocks());
+afterEach(() => tableAdmissionInbox.clear());
 it('searches trusted restaurants and navigates only after successful selection', () => {
   const state = setup();
   const screen = render(<RestaurantScreen />);
@@ -95,4 +97,36 @@ it('shows directory outage recovery without stale restaurants', () => {
   fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
   expect(state.refresh).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole('button', { name: 'Alpha' })).toBeNull();
+});
+it.each([
+  'https://links.example/r/alpha/table/private-physical-qr',
+  'https://alpha.example/scan?qr=private-physical-qr',
+])(
+  'hands an accepted physical QR to volatile review without authority in navigation: %s',
+  (data) => {
+    const state = setup();
+    const screen = render(<ScanScreen />);
+    fireEvent(screen.UNSAFE_getByType(CameraView), 'barcodeScanned', {
+      data,
+    });
+    expect(state.select).toHaveBeenCalledWith(tenantA);
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/table');
+    expect(JSON.stringify(router.replace.mock.calls)).not.toContain('private-physical-qr');
+    expect(tableAdmissionInbox.take(tenantA)).toBe('private-physical-qr');
+    expect(tableAdmissionInbox.take(tenantA)).toBeNull();
+  },
+);
+it.each([
+  'https://hostile.example/r/alpha/table/qr',
+  'https://links.example/r/alpha/table',
+  'https://links.example/r/unknown/table/qr',
+  'https://links.example/r/alpha/menu',
+])('withdraws a previous table handoff on a new capture %s', (data) => {
+  setup();
+  tableAdmissionInbox.receive(tenantA, 'older-qr');
+  const screen = render(<ScanScreen />);
+  fireEvent(screen.UNSAFE_getByType(CameraView), 'barcodeScanned', { data });
+  expect(tableAdmissionInbox.take(tenantA)).toBeNull();
+  expect(router.replace).not.toHaveBeenCalledWith('/table');
 });

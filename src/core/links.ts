@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { type Directory, originSchema, resolveTenant } from './directory';
 const destinationSchema = z.enum([
   'menu',
+  'table',
   'order',
   'reservation',
   'verify',
@@ -38,6 +39,7 @@ export function resolveLink(
     throw new Error('Unexpected link data');
   if (url.searchParams.getAll('operation').length > 1) throw new Error('Ambiguous operation');
   const operation = url.searchParams.get('operation');
+  if (destination === 'table' && !reference) throw new Error('Table QR required');
   if (destination === 'payment-return') {
     const orderId = canonicalUuidSchema.parse(reference);
     const operationId = canonicalUuidSchema.parse(operation);

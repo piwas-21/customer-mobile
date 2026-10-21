@@ -1,3 +1,4 @@
+import { ChangeSignal } from './changeSignal';
 import { parseNativeAccountLink, type NativeAccountLink } from './nativeAccountLink';
 
 const ACCOUNT_ACTION_LIFETIME_MS = 10 * 60_000;
@@ -13,13 +14,8 @@ export class PendingAccountActions {
   private entry: { public: PendingAccountAction; proof: string | undefined } | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private viewSequence = 0;
-  private readonly listeners = new Set<() => void>();
-  readonly subscribe = (listener: () => void) => {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  };
+  private readonly changes = new ChangeSignal();
+  readonly subscribe = this.changes.subscribe;
   readonly snapshot = () => this.entry?.public;
   retain(id: number) {
     const view = ++this.viewSequence;
@@ -33,7 +29,7 @@ export class PendingAccountActions {
     return this.entry?.public.id === id && Boolean(this.entry.proof);
   }
   private publish() {
-    for (const listener of this.listeners) listener();
+    this.changes.publish();
   }
   capture(value: string, origin: string, now = Date.now()) {
     clearTimeout(this.timer);
