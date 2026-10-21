@@ -42,6 +42,24 @@ it('consumes install referrer once and gives explicit selection precedence', () 
   expect(new EntrySelection().consumeReferrer('tenant=https://evil.example')).toBeUndefined();
   expect(new EntrySelection().consumeReferrer('')).toBeUndefined();
 });
+it('resolves a physical table reference only at the trusted registered restaurant', () => {
+  expect(resolveLink(`${origin}/r/alpha/table/table-qr_1`, origin, fixtureDirectory())).toEqual({
+    tenantId: tenantA,
+    destination: 'table',
+    reference: 'table-qr_1',
+  });
+});
+it.each([
+  `${origin}/r/alpha/table`,
+  `${origin}/r/alpha/table/`,
+  `${origin}/r/alpha/table/%2F`,
+  `${origin}/r/alpha/table/qr?token=secret`,
+  `${origin}/r/alpha/table/qr?operation=${tenantB}`,
+  `${origin}/r/unknown/table/qr`,
+  'https://evil.example/r/alpha/table/qr',
+])('rejects missing or untrusted table authority %s', (value) => {
+  expect(() => resolveLink(value, origin, fixtureDirectory())).toThrow();
+});
 
 it.each([
   `${origin}/r/alpha/payment-return?operation=${tenantB}`,

@@ -4,7 +4,7 @@ import { ApiFailure, type CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
 import { tableAccountSchema } from './tableAccountContract';
 import { tableQrSchema, tableVisitIdentitySchema } from './tableVisitContract';
-function enabled(context: TenantContext, input: Bootstrap) {
+export function assertTableVisitEnabled(context: TenantContext, input: Bootstrap) {
   const bootstrap = bootstrapSchema.parse(input);
   if (
     bootstrap.tenantId !== context.tenant.id ||
@@ -22,7 +22,7 @@ export async function joinTableVisit(
   assertCurrent: () => void,
   locale: string,
 ) {
-  enabled(context, bootstrap);
+  assertTableVisitEnabled(context, bootstrap);
   const qr = tableQrSchema.parse(qrCodeData);
   assertCurrent();
   const identity = await client.request(
@@ -49,7 +49,7 @@ export async function readTableAccount(
   assertCurrent: () => void,
   locale: string,
 ) {
-  enabled(context, bootstrap);
+  assertTableVisitEnabled(context, bootstrap);
   const record = scopedTableVisit(context, input.principal, input);
   const identity = record.identity;
   assertCurrent();

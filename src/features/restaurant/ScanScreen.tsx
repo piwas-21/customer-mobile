@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { runtimeConfig } from '../../config';
+import { tableAdmissionInbox } from '../../core/tableAdmissionInbox';
 import { resolveLink } from '../../core/links';
 import Screen from '../../ui/Screen';
 import Button from '../../ui/Button';
@@ -38,13 +39,17 @@ export default function ScanScreen() {
             ? undefined
             : ({ data }) => {
                 setScanned(true);
+                tableAdmissionInbox.clear();
                 try {
                   if (!directory || !runtimeConfig) throw new Error('Directory required');
                   const link = resolveLink(data, runtimeConfig.linkOrigin, directory);
-                  // Only menu admission is enabled in the first browsing slice. Other destinations require their own authorization flow.
-                  if (link.destination !== 'menu') throw new Error('Destination unavailable');
+                  if (link.destination !== 'menu' && link.destination !== 'table')
+                    throw new Error('Destination unavailable');
                   if (!select(link.tenantId)) throw new Error('Restaurant unavailable');
-                  router.replace('/menu');
+                  if (link.destination === 'table' && link.reference) {
+                    tableAdmissionInbox.receive(link.tenantId, link.reference);
+                    router.replace('/table');
+                  } else router.replace('/menu');
                 } catch {
                   setError(true);
                 }

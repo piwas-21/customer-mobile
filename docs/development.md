@@ -277,3 +277,37 @@ remaining/credit amounts, frozen line totals, legacy daily identities and unknow
 Database bigint revisions must be exact safe integers; nested items stop at the server's twenty-level
 projection boundary. This adapter/storage slice does not expose admission UI, rounds, payments,
 notifications or deployed/installed acceptance. Those journeys and full locale/RTL remain required.
+
+## Native table admission and bill
+
+The camera accepts trusted central restaurant table references and hands QR authority to a single
+volatile, two-minute slot. Only a change counter is observable; QR bytes never enter navigation,
+Query, persistent storage or logs. A new capture, invalid capture, tenant mismatch or expiry withdraws
+the prior slot. The Table screen requires a fresh explicit Join confirmation and current module,
+flag, lifecycle and tenant compatibility before its single anonymous admission request.
+
+The returned participant capability and exact service-session identity are acknowledged in
+SecureStore under the original environment, tenant and Customer or basket-guest owner. Admission
+has no automatic retry. A lost response requires a new physical scan/review; a completed secure save
+can be restored without joining again. Existing access is never silently replaced. Local leaving
+requires confirmation, exact session identity and acknowledged deletion; it does not settle or
+close the restaurant bill. Logout cleanup shares the repository queue and verifies deletion.
+
+Bill reads send only the original participant header to the exact saved session path, with fresh
+capability checks and no Customer JWT, basket header or token renewal. Original Customer access can
+be restored when accounts are disabled without enabling another join. Resource disposal and
+owner/tenant/configuration/app-state changes withdraw private callbacks; failed refresh hides the
+previous bill while retaining original participant custody. A shared private-controller lifetime
+also preserves reservation restoration and synchronous AppState withdrawal.
+
+Server original/payable amounts, adjustments, paid/remaining/credit and frozen item totals are
+shown independently. A nullable legacy currency never becomes an invented amount. Exact safe
+integer account revisions, legacy daily-number/date values, customer-only nested item projection
+and duplicate/order identity binding are checked. The native view is virtualized and refuses more
+than 5,000 rows instead of silently omitting charges; this does not bound server queries or payloads.
+
+Source coverage includes rendered admission/local leaving, failed refresh, same-owner revision,
+background/tenant/capability withdrawal, private handoff, secure-store acknowledgement and original
+header binding. English fallback is present. General verified OS table links, the printed-QR/web
+bridge, rounds and table payments, ten locales/RTL, physical SecureStore/camera/accessibility,
+deployment and installed multi-tenant acceptance remain separate required work.
