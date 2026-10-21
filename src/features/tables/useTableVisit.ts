@@ -16,6 +16,7 @@ import { canUse } from '../../core/capabilities';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import useBootstrap from '../restaurant/useBootstrap';
 import useTableResource from './useTableResource';
+import useTableDeadline from './useTableDeadline';
 export default function useTableVisit() {
   const { controller, key, loading, unavailable } = useTableResource();
   const { context } = useRestaurant();
@@ -45,7 +46,11 @@ export default function useTableVisit() {
     gcTime: 0,
     refetchOnWindowFocus: false,
   });
-  const value = controller && !access.isError ? access.data : undefined;
+  const value = useTableDeadline(
+    controller,
+    controller && !access.isError ? access.data : undefined,
+    key,
+  );
   const busy = Boolean(controller && busyOwner === controller);
   const accountKey = [...key, 'account', value?.serviceSessionId, i18n.language];
   const account = useQuery({

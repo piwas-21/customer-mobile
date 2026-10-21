@@ -302,6 +302,10 @@ be restored when accounts are disabled without enabling another join. Resource d
 owner/tenant/configuration/app-state changes withdraw private callbacks; failed refresh hides the
 previous bill while retaining original participant custody. A shared private-controller lifetime
 also preserves reservation restoration and synchronous AppState withdrawal.
+An owner/visit-scoped deadline cancels account reads and removes private bill data when participant
+access expires, including while the screen stays foreground. The original secure record remains
+available for explicit local leaving. Clock-controlled tests distinguish the final valid millisecond
+from the expired display and verify that expiry creates no request.
 
 Server original/payable amounts, adjustments, paid/remaining/credit and frozen item totals are
 shown independently. A nullable legacy currency never becomes an invented amount. Exact safe
