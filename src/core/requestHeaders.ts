@@ -4,6 +4,7 @@ import {
   type OrderProofSource,
 } from './orderRequestHeaders';
 import { tableAccountHeaders } from './tableAccountRequest';
+import { tableRoundHeaders } from './tableRoundHeaders';
 import { reservationRequestHeaders } from './reservationRequest';
 import { cancellationRequestHeaders } from './cancellationRequest';
 import { canonicalUuidSchema } from './identifiers';
@@ -74,6 +75,12 @@ export async function requestHeaders(
   const orderProof = captureOrderProof(context, options);
   const paymentOrderId = options.expectedPaymentOrderId;
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
+  if (
+    mode === 'table-round-prepare' ||
+    mode === 'table-round-operation' ||
+    mode === 'table-round-renewal'
+  )
+    Object.assign(headers, await tableRoundHeaders(context, vault, options));
   if (
     mode === 'reservation-prepare' ||
     mode === 'reservation-operation' ||

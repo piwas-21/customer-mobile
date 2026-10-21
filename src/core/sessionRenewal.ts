@@ -1,3 +1,4 @@
+import { refreshTableRoundSession } from '../api/tableRounds';
 import type { CustomerRecoveryAuthority } from './customerRecoveryReads';
 import { refreshSession, refreshReservationSession } from '../api/auth';
 import type { CustomerSession } from './credentials';
@@ -20,17 +21,26 @@ export async function renewStoredSession(
   guard();
   let next: CustomerSession;
   try {
-    next = authority?.reservation
-      ? await refreshReservationSession(client, context, captured, guard, authority.reservation)
-      : await refreshSession(
-          client,
-          context,
-          captured,
-          guard,
-          authority?.proof,
-          authority?.paymentOrderId,
-          authority?.cancellation,
-        );
+    if (authority?.tableRound)
+      next = await refreshTableRoundSession(client, context, captured, guard, authority.tableRound);
+    else if (authority?.reservation)
+      next = await refreshReservationSession(
+        client,
+        context,
+        captured,
+        guard,
+        authority.reservation,
+      );
+    else
+      next = await refreshSession(
+        client,
+        context,
+        captured,
+        guard,
+        authority?.proof,
+        authority?.paymentOrderId,
+        authority?.cancellation,
+      );
   } catch (error) {
     guard();
     if (error instanceof ApiFailure && error.status === 401 && error.reason === 'http')

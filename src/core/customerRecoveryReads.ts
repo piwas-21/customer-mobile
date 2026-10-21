@@ -1,3 +1,5 @@
+import { resolveTableRound } from '../api/tableRounds';
+import { scopedTableRound, type TableRoundRecord } from './tableRoundRecord';
 import { prepareOriginalCancellation, resolveCancellation } from '../api/orderCancellation';
 import {
   scopedCancellationRecord,
@@ -22,6 +24,7 @@ export type CustomerRecoveryAuthority =
       paymentOrderId?: string | undefined;
       cancellation?: never;
       reservation?: never;
+      tableRound?: never;
       assertCurrent?: never;
     }
   | {
@@ -29,16 +32,27 @@ export type CustomerRecoveryAuthority =
       proof?: never;
       paymentOrderId?: never;
       reservation?: never;
+      tableRound?: never;
       assertCurrent?: never;
     }
   | {
       reservation: ReservationOperationRecord;
+      tableRound?: never;
       assertCurrent: () => void;
       proof?: never;
       paymentOrderId?: never;
       cancellation?: never;
+    }
+  | {
+      tableRound: TableRoundRecord;
+      assertCurrent: () => void;
+      proof?: never;
+      paymentOrderId?: never;
+      cancellation?: never;
+      reservation?: never;
     };
 export function recoveryPrincipal(authority: CustomerRecoveryAuthority): Principal {
+  if (authority.tableRound) return authority.tableRound.principal;
   if (authority.reservation) return authority.reservation.principal;
   if (authority.cancellation) return authority.cancellation.principal;
   return authority.proof.principal;
@@ -91,6 +105,22 @@ export class CustomerRecoveryReads {
       };
       guard();
       return resolveReservationAttempt(this.client, this.context, record, phase, guard, locale);
+    });
+  }
+  tableRound(
+    saved: TableRoundRecord,
+    phase: 'recover' | 'cancel-attempt',
+    locale: string,
+    assertCurrent: () => void,
+  ) {
+    const record = scopedTableRound(this.context, saved.principal, saved);
+    return this.readPrivate({ tableRound: record, assertCurrent }, (sessionGuard) => {
+      const guard = () => {
+        sessionGuard();
+        assertCurrent();
+      };
+      guard();
+      return resolveTableRound(this.client, this.context, record, { phase }, guard, locale);
     });
   }
 }

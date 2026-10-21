@@ -8,6 +8,7 @@ import { isReservationRecoveryPath } from './reservationPaths';
 import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
 import { captureTableAccountRequest } from './tableAccountRequest';
+import { captureTableRoundRequest, isTableRoundRecovery } from './tableRoundRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
 export { ApiFailure } from './apiFailure';
@@ -52,6 +53,7 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureTableRoundRequest(context, path, options);
     options = captureTableAccountRequest(context, path, options);
     options = captureCancellationRequest(context, path, options);
     options = captureReservationRequest(context, path, options);
@@ -65,7 +67,8 @@ export class CustomerTransport {
       options.credentials === 'receipt-renewal' ||
       options.credentials === 'payment-renewal' ||
       options.credentials === 'cancellation-renewal' ||
-      options.credentials === 'reservation-renewal';
+      options.credentials === 'reservation-renewal' ||
+      options.credentials === 'table-round-renewal';
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
@@ -99,6 +102,7 @@ export class CustomerTransport {
       context.tenant.status !== 'active' &&
       !orderRecovery &&
       !reservationRecovery &&
+      !(options.credentials === 'table-round-operation' && isTableRoundRecovery(path)) &&
       !receiptRead &&
       !paymentRecovery &&
       !cancellation &&
