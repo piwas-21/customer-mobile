@@ -69,6 +69,14 @@ it('captures the original wire scope before caller mutation during a secure read
 });
 it('withholds a late response after the original participant expires during the request', async () => {
   const f = await tablePaymentReadFixture();
+  // Expire only the participant; the directory remains valid for sixty seconds.
+  f.scope.visit.identity.expiresAt = new Date(Date.now() + 10_000).toISOString();
+  await f.vault.saveCapability(
+    f.context,
+    'table-participant',
+    f.scope.visit.principal,
+    JSON.stringify(f.scope.visit),
+  );
   const entered = deferred<void>();
   const release = deferred<void>();
   f.fetcher.mockImplementation(async () => {
@@ -90,7 +98,8 @@ it('withholds a late response after the original participant expires during the 
     .mockReturnValue(Date.parse(f.scope.visit.identity.expiresAt) + 1);
   try {
     release.resolve();
-    await expect(pending).rejects.toThrow();
+    await expect(pending).rejects.toMatchObject({ status: 200, reason: 'contract' });
+    expect(() => f.boundary.assertCurrent(f.context)).not.toThrow();
   } finally {
     clock.mockRestore();
     release.resolve();
