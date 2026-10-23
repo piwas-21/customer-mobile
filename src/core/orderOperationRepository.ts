@@ -1,4 +1,4 @@
-import { TableRoundStorage } from './tableRoundStorage';
+import { assertTablePurchasesResolved, tablePurchasesHeld } from './tablePurchaseHold';
 import { orderDecisionSchema, savedOrderLimit } from './orderDecisions';
 import type { CustomerOrderResolution } from '../api/customerOrderOperation';
 import {
@@ -46,7 +46,7 @@ export class OrderOperationRepository {
         throw new Error('Resolve the pending order first');
       if ((await this.storage.decisions(context, owner, assertCurrent)).length >= savedOrderLimit)
         throw new Error('Manage saved order receipts before placing another order');
-      await new TableRoundStorage(this.store).assertResolved(context, owner, assertCurrent);
+      await assertTablePurchasesResolved(this.store, context, owner, assertCurrent);
       await this.storage.ensureBasketUnclaimed(context, owner, assertCurrent);
       await this.payments.assertResolved(context, owner, assertCurrent);
       await new CancellationOperationStorage(this.store).assertResolved(
@@ -96,8 +96,7 @@ export class OrderOperationRepository {
     return this.tasks.run(
       async () =>
         Boolean(await this.storage.read(context, owner, assertCurrent)) ||
-        (await new TableRoundStorage(this.store).read(context, owner, assertCurrent))
-          ?.resolution === null ||
+        (await tablePurchasesHeld(this.store, context, owner, assertCurrent)) ||
         (await this.payments.read(context, owner, assertCurrent))?.state === 'pending' ||
         (await new CancellationOperationStorage(this.store).read(context, owner, assertCurrent))
           ?.resolution === null,

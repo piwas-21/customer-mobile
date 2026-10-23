@@ -1,12 +1,11 @@
+import { storedTableAuthority } from './storedTableAuthority';
+import { TablePaymentStorage } from './tablePaymentStorage';
 import { bindPreparedTableRound } from '../api/tableRoundContract';
 import { ApiFailure } from './apiFailure';
-import { CancellationOperationStorage } from './cancellationOperationStorage';
-import { canonicalUuidSchema } from './identifiers';
-import { PaymentOperationStorage } from './paymentOperationStorage';
+import { assertPurchaseClaims } from './purchaseClaim';
 import { scopedRoundPreparation, type TableRoundPreparation } from './tableRoundPreparation';
 import { scopedTableRound } from './tableRoundRecord';
-import { scopedTableVisit } from './tableVisitRecord';
-import { secretKey, type SecretStore } from './credentials';
+import type { SecretStore } from './credentials';
 import { TableRoundStorage } from './tableRoundStorage';
 import type { TenantContext } from './tenantContext';
 
@@ -24,24 +23,11 @@ export async function installTableRound(
   const prepared = bindPreparedTableRound(intent, preparation.currency, response);
   if (await storage.read(context, principal, guard)) throw new ApiFailure(409, 'refused');
   // A malformed or partially saved original claim must also prevent a competing purchase.
-  await assertUnclaimed(store, secretKey(context, 'basket-operation', principal), guard);
-  await assertUnclaimed(store, secretKey(context, 'order-operation-proof', principal), guard);
-  await new CancellationOperationStorage(store).assertResolved(context, principal, guard);
-  await new PaymentOperationStorage(store).assertResolved(context, principal, guard);
-  const session = canonicalUuidSchema.parse(
-    await store.get(secretKey(context, 'guest-session', principal)),
+  await assertPurchaseClaims(store, context, principal, guard);
+  await new TablePaymentStorage(store).assertResolved(context, principal, guard);
+  const session = await storedTableAuthority(store, context, principal, preparation, guard, () =>
+    scopedRoundPreparation(context, principal, preparation),
   );
-  guard();
-  const raw = await store.get(secretKey(context, 'table-participant', principal));
-  guard();
-  const visit = scopedTableVisit(context, principal, raw === null ? null : JSON.parse(raw));
-  // Recheck expiry and owner after every asynchronous read, before acknowledging first dispatch.
-  scopedRoundPreparation(context, principal, preparation);
-  if (
-    session !== preparation.sessionId ||
-    JSON.stringify(visit) !== JSON.stringify(preparation.visit)
-  )
-    throw new ApiFailure(409, 'refused');
   return storage.save(
     context,
     scopedTableRound(context, principal, {
@@ -57,10 +43,4 @@ export async function installTableRound(
     }),
     guard,
   );
-}
-
-async function assertUnclaimed(store: SecretStore, key: string, guard: () => void) {
-  const raw = await store.get(key);
-  guard();
-  if (raw !== null) throw new ApiFailure(409, 'refused');
 }

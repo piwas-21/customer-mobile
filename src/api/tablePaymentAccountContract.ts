@@ -8,7 +8,7 @@ const positiveMinor = tablePaymentMinor.min(1);
 const positiveInt = z.int32().min(1);
 const maximumSegments = 5_000;
 const maximumShares = 1_000;
-const state = z.enum([
+export const tablePaymentStateSchema = z.enum([
   'Quoted',
   'Reserved',
   'Starting',
@@ -19,7 +19,7 @@ const state = z.enum([
   'Failed',
   'ReconciliationRequired',
 ]);
-const allocation = z.strictObject({
+export const tablePaymentAllocationSchema = z.strictObject({
   orderId: canonicalUuidSchema,
   orderItemId: canonicalUuidSchema.nullable(),
   startOrdinal: positiveInt,
@@ -27,11 +27,11 @@ const allocation = z.strictObject({
   minorPerUnit: positiveMinor,
   amountMinor: positiveMinor,
 });
-const allocations = z.array(allocation).max(maximumSegments);
+const allocations = z.array(tablePaymentAllocationSchema).max(maximumSegments);
 const slot = z.strictObject({
   ordinal: positiveInt.max(maximumShares),
   amountMinor: positiveMinor,
-  claimState: state.nullable(),
+  claimState: tablePaymentStateSchema.nullable(),
   isAvailable: z.boolean(),
 });
 const plan = z
@@ -59,7 +59,7 @@ const plan = z
 const attempt = z
   .strictObject({
     operationId: canonicalUuidSchema.nullable(),
-    state,
+    state: tablePaymentStateSchema,
     version: positiveInt,
     paymentMethod: z.enum([
       'Cash',

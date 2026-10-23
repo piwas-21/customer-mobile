@@ -361,6 +361,17 @@ of these grant payment authority. Known two-decimal currencies mirror CheckoutAm
 BigInt formatting preserves even the largest safe minor-unit integer without floating-point cents.
 English fallback is present. Backend source must be accepted before dependent mobile publication.
 
-Durable native item/amount/equal-share quote/reserve/start/recovery, charge actions and provider
-navigation remain separate required work. No provider, activation, tenant, signing or deployment
-action is performed by these reads.
+Strict native contracts cover all five contribution modes, original submit/recover/stop and separate
+checkout decisions. Items responses bind the exact selected order/item/ordinal set; reserved and
+Unseen decisions never imply payment. The deployed OpenAPI capture remains unchanged.
+
+Original intent/proof and minimal reviewed money are acknowledged in scoped SecureStore. The shared
+purchase queue refuses replacement after lost acknowledgement, malformed custody or an unresolved
+contribution. Cancellation intent survives late replies; canonical paid/stopped evidence is required
+before acknowledged dismissal. URLs and participant credentials never enter this record. Logout and
+account-disabled restore preserve original private recovery custody and a Customer reminder.
+
+This foundation exposes no payment action or transport. Preparation/submit/recovery, original JWT
+renewal, browser/return lifetimes, all mode screens, full locales/RTL, backend publication/deployment
+and installed/provider acceptance remain required. No live payment, activation, signing or deployment
+is performed.
