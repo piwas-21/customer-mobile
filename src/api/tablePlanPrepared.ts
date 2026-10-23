@@ -30,11 +30,8 @@ export function bindPreparedTablePlan(input: TablePlanIntent, currency: string, 
     currency,
     intent.customAmountsMinor,
   );
-  const increment = intent.customAmountsMinor.length
-    ? 1
-    : currency === 'CHF' || currency === 'EUR'
-      ? 5
-      : 1;
+  const equalIncrement = currency === 'CHF' || currency === 'EUR' ? 5 : 1;
+  const increment = intent.customAmountsMinor.length ? 1 : equalIncrement;
   if (
     prepared.proof.tenantId !== intent.tenantId ||
     prepared.proof.operationId !== intent.operationId ||
