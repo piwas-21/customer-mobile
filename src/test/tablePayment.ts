@@ -1,4 +1,4 @@
-import { tenantA, tenantB } from './fixtures';
+import { tenantA, tenantB, fixtureDirectory } from './fixtures';
 import { paymentReadSession, tablePaymentBootstrap } from './tablePaymentAccount';
 export const contributionAttempt = '33333333-3333-4333-8333-333333333333';
 export function contributionIntent() {
@@ -75,4 +75,10 @@ export function contributionBootstrap() {
     flags: { ...bootstrap.flags, tableGuestAccountPaymentsV1: true },
     capabilities: { ...bootstrap.capabilities, 'table-payments': 'enabled' as const },
   };
+}
+
+export function contributionCheckoutUrl() {
+  const tenant = fixtureDirectory().tenants.find((row) => row.id === tenantA);
+  if (!tenant) throw new Error('Original test tenant is missing');
+  return new URL('/original', tenant.webOrigin).toString();
 }

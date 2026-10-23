@@ -1,14 +1,15 @@
-import { tablePaymentIntentSchema } from './tablePaymentIntent';
-import { bindPreparedTablePayment } from './tablePaymentPrepared';
-import { bindTablePaymentResolution } from './tablePaymentResolution';
-import { bindTableCheckoutDecision, tableCheckoutDecisionSchema } from './tableCheckoutDecision';
 import {
+  contributionCheckoutUrl,
   contributionIntent,
   preparedContribution,
   contributionResolution,
   contributionCheckout,
   contributionAttempt,
 } from '../test/tablePayment';
+import { tablePaymentIntentSchema } from './tablePaymentIntent';
+import { bindPreparedTablePayment } from './tablePaymentPrepared';
+import { bindTablePaymentResolution } from './tablePaymentResolution';
+import { bindTableCheckoutDecision, tableCheckoutDecisionSchema } from './tableCheckoutDecision';
 import { tenantA, tenantB } from '../test/fixtures';
 import { paymentReadSession } from '../test/tablePaymentAccount';
 
@@ -127,7 +128,7 @@ it('browser return text cannot become paid and pending cannot carry a hosted URL
   expect(() =>
     tableCheckoutDecisionSchema.parse({
       ...contributionCheckout(),
-      checkoutUrl: 'https://checkout.example.test',
+      checkoutUrl: contributionCheckoutUrl(),
     }),
   ).toThrow();
   expect(() =>
