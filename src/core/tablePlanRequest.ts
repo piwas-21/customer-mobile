@@ -7,6 +7,7 @@ import { scopedTablePlan } from './tablePlanRecord';
 import { refreshCredentialsSchema } from './refreshCredentials';
 import { ApiFailure } from './apiFailure';
 import type { RequestOptions } from './httpTypes';
+import type { Principal } from './credentials';
 import type { TenantContext } from './tenantContext';
 export const tablePlanPath = '/api/customer-mobile/table-payments/plans';
 const submission = z.strictObject({
@@ -37,21 +38,8 @@ export function captureTablePlanRequest(
   }
   if (options.method !== 'POST' || !options.principal || !options.assertCurrent)
     throw new ApiFailure(401, 'refused');
-  if (mode === 'table-plan-prepare') {
-    const prepared = scopedTablePlanPreparation(
-      context,
-      options.principal,
-      options.expectedPlanPreparation,
-    );
-    const body = tablePlanIntentSchema.parse(options.body);
-    if (
-      path !== tablePlanPath + '/prepare' ||
-      options.expectedPlanRecord !== undefined ||
-      JSON.stringify(body) !== JSON.stringify(prepared.intent)
-    )
-      throw new ApiFailure(401, 'refused');
-    return { ...options, principal: prepared.principal, expectedPlanPreparation: prepared, body };
-  }
+  if (mode === 'table-plan-prepare')
+    return capturePreparationRequest(context, path, options, options.principal);
   const record = scopedTablePlan(context, options.principal, options.expectedPlanRecord);
   if (record.resolution) throw new ApiFailure(401, 'refused');
   if (mode === 'table-plan-renewal') {
@@ -90,4 +78,21 @@ export function captureTablePlanRequest(
     ...(preparation ? { expectedPlanPreparation: preparation } : {}),
     body,
   };
+}
+
+function capturePreparationRequest(
+  context: TenantContext,
+  path: string,
+  options: RequestOptions,
+  principal: Principal,
+): RequestOptions {
+  const prepared = scopedTablePlanPreparation(context, principal, options.expectedPlanPreparation);
+  const body = tablePlanIntentSchema.parse(options.body);
+  if (
+    path !== tablePlanPath + '/prepare' ||
+    options.expectedPlanRecord !== undefined ||
+    JSON.stringify(body) !== JSON.stringify(prepared.intent)
+  )
+    throw new ApiFailure(401, 'refused');
+  return { ...options, principal: prepared.principal, expectedPlanPreparation: prepared, body };
 }
