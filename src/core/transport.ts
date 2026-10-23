@@ -1,15 +1,16 @@
+import { isOriginalRecovery, isPrivateRenewal } from './transportAuthority';
+import { captureTableContributionRequest } from './tableContributionRequest';
 import { fetch as expoFetch } from 'expo/fetch';
 import { z } from 'zod';
 import { originSchema } from './directory';
 import type { CredentialVault } from './credentials';
 import type { TenantBoundary, TenantContext } from './tenantContext';
 import { ApiFailure } from './apiFailure';
-import { isReservationRecoveryPath } from './reservationPaths';
 import { captureReservationRequest } from './reservationRequest';
 import { captureCancellationRequest } from './cancellationRequest';
 import { captureTableAccountRequest } from './tableAccountRequest';
 import { captureTablePaymentAccountRequest } from './tablePaymentAccountRequest';
-import { captureTableRoundRequest, isTableRoundRecovery } from './tableRoundRequest';
+import { captureTableRoundRequest } from './tableRoundRequest';
 import { requestHeaders } from './requestHeaders';
 import type { Fetch, RequestOptions } from './httpTypes';
 export { ApiFailure } from './apiFailure';
@@ -54,6 +55,7 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureTableContributionRequest(context, path, options);
     options = captureTablePaymentAccountRequest(context, path, options);
     options = captureTableRoundRequest(context, path, options);
     options = captureTableAccountRequest(context, path, options);
@@ -65,12 +67,7 @@ export class CustomerTransport {
     const receiptRead = options.credentials === 'order-receipt';
     const paymentRecovery = options.credentials === 'order-payment';
     const cancellation = options.credentials === 'order-cancellation';
-    const renewal =
-      options.credentials === 'receipt-renewal' ||
-      options.credentials === 'payment-renewal' ||
-      options.credentials === 'cancellation-renewal' ||
-      options.credentials === 'reservation-renewal' ||
-      options.credentials === 'table-round-renewal';
+    const renewal = isPrivateRenewal(options.credentials);
     if (
       renewal &&
       (!options.assertCurrent || method !== 'POST' || path !== '/api/Auth/refresh-token')
@@ -134,16 +131,6 @@ export class CustomerTransport {
       context.signal.removeEventListener('abort', cancel);
     }
   }
-}
-function isOriginalRecovery(path: string, method: string, options: RequestOptions) {
-  if (options.credentials === 'reservation-operation') return isReservationRecoveryPath(path);
-  if (options.credentials === 'table-round-operation') return isTableRoundRecovery(path);
-  return (
-    method === 'POST' &&
-    options.credentials === 'order' &&
-    (path === '/api/customer-mobile/checkout/recover' ||
-      path === '/api/customer-mobile/checkout/cancel')
-  );
 }
 export async function fetchDirectory(origin: string, fetcher: Fetch = expoFetch): Promise<unknown> {
   originSchema.parse(origin);

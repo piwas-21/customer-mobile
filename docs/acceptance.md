@@ -607,5 +607,7 @@ deployment and restaurant acceptance remain open. Durable quote/reserve/start/or
 the full item/amount/equal-share provider/concurrency acceptance gates remain open. Strict five-mode
 contracts and original private contribution custody are implemented separately: exact selected-unit
 binding, acknowledged proof, shared purchase guards, original cancellation and logout recovery have
-source coverage. This foundation exposes no payment transport or charge action. See development.md
-for the boundary; deployment, connected UI and physical acceptance remain required.
+source coverage. Strict original transport and one-renewal-only Customer recovery are implemented separately, with
+paused owner/tenant/resource and participant-expiry controls. Neither source slice exposes a charge
+action or browser. See development.md for the boundary; accepted backend #771, deployment, connected
+UI and physical acceptance remain required.

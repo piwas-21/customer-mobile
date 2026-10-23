@@ -1,3 +1,4 @@
+import { refreshPrivateTableSession } from '../api/privateTableRenewal';
 import { refreshTableRoundSession } from '../api/tableRounds';
 import type { CustomerRecoveryAuthority } from './customerRecoveryReads';
 import { refreshSession, refreshReservationSession } from '../api/auth';
@@ -21,7 +22,12 @@ export async function renewStoredSession(
   guard();
   let next: CustomerSession;
   try {
-    if (authority?.tableRound)
+    if (authority?.tableContribution)
+      next = await refreshPrivateTableSession(client, context, captured, guard, {
+        kind: 'contribution',
+        record: authority.tableContribution,
+      });
+    else if (authority?.tableRound)
       next = await refreshTableRoundSession(client, context, captured, guard, authority.tableRound);
     else if (authority?.reservation)
       next = await refreshReservationSession(

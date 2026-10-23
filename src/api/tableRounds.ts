@@ -1,3 +1,4 @@
+import { refreshPrivateTableSession } from './privateTableRenewal';
 import {
   bindPreparedTableRound,
   bindTableRoundResolution,
@@ -7,11 +8,9 @@ import {
 import { scopedRoundPreparation, type TableRoundPreparation } from '../core/tableRoundPreparation';
 import { scopedTableRound, type TableRoundRecord } from '../core/tableRoundRecord';
 import { tableRoundPath } from '../core/tableRoundRequest';
-import { refreshCredentialsSchema } from '../core/refreshCredentials';
-import { ApiFailure, type CustomerTransport } from '../core/transport';
+import type { CustomerTransport } from '../core/transport';
 import type { TenantContext } from '../core/tenantContext';
 import type { CustomerSession } from '../core/credentials';
-import { customerAuthResponseSchema } from './customerAuthResponse';
 
 export async function prepareTableRound(
   client: CustomerTransport,
@@ -83,29 +82,8 @@ export async function refreshTableRoundSession(
   guard: () => void,
   input: TableRoundRecord,
 ) {
-  const record = scopedTableRound(context, input.principal, input);
-  if (record.principal.kind !== 'customer' || record.principal.id !== session.userId)
-    throw new ApiFailure(401, 'refused');
-  const result = await client.request(
-    context,
-    '/api/Auth/refresh-token',
-    customerAuthResponseSchema,
-    {
-      method: 'POST',
-      credentials: 'table-round-renewal',
-      principal: record.principal,
-      expectedRoundRecord: record,
-      body: refreshCredentialsSchema.parse({
-        accessToken: session.accessToken,
-        refreshToken: session.refreshToken,
-      }),
-      assertCurrent: guard,
-    },
-  );
-  if (result.userId !== record.principal.id) throw new ApiFailure(401, 'refused');
-  return {
-    userId: result.userId,
-    accessToken: result.accessToken,
-    refreshToken: result.refreshToken,
-  };
+  return refreshPrivateTableSession(client, context, session, guard, {
+    kind: 'round',
+    record: input,
+  });
 }

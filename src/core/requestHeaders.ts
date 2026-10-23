@@ -1,3 +1,4 @@
+import { tableContributionHeaders } from './tableContributionHeaders';
 import {
   captureOrderProof,
   orderRequestHeaders,
@@ -76,6 +77,13 @@ export async function requestHeaders(
   const orderProof = captureOrderProof(context, options);
   const paymentOrderId = options.expectedPaymentOrderId;
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
+  if (
+    mode === 'table-payment-prepare' ||
+    mode === 'table-payment-operation' ||
+    mode === 'table-checkout-operation' ||
+    mode === 'table-payment-renewal'
+  )
+    Object.assign(headers, await tableContributionHeaders(context, vault, options));
   if (
     mode === 'table-round-prepare' ||
     mode === 'table-round-operation' ||

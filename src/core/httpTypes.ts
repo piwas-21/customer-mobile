@@ -1,3 +1,5 @@
+import type { TablePaymentPreparation } from './tablePaymentPreparation';
+import type { TablePaymentRecord } from './tablePaymentRecord';
 import type { TableVisitRecord } from './tableVisitRecord';
 import type { TablePaymentReadScope } from './tablePaymentReadScope';
 import type { TableRoundPreparation } from './tableRoundPreparation';
@@ -44,7 +46,11 @@ export type RequestOptions = {
     | 'reservation-renewal'
     | 'table-round-prepare'
     | 'table-round-operation'
-    | 'table-round-renewal';
+    | 'table-round-renewal'
+    | 'table-payment-prepare'
+    | 'table-payment-operation'
+    | 'table-checkout-operation'
+    | 'table-payment-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
@@ -53,6 +59,8 @@ export type RequestOptions = {
   expectedTablePaymentAccount?: TablePaymentReadScope;
   expectedRoundPreparation?: TableRoundPreparation;
   expectedRoundRecord?: TableRoundRecord;
+  expectedContributionPreparation?: TablePaymentPreparation;
+  expectedContributionRecord?: TablePaymentRecord;
   expectedOrderProof?: OrderOperationProof;
   expectedPaymentOrderId?: string;
   expectedCancellationRecord?: CancellationOperationRecord;
