@@ -1,20 +1,24 @@
 import type { TablePaymentAccount } from '../api/tablePaymentAccountContract';
 import { TableAllocationIndex, type TableAllocation } from './tableAllocationIndex';
 import { ApiFailure } from '../core/apiFailure';
+import { tableShareAmounts } from './tableShareAmounts';
 type Plan = NonNullable<TablePaymentAccount['account']['activeEqualSharePlan']>;
 export function tableContributionShare(plan: Plan, ordinal: number) {
   const reviewed = new TableAllocationIndex(plan.scope);
   const slots = [...plan.slots].sort((a, b) => a.ordinal - b.ordinal);
-  const step = plan.currency === 'CHF' || plan.currency === 'EUR' ? 5n : 1n;
   const total = BigInt(plan.totalMinor);
-  const count = BigInt(plan.shareCount);
-  const base = (total / count / step) * step;
+  const amounts = tableShareAmounts(
+    total,
+    plan.shareCount,
+    plan.currency,
+    plan.isCustom ? (plan.customAmountsMinor ?? []) : [],
+  );
   if (
     reviewed.total !== total ||
     slots.reduce((sum, slot) => sum + BigInt(slot.amountMinor), 0n) !== total ||
-    slots.some(
-      (slot, i) => BigInt(slot.amountMinor) !== expectedShare(plan, i, step, total, count, base),
-    )
+    (plan.isCustom && plan.customAmountsMinor?.length !== plan.shareCount) ||
+    slots.length !== plan.shareCount ||
+    slots.some((slot, i) => slot.ordinal !== i + 1 || BigInt(slot.amountMinor) !== amounts[i])
   )
     throw new ApiFailure(200, 'contract');
   const offset = slots
@@ -23,18 +27,6 @@ export function tableContributionShare(plan: Plan, ordinal: number) {
   const selected = slots.find((slot) => slot.ordinal === ordinal);
   if (!selected) throw new ApiFailure(409, 'refused');
   return new TableAllocationIndex(sliceScope(plan.scope, offset, BigInt(selected.amountMinor)));
-}
-function expectedShare(
-  plan: Plan,
-  index: number,
-  step: bigint,
-  total: bigint,
-  count: bigint,
-  base: bigint,
-) {
-  if (plan.isCustom) return BigInt(plan.customAmountsMinor?.[index] ?? 0);
-  if (step > 1n) return index === plan.slots.length - 1 ? total - base * (count - 1n) : base;
-  return total / count + (BigInt(index) < total % count ? 1n : 0n);
 }
 const minimum = (a: bigint, b: bigint) => (a < b ? a : b);
 // Slice frozen money in its reviewed order. At most two partial units are materialized.

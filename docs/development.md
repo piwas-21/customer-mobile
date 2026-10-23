@@ -400,3 +400,14 @@ navigate to the table and never reuse order identity or carry settlement/token a
 split-plan creation, runtime activation, live provider payment, signing or deployment is performed.
 Full locales/RTL, installed browser/storage lifecycle, accepted backend/transport publication,
 new split plans and provider/device acceptance remain required.
+
+## Native split-plan source contracts
+
+The separate schema1 plan intent, read-only preparation and minimal original resolution contracts
+bind tenant, public operation, visit, revision, exact frozen allocation and ordered per-guest amounts.
+Equal and custom contribution selection share the same exact BigInt distribution check with new
+plan review. CHF/EUR equal shares retain the five-minor increment and final remainder; supported
+other currencies use stable one-minor remainder positions. Custom amounts retain original order.
+A preparation never authorizes payment or creates a plan. These contracts do not connect plan
+creation, custody, transport or UI. Original-proof server integration, durable local recovery and
+backend-ordered publication precede the connected journey; source does not activate any tenant.
