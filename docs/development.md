@@ -411,3 +411,9 @@ other currencies use stable one-minor remainder positions. Custom amounts retain
 A preparation never authorizes payment or creates a plan. These contracts do not connect plan
 creation, custody, transport or UI. Original-proof server integration, durable local recovery and
 backend-ordered publication precede the connected journey; source does not activate any tenant.
+
+Schema1 split-plan resolution mirrors the accepted backend `CustomerTablePlanResolutionDto`: only
+operation, service-session, outcome and optional plan identity are returned. The purpose-bound
+original proof and scoped transport enforce tenant/environment/principal authority; the pure
+resolution decoder binds the returned operation and service session. Requiring a new echoed tenant
+field would contradict the accepted server contract and reject valid original recovery responses.
