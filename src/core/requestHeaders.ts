@@ -1,3 +1,4 @@
+import { tablePlanHeaders } from './tablePlanHeaders';
 import { tableContributionHeaders } from './tableContributionHeaders';
 import {
   captureOrderProof,
@@ -77,6 +78,12 @@ export async function requestHeaders(
   const orderProof = captureOrderProof(context, options);
   const paymentOrderId = options.expectedPaymentOrderId;
   const principal = options.principal ? Object.freeze({ ...options.principal }) : undefined;
+  if (
+    mode === 'table-plan-prepare' ||
+    mode === 'table-plan-operation' ||
+    mode === 'table-plan-renewal'
+  )
+    Object.assign(headers, await tablePlanHeaders(context, vault, options));
   if (
     mode === 'table-payment-prepare' ||
     mode === 'table-payment-operation' ||

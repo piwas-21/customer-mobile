@@ -1,7 +1,11 @@
+import {
+  originalTableSessionHeader,
+  privateTableCustomerHeaders,
+  tablePreparationHeaders,
+} from './privateTableHeaders';
 import { ApiFailure } from './apiFailure';
 import type { CredentialVault } from './credentials';
 import type { RequestOptions } from './httpTypes';
-import { privateTableCustomerHeaders, tablePreparationHeaders } from './privateTableHeaders';
 import { scopedTablePaymentPreparation } from './tablePaymentPreparation';
 import { scopedTablePayment, type TablePaymentRecord } from './tablePaymentRecord';
 import { scopedTableVisit } from './tableVisitRecord';
@@ -21,10 +25,7 @@ export async function tableContributionHeaders(
     options.expectedContributionPreparation === undefined
       ? null
       : scopedTablePaymentPreparation(context, principal, options.expectedContributionPreparation);
-  if (!record && !preparation) throw new ApiFailure(401, 'refused');
-  const headers: Record<string, string> = {
-    'X-Session-Id': record?.sessionId ?? preparation!.sessionId,
-  };
+  const headers = originalTableSessionHeader(record, preparation);
   if (preparation)
     Object.assign(
       headers,

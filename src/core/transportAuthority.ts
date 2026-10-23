@@ -1,9 +1,11 @@
+import { isTablePlanRecovery } from './tablePlanRequest';
 import { isReservationRecoveryPath } from './reservationPaths';
 import { isTableRoundRecovery } from './tableRoundRequest';
 import { isTableContributionRecovery } from './tableContributionRequest';
 import type { RequestOptions } from './httpTypes';
 export function isOriginalRecovery(path: string, method: string, options: RequestOptions) {
   if (method !== 'POST') return false;
+  if (options.credentials === 'table-plan-operation') return isTablePlanRecovery(path);
   if (options.credentials === 'reservation-operation') return isReservationRecoveryPath(path);
   if (options.credentials === 'table-round-operation') return isTableRoundRecovery(path);
   if (
@@ -25,5 +27,6 @@ export function isPrivateRenewal(mode: RequestOptions['credentials']) {
     'reservation-renewal',
     'table-round-renewal',
     'table-payment-renewal',
+    'table-plan-renewal',
   ].includes(mode ?? 'none');
 }

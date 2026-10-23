@@ -1,3 +1,4 @@
+import { scopedTablePlan, type TablePlanRecord } from '../core/tablePlanRecord';
 import { customerAuthResponseSchema } from './customerAuthResponse';
 import { refreshCredentialsSchema } from '../core/refreshCredentials';
 import { scopedTableRound, type TableRoundRecord } from '../core/tableRoundRecord';
@@ -12,22 +13,27 @@ export async function refreshPrivateTableSession(
   guard: () => void,
   original:
     | { kind: 'round'; record: TableRoundRecord }
-    | { kind: 'contribution'; record: TablePaymentRecord },
+    | { kind: 'contribution'; record: TablePaymentRecord }
+    | { kind: 'plan'; record: TablePlanRecord },
 ) {
   const record =
     original.kind === 'round'
       ? scopedTableRound(context, original.record.principal, original.record)
-      : scopedTablePayment(context, original.record.principal, original.record);
+      : original.kind === 'plan'
+        ? scopedTablePlan(context, original.record.principal, original.record)
+        : scopedTablePayment(context, original.record.principal, original.record);
   if (record.principal.kind !== 'customer' || record.principal.id !== session.userId)
     throw new ApiFailure(401, 'refused');
   guard();
   const authority =
     original.kind === 'round'
       ? { credentials: 'table-round-renewal' as const, expectedRoundRecord: original.record }
-      : {
-          credentials: 'table-payment-renewal' as const,
-          expectedContributionRecord: original.record,
-        };
+      : original.kind === 'plan'
+        ? { credentials: 'table-plan-renewal' as const, expectedPlanRecord: original.record }
+        : {
+            credentials: 'table-payment-renewal' as const,
+            expectedContributionRecord: original.record,
+          };
   const result = await client.request(
     context,
     '/api/Auth/refresh-token',

@@ -433,3 +433,5 @@ participant expiry after asynchronous secure reads. Minimal original recovery re
 local leaving or capability withdrawal. Logout purges credentials while retaining original plan
 proof and the Customer reminder. Transport, renewal, connected plan creation and deployed/provider/
 installed acceptance remain separate gates. No tenant is activated by this source slice.
+
+Native split-plan transport binds the original plan intent/proof, exact route and acknowledged custody before any network dispatch. Fresh preparation/submission require the original participant/session and current expiry. Original recover/stop omit participant credentials and retain one Customer token renewal after local leaving or directory withdrawal. Initial writes are sent once; only original recovery can renew/retry. A response arriving after preparation expiry cannot become a new review. This source slice does not activate payments or prove installed/provider acceptance.

@@ -1,3 +1,6 @@
+import type { CustomerRecoveryAuthority } from './customerRecoveryAuthority';
+import { resolveTablePlan } from '../api/tablePlans';
+import { scopedTablePlan, type TablePlanRecord } from './tablePlanRecord';
 import { resolveTableContribution, resolveTableCheckout } from '../api/tableContributions';
 import { scopedTablePayment, type TablePaymentRecord } from './tablePaymentRecord';
 import { resolveTableRound } from '../api/tableRounds';
@@ -12,67 +15,13 @@ import {
   scopedReservationRecord,
   type ReservationOperationRecord,
 } from './reservationOperationRecord';
-import type { Principal } from './credentials';
 import { readOrderReceipt } from '../api/orderReceipt';
 import { recoverCustomerPayment } from '../api/customerPayment';
 import { decisionProof, orderDecisionSchema, type OrderDecision } from './orderDecisions';
 import { scopedPaymentRecord, type PaymentOperationRecord } from './paymentOperationRecord';
-import type { OrderOperationProof } from './orderOperationProof';
 import type { TenantContext } from './tenantContext';
 import type { CustomerTransport } from './transport';
-export type CustomerRecoveryAuthority =
-  | {
-      proof: OrderOperationProof;
-      paymentOrderId?: string | undefined;
-      cancellation?: never;
-      reservation?: never;
-      tableRound?: never;
-      tableContribution?: never;
-      assertCurrent?: never;
-    }
-  | {
-      cancellation: CancellationOperationRecord;
-      proof?: never;
-      paymentOrderId?: never;
-      reservation?: never;
-      tableRound?: never;
-      tableContribution?: never;
-      assertCurrent?: never;
-    }
-  | {
-      reservation: ReservationOperationRecord;
-      tableRound?: never;
-      tableContribution?: never;
-      assertCurrent: () => void;
-      proof?: never;
-      paymentOrderId?: never;
-      cancellation?: never;
-    }
-  | {
-      tableRound: TableRoundRecord;
-      tableContribution?: never;
-      assertCurrent: () => void;
-      proof?: never;
-      paymentOrderId?: never;
-      cancellation?: never;
-      reservation?: never;
-    }
-  | {
-      tableContribution: TablePaymentRecord;
-      assertCurrent: () => void;
-      proof?: never;
-      paymentOrderId?: never;
-      cancellation?: never;
-      reservation?: never;
-      tableRound?: never;
-    };
-export function recoveryPrincipal(authority: CustomerRecoveryAuthority): Principal {
-  if (authority.tableContribution) return authority.tableContribution.principal;
-  if (authority.tableRound) return authority.tableRound.principal;
-  if (authority.reservation) return authority.reservation.principal;
-  if (authority.cancellation) return authority.cancellation.principal;
-  return authority.proof.principal;
-}
+export { recoveryPrincipal, type CustomerRecoveryAuthority } from './customerRecoveryAuthority';
 type ReadPrivate = <T>(
   authority: CustomerRecoveryAuthority,
   read: (guard: () => void) => Promise<T>,
@@ -121,6 +70,22 @@ export class CustomerRecoveryReads {
       };
       guard();
       return resolveReservationAttempt(this.client, this.context, record, phase, guard, locale);
+    });
+  }
+  tablePlan(
+    saved: TablePlanRecord,
+    phase: 'recover' | 'stop',
+    locale: string,
+    assertCurrent: () => void,
+  ) {
+    const record = scopedTablePlan(this.context, saved.principal, saved);
+    return this.readPrivate({ tablePlan: record, assertCurrent }, (sessionGuard) => {
+      const guard = () => {
+        sessionGuard();
+        assertCurrent();
+      };
+      guard();
+      return resolveTablePlan(this.client, this.context, record, { phase }, guard, locale);
     });
   }
   tableRound(

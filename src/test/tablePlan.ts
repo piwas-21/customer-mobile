@@ -26,3 +26,14 @@ export function preparedTablePlan() {
     sharesMinor: [465, 465, 470],
   };
 }
+
+export function planResolution(): import('../api/tablePlanResolution').TablePlanResolution {
+  const intent = tablePlanIntent();
+  return {
+    schemaVersion: 1,
+    operationId: intent.operationId,
+    serviceSessionId: intent.serviceSessionId,
+    outcome: 'applied',
+    planId: intent.operationId,
+  };
+}
