@@ -1,7 +1,7 @@
+import { scopedPrivateOperation } from './scopedPrivateOperation';
 import { z } from 'zod';
 import { originalOperationProofSchema } from '../api/originalOperationProof';
 import { tableRoundIntentSchema, tableRoundResolutionSchema } from '../api/tableRoundContract';
-import { ApiFailure } from './apiFailure';
 import { principalSchema, type Principal } from './credentials';
 import { environmentSchema } from './directory';
 import { canonicalUuidSchema } from './identifiers';
@@ -35,14 +35,7 @@ export const tableRoundRecordSchema = z
   });
 export type TableRoundRecord = z.infer<typeof tableRoundRecordSchema>;
 export function scopedTableRound(context: TenantContext, principal: Principal, input: unknown) {
-  const owner = principalSchema.parse(principal);
-  const record = tableRoundRecordSchema.parse(input);
-  if (
-    record.environment !== context.environment ||
-    record.tenantId !== context.tenant.id ||
-    record.principal.kind !== owner.kind ||
-    record.principal.id !== owner.id
-  )
-    throw new ApiFailure(403, 'refused');
-  return record;
+  return scopedPrivateOperation(context, principal, input, (value) =>
+    tableRoundRecordSchema.parse(value),
+  );
 }

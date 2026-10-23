@@ -1,3 +1,4 @@
+import { TablePlanStorage } from './tablePlanStorage';
 import { TableRoundStorage } from './tableRoundStorage';
 import { TablePaymentStorage } from './tablePaymentStorage';
 import { tablePaymentResolved } from './tablePaymentRecord';
@@ -11,6 +12,7 @@ export async function assertTablePurchasesResolved(
 ) {
   await new TableRoundStorage(store).assertResolved(context, principal, guard);
   await new TablePaymentStorage(store).assertResolved(context, principal, guard);
+  await new TablePlanStorage(store).assertResolved(context, principal, guard);
 }
 export async function tablePaymentHoldsPurchases(
   store: SecretStore,
@@ -29,6 +31,7 @@ export async function tablePurchasesHeld(
 ) {
   return (
     (await tablePaymentHoldsPurchases(store, context, principal, guard)) ||
-    (await new TableRoundStorage(store).read(context, principal, guard))?.resolution === null
+    (await new TableRoundStorage(store).read(context, principal, guard))?.resolution === null ||
+    (await new TablePlanStorage(store).read(context, principal, guard))?.resolution === null
   );
 }

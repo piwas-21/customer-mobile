@@ -38,7 +38,8 @@ export type CredentialKind =
   | 'reservation-operation'
   | 'reservation-contact'
   | 'table-round-operation'
-  | 'table-payment-operation';
+  | 'table-payment-operation'
+  | 'table-plan-operation';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,

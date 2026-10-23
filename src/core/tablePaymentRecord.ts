@@ -1,3 +1,4 @@
+import { scopedPrivateOperation } from './scopedPrivateOperation';
 import { z } from 'zod';
 import { originalOperationProofSchema } from '../api/originalOperationProof';
 import { tablePaymentIntentSchema, tablePaymentModeSchema } from '../api/tablePaymentIntent';
@@ -7,7 +8,6 @@ import { principalSchema, type Principal } from './credentials';
 import { environmentSchema } from './directory';
 import { canonicalUuidSchema } from './identifiers';
 import { utcSortMarkerSchema } from './utcSortMarker';
-import { ApiFailure } from './apiFailure';
 import type { TenantContext } from './tenantContext';
 const checkoutState = z.strictObject({
   outcome: z.enum(['reserved', 'pending', 'paid', 'stopped']),
@@ -50,16 +50,9 @@ export const tablePaymentRecordSchema = z
   });
 export type TablePaymentRecord = z.infer<typeof tablePaymentRecordSchema>;
 export function scopedTablePayment(context: TenantContext, principal: Principal, value: unknown) {
-  const owner = principalSchema.parse(principal);
-  const record = tablePaymentRecordSchema.parse(value);
-  if (
-    record.environment !== context.environment ||
-    record.tenantId !== context.tenant.id ||
-    record.principal.kind !== owner.kind ||
-    record.principal.id !== owner.id
-  )
-    throw new ApiFailure(403, 'refused');
-  return record;
+  return scopedPrivateOperation(context, principal, value, (value) =>
+    tablePaymentRecordSchema.parse(value),
+  );
 }
 export function tablePaymentResolved(record: TablePaymentRecord) {
   return (

@@ -1,5 +1,5 @@
 import { storedTableAuthority } from './storedTableAuthority';
-import { TablePaymentStorage } from './tablePaymentStorage';
+import { assertTablePurchasesResolved } from './tablePurchaseHold';
 import { bindPreparedTableRound } from '../api/tableRoundContract';
 import { ApiFailure } from './apiFailure';
 import { assertPurchaseClaims } from './purchaseClaim';
@@ -24,7 +24,7 @@ export async function installTableRound(
   if (await storage.read(context, principal, guard)) throw new ApiFailure(409, 'refused');
   // A malformed or partially saved original claim must also prevent a competing purchase.
   await assertPurchaseClaims(store, context, principal, guard);
-  await new TablePaymentStorage(store).assertResolved(context, principal, guard);
+  await assertTablePurchasesResolved(store, context, principal, guard);
   const session = await storedTableAuthority(store, context, principal, preparation, guard, () =>
     scopedRoundPreparation(context, principal, preparation),
   );
