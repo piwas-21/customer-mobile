@@ -38,3 +38,12 @@ export async function tablePreparationHeaders(
   validate();
   return participant;
 }
+
+export function originalTableSessionHeader(
+  record: { sessionId: string } | null,
+  preparation: { sessionId: string } | null,
+): Record<string, string> {
+  const sessionId = record?.sessionId ?? preparation?.sessionId;
+  if (!sessionId) throw new ApiFailure(401, 'refused');
+  return { 'X-Session-Id': sessionId };
+}

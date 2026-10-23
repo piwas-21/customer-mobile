@@ -1,3 +1,4 @@
+import { originalTableBody } from './originalTableBody';
 import { z } from 'zod';
 import { originalOperationProofSchema } from '../api/originalOperationProof';
 import { tablePaymentIntentSchema } from '../api/tablePaymentIntent';
@@ -112,14 +113,7 @@ function captureOriginal(
       : options.expectedContributionPreparation !== undefined
   )
     throw new ApiFailure(401, 'refused');
-  const body = initial
-    ? submission.parse(options.body)
-    : originalOperationProofSchema.parse(options.body);
-  if (
-    JSON.stringify(body) !==
-    JSON.stringify(initial ? { intent: record.intent, proof: record.proof } : record.proof)
-  )
-    throw new ApiFailure(401, 'refused');
+  const body = originalTableBody(options.body, initial, record, submission);
   return {
     ...options,
     principal: record.principal,

@@ -1,3 +1,4 @@
+import { scopedTablePlan, type TablePlanRecord } from '../core/tablePlanRecord';
 import { customerAuthResponseSchema } from './customerAuthResponse';
 import { refreshCredentialsSchema } from '../core/refreshCredentials';
 import { scopedTableRound, type TableRoundRecord } from '../core/tableRoundRecord';
@@ -5,29 +6,21 @@ import { scopedTablePayment, type TablePaymentRecord } from '../core/tablePaymen
 import type { CustomerSession } from '../core/credentials';
 import type { TenantContext } from '../core/tenantContext';
 import { ApiFailure, type CustomerTransport } from '../core/transport';
+type OriginalTableRenewal =
+  | { kind: 'round'; record: TableRoundRecord }
+  | { kind: 'contribution'; record: TablePaymentRecord }
+  | { kind: 'plan'; record: TablePlanRecord };
 export async function refreshPrivateTableSession(
   client: CustomerTransport,
   context: TenantContext,
   session: CustomerSession,
   guard: () => void,
-  original:
-    | { kind: 'round'; record: TableRoundRecord }
-    | { kind: 'contribution'; record: TablePaymentRecord },
+  original: OriginalTableRenewal,
 ) {
-  const record =
-    original.kind === 'round'
-      ? scopedTableRound(context, original.record.principal, original.record)
-      : scopedTablePayment(context, original.record.principal, original.record);
+  const { record, authority } = captureOriginalRenewal(context, original);
   if (record.principal.kind !== 'customer' || record.principal.id !== session.userId)
     throw new ApiFailure(401, 'refused');
   guard();
-  const authority =
-    original.kind === 'round'
-      ? { credentials: 'table-round-renewal' as const, expectedRoundRecord: original.record }
-      : {
-          credentials: 'table-payment-renewal' as const,
-          expectedContributionRecord: original.record,
-        };
   const result = await client.request(
     context,
     '/api/Auth/refresh-token',
@@ -50,4 +43,33 @@ export async function refreshPrivateTableSession(
     accessToken: result.accessToken,
     refreshToken: result.refreshToken,
   };
+}
+
+function captureOriginalRenewal(context: TenantContext, original: OriginalTableRenewal) {
+  switch (original.kind) {
+    case 'round':
+      return {
+        record: scopedTableRound(context, original.record.principal, original.record),
+        authority: {
+          credentials: 'table-round-renewal' as const,
+          expectedRoundRecord: original.record,
+        },
+      };
+    case 'plan':
+      return {
+        record: scopedTablePlan(context, original.record.principal, original.record),
+        authority: {
+          credentials: 'table-plan-renewal' as const,
+          expectedPlanRecord: original.record,
+        },
+      };
+    case 'contribution':
+      return {
+        record: scopedTablePayment(context, original.record.principal, original.record),
+        authority: {
+          credentials: 'table-payment-renewal' as const,
+          expectedContributionRecord: original.record,
+        },
+      };
+  }
 }

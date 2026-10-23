@@ -1,3 +1,4 @@
+import { captureTablePlanRequest } from './tablePlanRequest';
 import { isOriginalRecovery, isPrivateRenewal } from './transportAuthority';
 import { captureTableContributionRequest } from './tableContributionRequest';
 import { fetch as expoFetch } from 'expo/fetch';
@@ -55,6 +56,7 @@ export class CustomerTransport {
     options: RequestOptions = {},
   ): Promise<T> {
     this.boundary.assertCurrent(context);
+    options = captureTablePlanRequest(context, path, options);
     options = captureTableContributionRequest(context, path, options);
     options = captureTablePaymentAccountRequest(context, path, options);
     options = captureTableRoundRequest(context, path, options);

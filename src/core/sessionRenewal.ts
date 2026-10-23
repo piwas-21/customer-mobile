@@ -22,7 +22,12 @@ export async function renewStoredSession(
   guard();
   let next: CustomerSession;
   try {
-    if (authority?.tableContribution)
+    if (authority?.tablePlan)
+      next = await refreshPrivateTableSession(client, context, captured, guard, {
+        kind: 'plan',
+        record: authority.tablePlan,
+      });
+    else if (authority?.tableContribution)
       next = await refreshPrivateTableSession(client, context, captured, guard, {
         kind: 'contribution',
         record: authority.tableContribution,

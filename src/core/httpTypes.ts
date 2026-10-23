@@ -1,3 +1,5 @@
+import type { TablePlanPreparation } from './tablePlanPreparation';
+import type { TablePlanRecord } from './tablePlanRecord';
 import type { TablePaymentPreparation } from './tablePaymentPreparation';
 import type { TablePaymentRecord } from './tablePaymentRecord';
 import type { TableVisitRecord } from './tableVisitRecord';
@@ -50,13 +52,18 @@ export type RequestOptions = {
     | 'table-payment-prepare'
     | 'table-payment-operation'
     | 'table-checkout-operation'
-    | 'table-payment-renewal';
+    | 'table-payment-renewal'
+    | 'table-plan-prepare'
+    | 'table-plan-operation'
+    | 'table-plan-renewal';
   principal?: Principal;
   locale?: string;
   assertCurrent?: () => void;
   expectedBasketSessionId?: string;
   expectedTableVisit?: TableVisitRecord;
   expectedTablePaymentAccount?: TablePaymentReadScope;
+  expectedPlanPreparation?: TablePlanPreparation;
+  expectedPlanRecord?: TablePlanRecord;
   expectedRoundPreparation?: TableRoundPreparation;
   expectedRoundRecord?: TableRoundRecord;
   expectedContributionPreparation?: TablePaymentPreparation;
