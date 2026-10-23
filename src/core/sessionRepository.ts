@@ -1,3 +1,4 @@
+import { tablePurchasesHeld } from './tablePurchaseHold';
 import { hasCustomerRecovery } from './hasCustomerRecovery';
 import { TablePaymentRepository } from './tablePaymentRepository';
 import { TableRoundRepository } from './tableRoundRepository';
@@ -10,7 +11,12 @@ import { OrderOperationRepository } from './orderOperationRepository';
 import { PaymentOperationRepository } from './paymentOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
-import { CredentialVault, type CustomerSession, type SecretStore } from './credentials';
+import {
+  CredentialVault,
+  type CustomerSession,
+  type Principal,
+  type SecretStore,
+} from './credentials';
 import { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
 const pointerKey = (context: TenantContext) =>
@@ -44,6 +50,9 @@ export class SessionRepository {
     this.tableVisits = new TableVisitRepository(store, this.writes);
     this.tableRounds = new TableRoundRepository(store, this.writes);
     this.tablePayments = new TablePaymentRepository(store, this.writes);
+  }
+  hasTablePurchaseHold(context: TenantContext, principal: Principal, guard: () => void) {
+    return this.writes.run(() => tablePurchasesHeld(this.store, context, principal, guard));
   }
   loadPaymentAttention(context: TenantContext): Promise<string | null> {
     return this.writes.run(() => this.attention.load(context));
