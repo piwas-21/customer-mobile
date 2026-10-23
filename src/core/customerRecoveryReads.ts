@@ -1,3 +1,5 @@
+import { resolveTableContribution, resolveTableCheckout } from '../api/tableContributions';
+import { scopedTablePayment, type TablePaymentRecord } from './tablePaymentRecord';
 import { resolveTableRound } from '../api/tableRounds';
 import { scopedTableRound, type TableRoundRecord } from './tableRoundRecord';
 import { prepareOriginalCancellation, resolveCancellation } from '../api/orderCancellation';
@@ -25,6 +27,7 @@ export type CustomerRecoveryAuthority =
       cancellation?: never;
       reservation?: never;
       tableRound?: never;
+      tableContribution?: never;
       assertCurrent?: never;
     }
   | {
@@ -33,11 +36,13 @@ export type CustomerRecoveryAuthority =
       paymentOrderId?: never;
       reservation?: never;
       tableRound?: never;
+      tableContribution?: never;
       assertCurrent?: never;
     }
   | {
       reservation: ReservationOperationRecord;
       tableRound?: never;
+      tableContribution?: never;
       assertCurrent: () => void;
       proof?: never;
       paymentOrderId?: never;
@@ -45,13 +50,24 @@ export type CustomerRecoveryAuthority =
     }
   | {
       tableRound: TableRoundRecord;
+      tableContribution?: never;
       assertCurrent: () => void;
       proof?: never;
       paymentOrderId?: never;
       cancellation?: never;
       reservation?: never;
+    }
+  | {
+      tableContribution: TablePaymentRecord;
+      assertCurrent: () => void;
+      proof?: never;
+      paymentOrderId?: never;
+      cancellation?: never;
+      reservation?: never;
+      tableRound?: never;
     };
 export function recoveryPrincipal(authority: CustomerRecoveryAuthority): Principal {
+  if (authority.tableContribution) return authority.tableContribution.principal;
   if (authority.tableRound) return authority.tableRound.principal;
   if (authority.reservation) return authority.reservation.principal;
   if (authority.cancellation) return authority.cancellation.principal;
@@ -121,6 +137,41 @@ export class CustomerRecoveryReads {
       };
       guard();
       return resolveTableRound(this.client, this.context, record, { phase }, guard, locale);
+    });
+  }
+  tableContribution(
+    saved: TablePaymentRecord,
+    phase: 'recover' | 'stop',
+    locale: string,
+    assertCurrent: () => void,
+  ) {
+    return this.originalContribution(saved, assertCurrent, (record, guard) =>
+      resolveTableContribution(this.client, this.context, record, { phase }, guard, locale),
+    );
+  }
+  tableCheckout(
+    saved: TablePaymentRecord,
+    phase: 'recover' | 'stop',
+    locale: string,
+    assertCurrent: () => void,
+  ) {
+    return this.originalContribution(saved, assertCurrent, (record, guard) =>
+      resolveTableCheckout(this.client, this.context, record, { phase }, guard, locale),
+    );
+  }
+  private originalContribution<T>(
+    saved: TablePaymentRecord,
+    assertCurrent: () => void,
+    read: (record: TablePaymentRecord, guard: () => void) => Promise<T>,
+  ) {
+    const record = scopedTablePayment(this.context, saved.principal, saved);
+    return this.readPrivate({ tableContribution: record, assertCurrent }, (sessionGuard) => {
+      const guard = () => {
+        sessionGuard();
+        assertCurrent();
+      };
+      guard();
+      return read(record, guard);
     });
   }
 }

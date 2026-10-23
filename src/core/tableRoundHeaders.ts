@@ -1,8 +1,7 @@
+import { privateTableCustomerHeaders, tablePreparationHeaders } from './privateTableHeaders';
 import { ApiFailure } from './apiFailure';
 import type { CredentialVault } from './credentials';
 import type { RequestOptions } from './httpTypes';
-import { refreshCredentialsSchema } from './refreshCredentials';
-import { tableAccountHeaders } from './tableAccountRequest';
 import { scopedRoundPreparation } from './tableRoundPreparation';
 import { scopedTableRound } from './tableRoundRecord';
 import type { TenantContext } from './tenantContext';
@@ -27,19 +26,22 @@ export async function tableRoundHeaders(
     'X-Session-Id': record?.sessionId ?? preparation!.sessionId,
   };
   if (preparation) {
-    const sessionId = await vault.capability(context, 'guest-session', principal);
-    options.assertCurrent();
-    if (sessionId !== preparation.sessionId) throw new ApiFailure(401, 'refused');
     Object.assign(
       headers,
-      await tableAccountHeaders(context, vault, {
-        ...options,
-        expectedTableVisit: preparation.visit,
-      }),
+      await tablePreparationHeaders(context, vault, options, preparation, () =>
+        scopedRoundPreparation(context, principal, preparation),
+      ),
     );
-    scopedRoundPreparation(context, principal, preparation);
   }
-  Object.assign(headers, await customerHeaders(context, vault, options));
+  Object.assign(
+    headers,
+    await privateTableCustomerHeaders(
+      context,
+      vault,
+      options,
+      options.credentials === 'table-round-renewal',
+    ),
+  );
   if (record) {
     const raw = await vault.capability(context, 'table-round-operation', principal);
     options.assertCurrent();
@@ -49,21 +51,4 @@ export async function tableRoundHeaders(
   if (preparation) scopedRoundPreparation(context, principal, preparation);
   options.assertCurrent();
   return headers;
-}
-
-async function customerHeaders(
-  context: TenantContext,
-  vault: CredentialVault,
-  options: RequestOptions,
-) {
-  if (options.principal?.kind !== 'customer') return {};
-  const session = await vault.session(context, options.principal.id);
-  options.assertCurrent!();
-  if (!session) throw new ApiFailure(401, 'refused');
-  if (options.credentials !== 'table-round-renewal')
-    return { Authorization: `Bearer ${session.accessToken}` };
-  const body = refreshCredentialsSchema.parse(options.body);
-  if (body.accessToken !== session.accessToken || body.refreshToken !== session.refreshToken)
-    throw new ApiFailure(401, 'refused');
-  return {};
 }

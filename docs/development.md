@@ -371,7 +371,13 @@ contribution. Cancellation intent survives late replies; canonical paid/stopped 
 before acknowledged dismissal. URLs and participant credentials never enter this record. Logout and
 account-disabled restore preserve original private recovery custody and a Customer reminder.
 
-This foundation exposes no payment action or transport. Preparation/submit/recovery, original JWT
-renewal, browser/return lifetimes, all mode screens, full locales/RTL, backend publication/deployment
-and installed/provider acceptance remain required. No live payment, activation, signing or deployment
-is performed.
+The separate strict transport now binds native contribution prepare/submit/recover/stop and original
+hosted start/recover/stop to exact routes, immutable request bodies and acknowledged private records.
+New requests require separate live participant and original session authority. Original minimal
+recovery and stopping survive local leaving or read-only withdrawal; Customer recovery may renew
+once using only its original proof and stored credentials. Initial submission never renews or retries.
+Owner/resource/tenant withdrawal fences paused headers, responses, renewal installation and retries.
+
+No connected charge action or browser is exposed by these adapters. Controller/browser/return
+lifetimes, all mode screens, full locales/RTL, accepted backend #771, deployment and installed/provider
+acceptance remain required. No live payment, activation, signing or deployment is performed.
