@@ -342,6 +342,15 @@ cannot release an unresolved operation. Backend #761 must be accepted on develop
 mobile source publication; deployed/installed acceptance remains separate. No tenant activation,
 real round, payment, notification or deployment is performed.
 
+## Current native translation resources
+
+The native runtime in `src/i18n.ts` currently registers only English resources, with English
+fallback for other device languages. Its translation modules are the existing `*.en.ts` files;
+there are no other native locale bundles to keep in parity in this source slice. New contribution
+labels use that same i18next boundary. This is incomplete release localization: the plan still
+requires all ten locales, RTL and installed accessibility acceptance before release. No translated
+bundle, supported-language restriction or localization acceptance is implied here.
+
 ## Native table payment account reads
 
 The table's explicit Payment details view reads backend #762's schema1 current participant account.
