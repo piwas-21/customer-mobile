@@ -36,6 +36,7 @@ export async function prepareTableContribution(
     },
   );
   guard();
+  scopedTablePaymentPreparation(context, preparation.principal, preparation);
   return bindPreparedTablePayment(preparation.intent, preparation.currency, response);
 }
 export async function resolveTableContribution(

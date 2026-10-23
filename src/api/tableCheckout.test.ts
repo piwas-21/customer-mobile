@@ -17,7 +17,7 @@ it('starts the same reserved attempt with original live authority and never trea
   const ready = {
     ...contributionCheckout(),
     outcome: 'ready',
-    checkoutUrl: 'https://checkout.example.test/original',
+    checkoutUrl: new URL('/original', f.context.tenant.webOrigin).toString(),
   };
   f.fetcher.mockResolvedValue(response({ success: true, data: ready }));
   expect(
