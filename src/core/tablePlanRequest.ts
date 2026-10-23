@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { originalOperationProofSchema } from '../api/originalOperationProof';
 import { tablePlanIntentSchema } from '../api/tablePlanIntent';
 import { scopedTablePlanPreparation } from './tablePlanPreparation';
-import { scopedTablePlan } from './tablePlanRecord';
+import { scopedTablePlan, type TablePlanRecord } from './tablePlanRecord';
 import { refreshCredentialsSchema } from './refreshCredentials';
 import { ApiFailure } from './apiFailure';
 import type { RequestOptions } from './httpTypes';
@@ -42,20 +42,52 @@ export function captureTablePlanRequest(
     return capturePreparationRequest(context, path, options, options.principal);
   const record = scopedTablePlan(context, options.principal, options.expectedPlanRecord);
   if (record.resolution) throw new ApiFailure(401, 'refused');
-  if (mode === 'table-plan-renewal') {
-    if (
-      path !== '/api/Auth/refresh-token' ||
-      record.principal.kind !== 'customer' ||
-      options.expectedPlanPreparation !== undefined
-    )
-      throw new ApiFailure(401, 'refused');
-    return {
-      ...options,
-      principal: record.principal,
-      expectedPlanRecord: record,
-      body: refreshCredentialsSchema.parse(options.body),
-    };
-  }
+  if (mode === 'table-plan-renewal') return captureRenewalRequest(path, options, record);
+  return captureOperationRequest(context, path, options, record);
+}
+
+function capturePreparationRequest(
+  context: TenantContext,
+  path: string,
+  options: RequestOptions,
+  principal: Principal,
+): RequestOptions {
+  const prepared = scopedTablePlanPreparation(context, principal, options.expectedPlanPreparation);
+  const body = tablePlanIntentSchema.parse(options.body);
+  if (
+    path !== tablePlanPath + '/prepare' ||
+    options.expectedPlanRecord !== undefined ||
+    JSON.stringify(body) !== JSON.stringify(prepared.intent)
+  )
+    throw new ApiFailure(401, 'refused');
+  return { ...options, principal: prepared.principal, expectedPlanPreparation: prepared, body };
+}
+
+function captureRenewalRequest(
+  path: string,
+  options: RequestOptions,
+  record: TablePlanRecord,
+): RequestOptions {
+  if (
+    path !== '/api/Auth/refresh-token' ||
+    record.principal.kind !== 'customer' ||
+    options.expectedPlanPreparation !== undefined
+  )
+    throw new ApiFailure(401, 'refused');
+  return {
+    ...options,
+    principal: record.principal,
+    expectedPlanRecord: record,
+    body: refreshCredentialsSchema.parse(options.body),
+  };
+}
+
+function captureOperationRequest(
+  context: TenantContext,
+  path: string,
+  options: RequestOptions,
+  record: TablePlanRecord,
+): RequestOptions {
   const initial = path === tablePlanPath + '/submit';
   if (!initial && !isTablePlanRecovery(path)) throw new ApiFailure(401, 'refused');
   const preparation = initial
@@ -78,21 +110,4 @@ export function captureTablePlanRequest(
     ...(preparation ? { expectedPlanPreparation: preparation } : {}),
     body,
   };
-}
-
-function capturePreparationRequest(
-  context: TenantContext,
-  path: string,
-  options: RequestOptions,
-  principal: Principal,
-): RequestOptions {
-  const prepared = scopedTablePlanPreparation(context, principal, options.expectedPlanPreparation);
-  const body = tablePlanIntentSchema.parse(options.body);
-  if (
-    path !== tablePlanPath + '/prepare' ||
-    options.expectedPlanRecord !== undefined ||
-    JSON.stringify(body) !== JSON.stringify(prepared.intent)
-  )
-    throw new ApiFailure(401, 'refused');
-  return { ...options, principal: prepared.principal, expectedPlanPreparation: prepared, body };
 }
