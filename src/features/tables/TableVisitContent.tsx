@@ -1,3 +1,4 @@
+import PlanControl from './PlanControl';
 import ContributionControl from './ContributionControl';
 import { Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -31,6 +32,7 @@ export default function TableVisitContent({
       <AccountContent flow={flow} />
       <TablePaymentAccountControl flow={flow} />
       <ContributionControl flow={flow} />
+      <PlanControl flow={flow} />
       <Button label={t('tableRefresh')} secondary onPress={flow.refresh} disabled={flow.busy} />
       <Button
         label={t('tableLeave')}

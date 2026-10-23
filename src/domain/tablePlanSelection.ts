@@ -36,10 +36,10 @@ export function tablePlanSelection(
         previous.planId !== choice.supersedesPlanId ||
         previous.slots.some(
           (slot) =>
-            !slot.isAvailable ||
-            (slot.claimState !== null &&
-              slot.claimState !== 'Released' &&
-              slot.claimState !== 'Failed'),
+            slot.claimState !== null &&
+            slot.claimState !== 'Quoted' &&
+            slot.claimState !== 'Released' &&
+            slot.claimState !== 'Failed',
         )
       : choice.supersedesPlanId !== null)
   )

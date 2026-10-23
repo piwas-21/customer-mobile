@@ -1,3 +1,4 @@
+import PlanNotice from './PlanNotice';
 import ContributionNotice from './ContributionNotice';
 import TableMenuEntry from './TableMenuEntry';
 import RoundAttemptNotice from './RoundAttemptNotice';
@@ -33,6 +34,7 @@ export default function TableScreen() {
       <Stack.Screen options={{ title: t('tableTitle') }} />
       <RoundAttemptNotice />
       <ContributionNotice />
+      <PlanNotice />
       <TableMenuEntry enabled={Boolean(flow.value && !flow.value.expired && !flow.busy)} />
       {flow.loading ? <Feedback loading message={t('loading')} /> : null}
       {flow.busy ? <Feedback loading message={t('tableJoining')} /> : null}

@@ -1,11 +1,11 @@
 import type { PropsWithChildren } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import { openBrowserAsync, type WebBrowserResult } from 'expo-web-browser';
 import { setReservationUiRepository } from './reservationUiSetup';
 import { tableContributionControllerFixture } from './tableContributionController';
 import { mockWorkspaceOwner } from './workspaceOwner';
-import useBootstrap from '../features/restaurant/useBootstrap';
+import { privateTableUi } from './privateTableUi';
 import ContributionProvider from '../features/tables/ContributionProvider';
 import { readTablePaymentAccount } from '../api/tablePaymentAccount';
 import { tableAccount } from './tableAccount';
@@ -24,12 +24,8 @@ export async function tableContributionUiFixture(
     await f.openBrowser(url);
     return { type: 'cancel' } as WebBrowserResult;
   });
-  const bootstrapQuery = { data: f.bootstrap, isPending: false } as ReturnType<typeof useBootstrap>;
-  jest.mocked(useBootstrap).mockReturnValue(bootstrapQuery);
+  const { bootstrapQuery, cache } = privateTableUi(f.bootstrap);
   if (pending) await f.install();
-  const cache = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
-  });
   const bill = tableAccount();
   bill.items[0]!.item.itemId = paymentReadSession;
   const scope = {

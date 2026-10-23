@@ -87,3 +87,48 @@ it('custom allocation order is exact and positive online bounds apply to every g
   f.input.account.account.limits.online!.maximumAmountMinor = 999;
   expect(f.review).toThrow();
 });
+
+it('replaces an owned unclaimed stale scope after an unrelated payment consumed part of the old split', async () => {
+  const f = await fixture();
+  const prior = payableTableAccount().account.activeEqualSharePlan!;
+  prior.isOwnPlan = true;
+  prior.slots.forEach((slot) => {
+    slot.isAvailable = false;
+    slot.claimState = null;
+  });
+  const account = f.input.account.account;
+  account.accountRevision = 8;
+  account.outstandingMinor = 700;
+  account.availableMinor = 700;
+  account.capturedAccountPaymentMinor = 700;
+  account.outstandingAllocations = [
+    { ...account.outstandingAllocations[0]!, startOrdinal: 2, unitCount: 1, amountMinor: 700 },
+  ];
+  account.availableAllocations = account.outstandingAllocations.map((row) => ({ ...row }));
+  account.activeEqualSharePlan = prior;
+  f.input.choice.supersedesPlanId = prior.planId;
+  const review = f.review();
+  const prepared = {
+    ...f.prepared,
+    accountRevision: 8,
+    totalMinor: 700,
+    scope: account.availableAllocations,
+    sharesMinor: [230, 230, 240],
+  };
+  expect(review.accept(prepared).sharesMinor).toEqual([230, 230, 240]);
+});
+it.each(['Quoted', 'Released', 'Failed'] as const)(
+  'permits explicit replacement of an owned plan with only unprotected %s claims',
+  async (state) => {
+    const f = await fixture();
+    const plan = payableTableAccount().account.activeEqualSharePlan!;
+    plan.isOwnPlan = true;
+    plan.slots.forEach((slot) => {
+      slot.claimState = state;
+      slot.isAvailable = false;
+    });
+    f.input.account.account.activeEqualSharePlan = plan;
+    f.input.choice.supersedesPlanId = plan.planId;
+    expect(f.review().accept(f.prepared).totalMinor).toBe(1400);
+  },
+);
