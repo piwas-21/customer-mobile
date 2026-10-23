@@ -25,5 +25,5 @@ export function isPrivateRenewal(mode: RequestOptions['credentials']) {
     'reservation-renewal',
     'table-round-renewal',
     'table-payment-renewal',
-  ].some((value) => value === mode);
+  ].includes(mode ?? 'none');
 }

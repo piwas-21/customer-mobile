@@ -3,7 +3,7 @@ import type { CredentialVault } from './credentials';
 import type { RequestOptions } from './httpTypes';
 import { privateTableCustomerHeaders, tablePreparationHeaders } from './privateTableHeaders';
 import { scopedTablePaymentPreparation } from './tablePaymentPreparation';
-import { scopedTablePayment } from './tablePaymentRecord';
+import { scopedTablePayment, type TablePaymentRecord } from './tablePaymentRecord';
 import { scopedTableVisit } from './tableVisitRecord';
 import type { TenantContext } from './tenantContext';
 export async function tableContributionHeaders(
@@ -32,24 +32,7 @@ export async function tableContributionHeaders(
         scopedTablePaymentPreparation(context, principal, preparation),
       ),
     );
-  else if (
-    record &&
-    options.credentials === 'table-checkout-operation' &&
-    !record.cancellationRequested
-  ) {
-    // Recovery may show an existing hosted page only while the original visit is still live.
-    // Missing/expired participant custody does not block private money recovery.
-    const raw = await vault.capability(context, 'table-participant', principal);
-    options.assertCurrent();
-    if (raw !== null) {
-      const visit = scopedTableVisit(context, principal, JSON.parse(raw));
-      if (
-        visit.identity.serviceSessionId === record.intent.serviceSessionId &&
-        Date.parse(visit.identity.expiresAt) > Date.now()
-      )
-        headers['X-Table-Participant'] = visit.identity.participantToken;
-    }
-  }
+  else Object.assign(headers, await checkoutParticipantHeader(context, vault, options, record));
   Object.assign(
     headers,
     await privateTableCustomerHeaders(
@@ -68,4 +51,24 @@ export async function tableContributionHeaders(
   if (preparation) scopedTablePaymentPreparation(context, principal, preparation);
   options.assertCurrent();
   return headers;
+}
+
+async function checkoutParticipantHeader(
+  context: TenantContext,
+  vault: CredentialVault,
+  options: RequestOptions,
+  record: TablePaymentRecord | null,
+): Promise<Record<string, string>> {
+  if (!record || options.credentials !== 'table-checkout-operation' || record.cancellationRequested)
+    return {};
+  // Existing checkout navigation requires a live original visit. Private money recovery remains available without it.
+  const principal = record.principal;
+  const raw = await vault.capability(context, 'table-participant', principal);
+  options.assertCurrent!();
+  if (raw === null) return {};
+  const visit = scopedTableVisit(context, principal, JSON.parse(raw));
+  return visit.identity.serviceSessionId === record.intent.serviceSessionId &&
+    Date.parse(visit.identity.expiresAt) > Date.now()
+    ? { 'X-Table-Participant': visit.identity.participantToken }
+    : {};
 }

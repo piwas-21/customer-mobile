@@ -4,7 +4,11 @@ import { tablePaymentIntentSchema } from '../api/tablePaymentIntent';
 import { ApiFailure } from './apiFailure';
 import type { RequestOptions } from './httpTypes';
 import { scopedTablePaymentPreparation } from './tablePaymentPreparation';
-import { scopedTablePayment, tablePaymentResolved } from './tablePaymentRecord';
+import {
+  scopedTablePayment,
+  tablePaymentResolved,
+  type TablePaymentRecord,
+} from './tablePaymentRecord';
 import { refreshCredentialsSchema } from './refreshCredentials';
 import type { TenantContext } from './tenantContext';
 export const tableContributionPath = '/api/customer-mobile/table-payments';
@@ -66,8 +70,19 @@ export function captureTableContributionRequest(
       body,
     };
   }
-  const record = scopedTablePayment(context, options.principal, options.expectedContributionRecord);
-  if (mode === 'table-payment-renewal') {
+  return captureOriginal(context, path, options);
+}
+function captureOriginal(
+  context: TenantContext,
+  path: string,
+  options: RequestOptions,
+): RequestOptions {
+  const record = scopedTablePayment(
+    context,
+    options.principal!,
+    options.expectedContributionRecord,
+  );
+  if (options.credentials === 'table-payment-renewal') {
     if (
       path !== '/api/Auth/refresh-token' ||
       record.principal.kind !== 'customer' ||
@@ -81,23 +96,7 @@ export function captureTableContributionRequest(
       body: refreshCredentialsSchema.parse(options.body),
     };
   }
-  if (
-    path.startsWith(tableContributionCheckoutPath + '/') !==
-    (mode === 'table-checkout-operation')
-  )
-    throw new ApiFailure(401, 'refused');
-  const initial = path === tableContributionPath + '/submit';
-  const start = path === tableContributionCheckoutPath + '/start';
-  if (!initial && !start && !isTableContributionRecovery(path))
-    throw new ApiFailure(401, 'refused');
-  if ((initial || start) && (record.cancellationRequested || tablePaymentResolved(record)))
-    throw new ApiFailure(401, 'refused');
-  if (
-    (initial && record.resolution !== null) ||
-    (start && record.resolution?.outcome !== 'Applied') ||
-    (path.endsWith('/stop') && !record.cancellationRequested)
-  )
-    throw new ApiFailure(401, 'refused');
+  const { initial, start } = requirePhase(path, options, record);
   const prepared =
     initial || start
       ? scopedTablePaymentPreparation(
@@ -128,4 +127,25 @@ export function captureTableContributionRequest(
     ...(prepared ? { expectedContributionPreparation: prepared } : {}),
     body,
   };
+}
+
+function requirePhase(path: string, options: RequestOptions, record: TablePaymentRecord) {
+  if (
+    path.startsWith(tableContributionCheckoutPath + '/') !==
+    (options.credentials === 'table-checkout-operation')
+  )
+    throw new ApiFailure(401, 'refused');
+  const initial = path === tableContributionPath + '/submit';
+  const start = path === tableContributionCheckoutPath + '/start';
+  if (!initial && !start && !isTableContributionRecovery(path))
+    throw new ApiFailure(401, 'refused');
+  if ((initial || start) && (record.cancellationRequested || tablePaymentResolved(record)))
+    throw new ApiFailure(401, 'refused');
+  if (
+    (initial && record.resolution !== null) ||
+    (start && record.resolution?.outcome !== 'Applied') ||
+    (path.endsWith('/stop') && !record.cancellationRequested)
+  )
+    throw new ApiFailure(401, 'refused');
+  return { initial, start };
 }
