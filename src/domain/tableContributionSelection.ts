@@ -62,8 +62,7 @@ export function tableContributionSelection(
     const plan = account.activeEqualSharePlan;
     const slot = plan?.slots.find((row) => row.ordinal === choice.ordinal);
     if (
-      !plan ||
-      plan.planId !== choice.planId ||
+      plan?.planId !== choice.planId ||
       plan.isCustom !== (choice.mode === 'CustomAmount') ||
       plan.shareCount > account.limits.maximumEqualShares ||
       !slot?.isAvailable

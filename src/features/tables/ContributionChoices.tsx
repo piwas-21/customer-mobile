@@ -35,13 +35,7 @@ export default function ContributionChoices({
   const plan = account.activeEqualSharePlan;
   const modes: Mode[] = ['Full', 'Amount', 'Items'];
   if (plan) modes.push(plan.isCustom ? 'CustomAmount' : 'Equal');
-  let choice: TableContributionChoice | undefined;
-  if (mode === 'Full') choice = { mode };
-  if (mode === 'Amount' && contributionInputMinor(amount))
-    choice = { mode, amountMinor: contributionInputMinor(amount)! };
-  if (mode === 'Items' && units.length) choice = { mode, selectedUnits: units };
-  if ((mode === 'Equal' || mode === 'CustomAmount') && plan && ordinal)
-    choice = { mode, planId: plan.planId, ordinal };
+  const choice = currentChoice(mode, amount, units, plan, ordinal);
   let valid = false;
   try {
     if (choice) {
@@ -110,4 +104,20 @@ export default function ContributionChoices({
       />
     </>
   );
+}
+
+function currentChoice(
+  mode: Mode,
+  amount: string,
+  units: Extract<TableContributionChoice, { mode: 'Items' }>['selectedUnits'],
+  plan: TablePaymentAccount['account']['activeEqualSharePlan'],
+  ordinal: number | undefined,
+): TableContributionChoice | undefined {
+  if (mode === 'Full') return { mode };
+  const minor = contributionInputMinor(amount);
+  if (mode === 'Amount' && minor) return { mode, amountMinor: minor };
+  if (mode === 'Items' && units.length) return { mode, selectedUnits: units };
+  if ((mode === 'Equal' || mode === 'CustomAmount') && plan && ordinal)
+    return { mode, planId: plan.planId, ordinal };
+  return undefined;
 }
