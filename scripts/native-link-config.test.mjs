@@ -31,6 +31,7 @@ for (const environment of ['staging', 'production'])
         autoVerify: true,
         data: [
           { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/payment-return/.*' },
+          { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/table-payment-return/.*' },
           { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/verify' },
           { scheme: 'https', host: 'links.example', pathPattern: '/r/.*/recover' },
         ],

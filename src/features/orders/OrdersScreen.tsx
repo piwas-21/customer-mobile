@@ -1,3 +1,4 @@
+import ContributionNotice from '../tables/ContributionNotice';
 import RoundAttemptNotice from '../tables/RoundAttemptNotice';
 import ReservationAttemptNotice from '../reservations/ReservationAttemptNotice';
 import CancellationNotice from './CancellationNotice';
@@ -40,6 +41,7 @@ export default function OrdersScreen() {
             <Text style={[styles.body, { color: theme.secondary }]}>{t('savedOrdersIntro')}</Text>
             <OrderHistoryControl />
             <RoundAttemptNotice />
+            <ContributionNotice />
             <PaymentAttentionNotice />
             <PaymentNotice />
             <CancellationNotice />

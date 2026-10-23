@@ -32,6 +32,7 @@ const config: ExpoConfig = {
             autoVerify: true,
             data: [
               { scheme: 'https', host: linkHost, pathPattern: '/r/.*/payment-return/.*' },
+              { scheme: 'https', host: linkHost, pathPattern: '/r/.*/table-payment-return/.*' },
               { scheme: 'https', host: linkHost, pathPattern: '/r/.*/verify' },
               { scheme: 'https', host: linkHost, pathPattern: '/r/.*/recover' },
             ],

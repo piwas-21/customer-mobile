@@ -30,7 +30,12 @@ export async function verifyNativeLinks(path, host) {
   );
   const data = filter.data ?? [];
   const rows = new Map(data.map((value) => [value.$['android:pathPattern'], value.$]));
-  const expected = ['/r/.*/payment-return/.*', '/r/.*/verify', '/r/.*/recover'];
+  const expected = [
+    '/r/.*/payment-return/.*',
+    '/r/.*/table-payment-return/.*',
+    '/r/.*/verify',
+    '/r/.*/recover',
+  ];
   assert.equal(data.length, expected.length);
   assert.equal(rows.size, expected.length);
   for (const pattern of expected)
@@ -43,6 +48,6 @@ export async function verifyNativeLinks(path, host) {
 if (import.meta.url === pathToFileURL(resolve(process.argv[1] ?? '')).href) {
   await verifyNativeLinks(process.argv[2], process.argv[3]);
   process.stdout.write(
-    'Verified three scoped native HTTPS intent paths. Signing remains separate.\n',
+    'Verified four scoped native HTTPS intent paths. Signing remains separate.\n',
   );
 }

@@ -1,3 +1,4 @@
+import ContributionNotice from './ContributionNotice';
 import TableMenuEntry from './TableMenuEntry';
 import RoundAttemptNotice from './RoundAttemptNotice';
 import { useState } from 'react';
@@ -31,6 +32,7 @@ export default function TableScreen() {
     <Screen bottom top={false}>
       <Stack.Screen options={{ title: t('tableTitle') }} />
       <RoundAttemptNotice />
+      <ContributionNotice />
       <TableMenuEntry enabled={Boolean(flow.value && !flow.value.expired && !flow.busy)} />
       {flow.loading ? <Feedback loading message={t('loading')} /> : null}
       {flow.busy ? <Feedback loading message={t('tableJoining')} /> : null}

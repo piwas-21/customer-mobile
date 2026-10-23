@@ -1,3 +1,4 @@
+import { tableContributionsEnglish } from './translations/tableContributions.en';
 import { tableRoundsEnglish } from './translations/tableRounds.en';
 import { tablesEnglish } from './translations/tables.en';
 import { loyaltyEnglish } from './translations/loyalty.en';
@@ -16,6 +17,7 @@ import { getLocales } from 'expo-localization';
 const i18n = createInstance();
 const en = {
   ...tableRoundsEnglish,
+  ...tableContributionsEnglish,
   ...loyaltyEnglish,
   ...tablesEnglish,
   ...reservationsEnglish,

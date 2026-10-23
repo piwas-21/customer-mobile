@@ -1,3 +1,5 @@
+import { TableOperationController } from './tableOperationController';
+import type { TableRoundRecord } from './tableRoundRecord';
 import { tableRoundQuoteSchema } from '../api/tableRoundContract';
 import { SingleOperation } from './singleOperation';
 import { TableRoundScope } from './tableRoundScope';
@@ -14,12 +16,13 @@ type Candidate = Awaited<ReturnType<TableRoundScope['prepare']>>;
 export type TableRoundReviewView = Readonly<
   Pick<Candidate['prepared'], 'quote' | 'tableLabel'> & { operationId: string }
 >;
-export class TableRoundController {
-  private readonly scope: TableRoundScope;
-  private readonly mutations = new SingleOperation<TableRoundView | null>();
+export class TableRoundController extends TableOperationController<
+  Candidate,
+  TableRoundRecord,
+  TableRoundView,
+  TableRoundScope
+> {
   private readonly preparations = new SingleOperation<TableRoundReviewView>();
-  private candidate: Candidate | undefined;
-  private revision = 0;
   constructor(
     context: TenantContext,
     client: CustomerTransport,
@@ -29,42 +32,24 @@ export class TableRoundController {
     bootstrap: Bootstrap,
     private readonly createId: () => string,
   ) {
-    this.scope = new TableRoundScope(context, client, repository, sessions, principal, bootstrap);
-  }
-  readonly assertCurrent = () => this.scope.assertCurrent();
-  dispose() {
-    this.invalidateReview();
-    this.scope.owner.dispose();
-  }
-  invalidateReview() {
-    this.revision++;
-    this.candidate = undefined;
-  }
-  dismiss(operationId: string) {
-    this.assertCurrent();
-    if (this.candidate?.prepared.proof.operationId === canonicalUuidSchema.parse(operationId))
-      this.invalidateReview();
-  }
-  async saved() {
-    const record = await this.scope.load();
-    this.assertCurrent();
-    return record ? tableRoundView(record) : null;
+    const scope = new TableRoundScope(context, client, repository, sessions, principal, bootstrap);
+    super(scope, tableRoundView, (record) =>
+      scope.repository.tableRounds.acknowledge(scope.context, record, scope.assertCurrent),
+    );
   }
   prepare(locale: string) {
     this.scope.assertStart();
     if (this.mutations.busy) throw new ApiFailure(409, 'refused');
     return this.preparations.run('prepare/' + locale, async () => {
-      this.invalidateReview();
-      const revision = this.revision;
-      const guard = () => {
-        this.scope.assertStart();
-        if (this.revision !== revision || this.mutations.busy) throw new ApiFailure(409, 'refused');
-      };
+      const guard = this.review.guard(
+        () => this.scope.assertStart(),
+        () => this.mutations.busy,
+      );
       if (await this.scope.load(guard)) throw new ApiFailure(409, 'refused');
       const candidate = await this.scope.prepare(locale, this.createId, guard);
       if (await this.scope.load(guard)) throw new ApiFailure(409, 'refused');
       guard();
-      this.candidate = candidate;
+      this.review.current = candidate;
       return {
         operationId: candidate.prepared.proof.operationId,
         quote: tableRoundQuoteSchema.parse(candidate.prepared.quote),
@@ -76,11 +61,11 @@ export class TableRoundController {
     this.scope.assertStart();
     const id = canonicalUuidSchema.parse(operationId);
     return this.mutations.run('submit/' + id, async () => {
-      const candidate = this.candidate;
+      const candidate = this.review.current;
       if (candidate?.prepared.proof.operationId !== id) throw new ApiFailure(409, 'refused');
       const guard = () => {
         this.scope.assertStart();
-        if (this.candidate !== candidate) throw new ApiFailure(409, 'refused');
+        if (this.review.current !== candidate) throw new ApiFailure(409, 'refused');
       };
       if (await this.scope.load(guard)) throw new ApiFailure(409, 'refused');
       await this.scope.fresh(guard);
@@ -115,22 +100,6 @@ export class TableRoundController {
         this.assertCurrent,
       );
       return this.scope.recover(record, 'cancel-attempt', locale);
-    });
-  }
-  acknowledge(operationId: string) {
-    this.assertCurrent();
-    const id = canonicalUuidSchema.parse(operationId);
-    return this.mutations.run('acknowledge/' + id, async () => {
-      this.invalidateReview();
-      const record = await this.scope.load();
-      if (record?.proof.operationId !== id) throw new ApiFailure(409, 'refused');
-      await this.scope.repository.tableRounds.acknowledge(
-        this.scope.context,
-        record,
-        this.assertCurrent,
-      );
-      this.assertCurrent();
-      return null;
     });
   }
 }

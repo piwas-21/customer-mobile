@@ -1,3 +1,4 @@
+import ContributionProvider from '../src/features/tables/ContributionProvider';
 import RoundProvider from '../src/features/tables/RoundProvider';
 import '../src/i18n';
 import { useState } from 'react';
@@ -31,17 +32,19 @@ export default function RootLayout() {
               <CancellationProvider>
                 <PaymentProvider>
                   <RoundProvider>
-                    <BasketProvider>
-                      <Stack
-                        screenOptions={{
-                          headerStyle: { backgroundColor: theme.background },
-                          headerTintColor: theme.text,
-                        }}
-                      >
-                        <Stack.Screen name="index" options={{ headerShown: false }} />
-                        <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
-                      </Stack>
-                    </BasketProvider>
+                    <ContributionProvider>
+                      <BasketProvider>
+                        <Stack
+                          screenOptions={{
+                            headerStyle: { backgroundColor: theme.background },
+                            headerTintColor: theme.text,
+                          }}
+                        >
+                          <Stack.Screen name="index" options={{ headerShown: false }} />
+                          <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
+                        </Stack>
+                      </BasketProvider>
+                    </ContributionProvider>
                   </RoundProvider>
                 </PaymentProvider>
               </CancellationProvider>

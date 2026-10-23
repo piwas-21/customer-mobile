@@ -9,12 +9,14 @@ const destinationSchema = z.enum([
   'verify',
   'recover',
   'payment-return',
+  'table-payment-return',
 ]);
 export type AppDestination = {
   tenantId: string;
   destination: z.infer<typeof destinationSchema>;
   reference?: string;
   operationId?: string;
+  attemptId?: string;
 };
 export function resolveLink(
   value: string,
@@ -40,6 +42,11 @@ export function resolveLink(
   if (url.searchParams.getAll('operation').length > 1) throw new Error('Ambiguous operation');
   const operation = url.searchParams.get('operation');
   if (destination === 'table' && !reference) throw new Error('Table QR required');
+  if (destination === 'table-payment-return') {
+    const attemptId = canonicalUuidSchema.parse(reference);
+    const operationId = canonicalUuidSchema.parse(operation);
+    return { tenantId: tenant.id, destination, attemptId, operationId };
+  }
   if (destination === 'payment-return') {
     const orderId = canonicalUuidSchema.parse(reference);
     const operationId = canonicalUuidSchema.parse(operation);

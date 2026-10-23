@@ -5,7 +5,12 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { verifyNativeLinks } from './verify-native-links.mjs';
-const paths = ['/r/.*/payment-return/.*', '/r/.*/verify', '/r/.*/recover'];
+const paths = [
+  '/r/.*/payment-return/.*',
+  '/r/.*/table-payment-return/.*',
+  '/r/.*/verify',
+  '/r/.*/recover',
+];
 function fixture() {
   return `<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:name=".MainApplication"><activity android:name=".MainActivity"><intent-filter android:autoVerify="true"><action android:name="android.intent.action.VIEW"/><category android:name="android.intent.category.DEFAULT"/><category android:name="android.intent.category.BROWSABLE"/>${paths.map((path) => `<data android:scheme="https" android:host="links.example" android:pathPattern="${path}"/>`).join('')}</intent-filter></activity></application></manifest>`;
 }
@@ -28,10 +33,18 @@ test('accepts an independent exact native manifest and CLI verification', async 
       { encoding: 'utf8' },
     );
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /Verified three scoped/);
+    assert.match(result.stdout, /Verified four scoped/);
   });
 });
 for (const [name, change] of [
+  [
+    'missing table payment return',
+    (xml) =>
+      xml.replace(
+        'android:pathPattern="/r/.*/table-payment-return/.*"',
+        'android:pathPattern="/unrelated"',
+      ),
+  ],
   [
     'missing verify',
     (xml) => xml.replace('android:pathPattern="/r/.*/verify"', 'android:pathPattern="/unrelated"'),
