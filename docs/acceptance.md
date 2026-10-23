@@ -587,9 +587,10 @@ Rendered tests cover exact money, no contact/tender fields, explicit stopping, r
 background withdrawal and Orders/Basket-accessible recovery. English fallback is present.
 
 Full locale/RTL, physical SecureStore/process death, camera/keyboard/back/screen-reader/large-text,
-API deployment/key retention and restaurant acceptance remain open. Table item/amount/equal-share
-payments, transactional push, verified OS table links and the website installation bridge are
-separate required work; this unpaid round does not collect payment or complete P4.
+API deployment/key retention and restaurant acceptance remain open. Connected contributions and
+split-plan creation have separate source checks below. Transactional push, verified OS table links
+and the website installation bridge remain required; this unpaid round does not collect payment
+or complete P4.
 
 ## Native table payment account reads
 
@@ -603,14 +604,11 @@ is required; refresh closes the view and reloads the bill. Minor-unit formatting
 one-cent, large-safe-integer, unsupported-scale and Arabic-digit controls.
 
 Physical Hermes Intl/BigInt, native back, font scaling, screen readers, all locales/RTL, actual API
-deployment and restaurant acceptance remain open. Durable quote/reserve/start/original recovery and
-the full item/amount/equal-share provider/concurrency acceptance gates remain open. Strict five-mode
-contracts and original private contribution custody are implemented separately: exact selected-unit
-binding, acknowledged proof, shared purchase guards, original cancellation and logout recovery have
-source coverage. Strict original transport and one-renewal-only Customer recovery are implemented separately, with
-paused owner/tenant/resource and participant-expiry controls. Neither source slice exposes a charge
-action or browser. See development.md for the boundary; accepted backend #771, deployment, connected
-UI and physical acceptance remain required.
+deployment and restaurant acceptance remain open. The separate connected contribution flow covers
+five-mode quote/reserve/start/original recovery, exact selected-unit binding, acknowledged proof,
+shared purchase guards, stopping and logout recovery. Transport includes one-renewal-only Customer
+recovery and paused owner/tenant/resource/participant-expiry controls. Backend #771 is accepted
+source; deployed provider/concurrency and physical acceptance remain required.
 
 ## Connected native table contributions
 
@@ -623,7 +621,21 @@ or browser launch. Unknown outcomes retain custody and explicit stopping require
 Public table return navigation has a distinct attempt field; private proof and current provider
 state remain authoritative. Current/foreign origins, malformed and extra query data are refused.
 
-Full quality, accepted-parent composition, immutable review and publication gates remain required
-for this continuation. New split-plan creation, deployed provider eligibility, installed SecureStore,
-font scaling/RTL/screen readers, real concurrent payments and physical/provider acceptance remain
-open. No live activation, payment, notification, signing, deployment or store publication is claimed.
+Contribution source is accepted through backend #771 and mobile #59. Deployed provider eligibility,
+installed SecureStore, font scaling/RTL/screen readers, real concurrent payments and physical/provider
+acceptance remain open. No live activation, payment, notification, signing, deployment or store
+publication is claimed.
+
+## Native split-plan creation
+
+Source checks cover explicit equal or ordered custom guest amounts, exact total/provider bounds,
+review of every guest amount and one acknowledged original submission. Owned unprotected plans may
+be explicitly replaced over the remaining balance; protected claims refuse replacement. Creating a
+plan never opens checkout or claims settlement. Unknown outcomes retain the shared purchase hold,
+original checking and confirmed stopping after rollout withdrawal. Account/tenant/background
+changes consume paused reviews; original proof/session and one-renewal-only recovery stay scoped.
+
+Accepted-parent composition, exact immutable review, normal quality/exports and hosted publication
+gates precede source acceptance. Full ten-locale/RTL, physical SecureStore/process death, native
+back, font scaling/screen readers, deployed configuration/provider concurrency and restaurant
+acceptance remain required. Plan creation does not complete P4 or activate native payments.
