@@ -1,3 +1,4 @@
+import ContributionNotice from '../tables/ContributionNotice';
 import RoundControl from '../tables/RoundControl';
 import RoundAttemptNotice from '../tables/RoundAttemptNotice';
 import CancellationNotice from '../orders/CancellationNotice';
@@ -54,6 +55,7 @@ function BasketContent({ basket }: Readonly<{ basket: ReturnType<typeof useBaske
         ListHeaderComponent={
           <>
             <RoundAttemptNotice />
+            <ContributionNotice />
             <PaymentAttentionNotice />
             <CancellationNotice />
             <BasketNotice basket={basket} />

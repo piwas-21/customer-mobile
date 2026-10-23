@@ -1,3 +1,4 @@
+import { bootstrapSchema } from '../core/capabilities';
 import { tableContributionFixture } from './tablePaymentRepository';
 import { payableTableAccount } from './tableContributionReview';
 import {
@@ -15,7 +16,7 @@ import { response } from './transport';
 import { tenantB } from './fixtures';
 export async function tableContributionControllerFixture(customer = false, custom = false) {
   const f = await tableContributionFixture(customer);
-  const bootstrap = contributionBootstrap();
+  const bootstrap = bootstrapSchema.parse(contributionBootstrap());
   const hostedUrl = new URL('/original', f.context.tenant.webOrigin).toString();
   const state = {
     accepted: false,

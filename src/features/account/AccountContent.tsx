@@ -1,3 +1,4 @@
+import ContributionNotice from '../tables/ContributionNotice';
 import PaymentAttentionNotice from '../payments/PaymentAttentionNotice';
 import { useTranslation } from 'react-i18next';
 import Feedback from '../../ui/Feedback';
@@ -27,6 +28,7 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
     return (
       <>
         <PaymentAttentionNotice account />
+        <ContributionNotice />
         <Feedback message={t('accountUnavailable')} />
       </>
     );
@@ -44,6 +46,7 @@ export default function AccountContent({ account }: Readonly<{ account: AccountS
   return (
     <>
       <PaymentAttentionNotice account />
+      <ContributionNotice />
       <AccountAccess account={account} />
     </>
   );

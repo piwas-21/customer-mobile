@@ -458,7 +458,7 @@ activation follows from these source tests.
 `EXPO_PUBLIC_MOBILE_LINK_ORIGIN` supplies the single canonical HTTPS origin for both runtime return
 validation and native declarations. Missing configuration emits no associated domains or verified
 intent filters. Invalid configured origins refuse generation/build. iOS declares that host only;
-Android additionally restricts the verified intent to the payment-return path. Existing provisional
+Android restricts verified payment intents to distinct order and table payment-return paths. Existing provisional
 application identifiers remain subject to publisher ownership approval.
 
 Ten configuration controls pass, and generated iOS entitlements/Android manifest were parsed against
@@ -611,3 +611,19 @@ source coverage. Strict original transport and one-renewal-only Customer recover
 paused owner/tenant/resource and participant-expiry controls. Neither source slice exposes a charge
 action or browser. See development.md for the boundary; accepted backend #771, deployment, connected
 UI and physical acceptance remain required.
+
+## Connected native table contributions
+
+Focused source checks review all five contribution modes for existing plans, exact selected units,
+frozen share ordinals, independent minor-unit prices and one submission. Same-total wrong-share
+controls discriminate the fixed-slice guard. The system browser opens only after acknowledged
+original custody; browser success text cannot confirm payment. Owner/rollout/background withdrawal
+consumes volatile reviews. Foregrounding recovers original canonical state without another submit
+or browser launch. Unknown outcomes retain custody and explicit stopping requires confirmation.
+Public table return navigation has a distinct attempt field; private proof and current provider
+state remain authoritative. Current/foreign origins, malformed and extra query data are refused.
+
+Full quality, accepted-parent composition, immutable review and publication gates remain required
+for this continuation. New split-plan creation, deployed provider eligibility, installed SecureStore,
+font scaling/RTL/screen readers, real concurrent payments and physical/provider acceptance remain
+open. No live activation, payment, notification, signing, deployment or store publication is claimed.

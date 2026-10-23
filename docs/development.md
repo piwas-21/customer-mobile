@@ -378,6 +378,16 @@ recovery and stopping survive local leaving or read-only withdrawal; Customer re
 once using only its original proof and stored credentials. Initial submission never renews or retries.
 Owner/resource/tenant withdrawal fences paused headers, responses, renewal installation and retries.
 
-No connected charge action or browser is exposed by these adapters. Controller/browser/return
-lifetimes, all mode screens, full locales/RTL, accepted backend #771, deployment and installed/provider
-acceptance remain required. No live payment, activation, signing or deployment is performed.
+The connected table contribution flow reviews Full, Amount, Items and existing Equal/CustomAmount
+share positions before acknowledged private custody and one submission. Fixed share slices follow
+reviewed scope order and exact minor-unit rounding; equal-price replacement allocations are refused.
+Canonical Ready opens only an approved current provider URL. Browser results and return links never
+mark Paid; foreground recovery uses original private proof. Unknown outcomes retain the purchase
+hold and require explicit original checking/stopping. Account, basket, orders and table screens share
+minimal recovery notices. Read-only preparation stays volatile and is withdrawn on dismissal.
+
+Table payment returns have a separate public attempt route and exact HTTPS intent scope. They
+navigate to the table and never reuse order identity or carry settlement/token authority. No new
+split-plan creation, runtime activation, live provider payment, signing or deployment is performed.
+Full locales/RTL, installed browser/storage lifecycle, accepted backend/transport publication,
+new split plans and provider/device acceptance remain required.
