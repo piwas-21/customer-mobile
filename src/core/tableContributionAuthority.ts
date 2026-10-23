@@ -1,45 +1,16 @@
-import { CustomerOperationScope } from './customerOperationScope';
-import { readBootstrap } from '../api/bootstrap';
+import { CustomerTablePaymentScope } from './customerTablePaymentScope';
 import { readTablePaymentAccount } from '../api/tablePaymentAccount';
-import { requireTableContributionEnabled } from './tableContributionPolicy';
 import { scopedTablePaymentPreparation } from './tablePaymentPreparation';
-import { canonicalUuidSchema } from './identifiers';
 import { ApiFailure } from './apiFailure';
 import type { TablePaymentRecord } from './tablePaymentRecord';
 import { hostedPaymentPage } from './hostedPaymentPage';
 import type { TableCheckoutDecision } from '../api/tableCheckoutDecision';
 import { tablePaymentCurrency } from '../domain/tablePaymentMoney';
 import type { TableVisitRecord } from './tableVisitRecord';
-export class TableContributionAuthority extends CustomerOperationScope {
-  assertStart() {
-    this.assertCurrent();
-    if (this.sessions.onlyRecoverOrders) throw new ApiFailure(409, 'refused');
-    requireTableContributionEnabled(this.context, this.configuration, this.owner.principal);
-  }
+export class TableContributionAuthority extends CustomerTablePaymentScope {
   load(guard = this.assertCurrent) {
     guard();
     return this.repository.tablePayments.load(this.context, this.owner.principal, guard);
-  }
-  async fresh(guard: () => void) {
-    this.assertStart();
-    guard();
-    const bootstrap = await readBootstrap(this.client, this.context, guard);
-    guard();
-    requireTableContributionEnabled(this.context, bootstrap, this.owner.principal);
-    if (bootstrap.currency !== this.configuration.currency) throw new ApiFailure(409, 'refused');
-    return bootstrap;
-  }
-  protected async live(guard: () => void, expectedSession: string) {
-    const bootstrap = await this.fresh(guard);
-    const visit = await this.repository.tableVisits.read(this.context, this.owner.principal, guard);
-    if (!visit || Date.parse(visit.identity.expiresAt) <= Date.now())
-      throw new ApiFailure(409, 'refused');
-    const sessionId = canonicalUuidSchema.parse(
-      await this.repository.vault.capability(this.context, 'guest-session', this.owner.principal),
-    );
-    guard();
-    if (sessionId !== expectedSession) throw new ApiFailure(409, 'refused');
-    return { bootstrap, visit, sessionId };
   }
   async page(
     record: TablePaymentRecord,

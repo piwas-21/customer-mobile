@@ -1,3 +1,4 @@
+import { tableReviewPreparation } from '../core/tablePreparationAuthority';
 import { bindPreparedTablePayment } from './tablePaymentPrepared';
 import type { TablePaymentAccount } from './tablePaymentAccountContract';
 import { tableContributionSelection } from '../domain/tableContributionSelection';
@@ -7,7 +8,6 @@ import type { TableVisitRecord } from '../core/tableVisitRecord';
 import type { TenantContext } from '../core/tenantContext';
 import type { Bootstrap } from '../core/capabilities';
 import type { Principal } from '../core/credentials';
-import { ApiFailure } from '../core/apiFailure';
 export function tableContributionReview(
   context: TenantContext,
   input: {
@@ -22,18 +22,11 @@ export function tableContributionReview(
 ) {
   const bootstrap = requireTableContributionEnabled(context, input.bootstrap, input.principal);
   const selected = tableContributionSelection(input.account, input.operationId, input.choice);
-  const preparation = scopedTablePaymentPreparation(context, input.principal, {
-    schemaVersion: 1,
-    environment: context.environment,
-    tenantId: context.tenant.id,
-    principal: input.principal,
-    sessionId: input.sessionId,
-    visit: input.visit,
-    intent: selected.intent,
-    currency: bootstrap.currency,
-  });
-  if (selected.intent.tenantId !== context.tenant.id || selected.currency !== preparation.currency)
-    throw new ApiFailure(200, 'contract');
+  const preparation = scopedTablePaymentPreparation(
+    context,
+    input.principal,
+    tableReviewPreparation(context, input, selected, bootstrap.currency),
+  );
   return {
     preparation,
     amountMinor: selected.amountMinor,
