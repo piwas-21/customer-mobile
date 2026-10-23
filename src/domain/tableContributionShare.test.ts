@@ -66,3 +66,27 @@ it.each(['total', 'slot', 'custom', 'scope-order'])(
     ).toThrow();
   },
 );
+
+it('preserves an existing 101-share plan while new creation remains capped at one hundred', () => {
+  const account = payableTableAccount(false);
+  const plan = account.account.activeEqualSharePlan!;
+  account.account.limits.maximumEqualShares = 1_000;
+  plan.shareCount = 101;
+  plan.slots = Array.from({ length: 101 }, (_, index) => ({
+    ...plan.slots[0]!,
+    ordinal: index + 1,
+    amountMinor: index === 100 ? 400 : 10,
+  }));
+  const chosen = tableContributionSelection(account, tenantB, {
+    mode: 'Equal',
+    planId: paymentReadSession,
+    ordinal: 101,
+  });
+  expect(chosen.intent.equalShareOrdinal).toBe(101);
+  const row = plan.scope[0]!;
+  expect(() =>
+    chosen.requireAllocations([
+      { ...row, startOrdinal: 2, unitCount: 1, minorPerUnit: 400, amountMinor: 400 },
+    ]),
+  ).not.toThrow();
+});

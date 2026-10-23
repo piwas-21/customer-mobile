@@ -9,7 +9,7 @@ export function tableShareAmounts(
     total <= 0n ||
     !Number.isSafeInteger(count) ||
     count < 2 ||
-    count > 100 ||
+    count > 1_000 ||
     (custom.length !== 0 && custom.length !== count)
   )
     throw new ApiFailure(200, 'contract');
