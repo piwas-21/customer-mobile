@@ -13,11 +13,9 @@ export function tableContributionView(
   record: TablePaymentRecord,
   canOpen = false,
 ): TableContributionView {
-  const state =
-    record.resolution?.outcome === 'Stopped'
-      ? 'stopped'
-      : (record.checkout?.outcome ??
-        (record.resolution?.outcome === 'Applied' ? 'reserved' : 'uncertain'));
+  const unresolved = record.resolution?.outcome === 'Applied' ? 'reserved' : 'uncertain';
+  const checkout = record.checkout?.outcome ?? unresolved;
+  const state = record.resolution?.outcome === 'Stopped' ? 'stopped' : checkout;
   return {
     operationId: record.proof.operationId,
     serviceSessionId: record.intent.serviceSessionId,

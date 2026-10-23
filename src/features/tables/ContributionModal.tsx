@@ -49,6 +49,20 @@ export default function ContributionModal({
       /* Current attempt and failure remain visible through shared recovery. */
     }
   }
+  const choices =
+    result.data && flow?.value === null ? (
+      <ContributionChoices
+        snapshot={result.data}
+        bill={bill}
+        busy={busy}
+        onReview={(choice) => void prepare(choice)}
+      />
+    ) : (
+      <Feedback
+        loading={result.loading}
+        message={t(result.loading ? 'loading' : 'tablePaymentReadFailed')}
+      />
+    );
   return (
     <BaseModal
       title={t('tableContributionTitle')}
@@ -90,18 +104,8 @@ export default function ContributionModal({
             }}
           />
         </>
-      ) : result.data && flow?.value === null ? (
-        <ContributionChoices
-          snapshot={result.data}
-          bill={bill}
-          busy={busy}
-          onReview={(choice) => void prepare(choice)}
-        />
       ) : (
-        <Feedback
-          loading={result.loading}
-          message={t(result.loading ? 'loading' : 'tablePaymentReadFailed')}
-        />
+        choices
       )}
       <Button label={t('close')} secondary disabled={busy} onPress={onClose} />
     </BaseModal>

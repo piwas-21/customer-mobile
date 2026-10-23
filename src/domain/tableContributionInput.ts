@@ -4,7 +4,7 @@ import type { TablePaymentIntent } from '../api/tablePaymentIntent';
 const PAGE_SIZE = 40;
 // Decimal entry has no grouping or exponent; all arithmetic remains exact minor units.
 export function contributionInputMinor(value: string) {
-  const match = /^(0|[1-9][0-9]{0,13})(?:[.,]([0-9]{1,2}))?$/.exec(value.trim());
+  const match = /^(0|[1-9]\d{0,13})(?:[.,](\d{1,2}))?$/.exec(value.trim());
   if (!match) return undefined;
   const result = BigInt(match[1]!) * 100n + BigInt((match[2] ?? '').padEnd(2, '0'));
   return result > 0n && result <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(result) : undefined;

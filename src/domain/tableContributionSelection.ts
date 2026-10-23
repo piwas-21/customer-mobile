@@ -104,7 +104,7 @@ export function tableContributionSelection(
       const quote = new TableAllocationIndex(rows);
       if (
         quote.total !== amount ||
-        rows.some((row) => !available.allows(row) || (shareScope && !shareScope.allows(row)))
+        rows.some((row) => !available.allows(row) || shareScope?.allows(row) === false)
       )
         throw new ApiFailure(200, 'contract');
     },

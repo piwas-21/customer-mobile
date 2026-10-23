@@ -20,6 +20,9 @@ export default function ContributionNotice() {
     !terminal && stopping?.controller === flow.controller && stopping.id === value?.operationId
       ? stopping
       : undefined;
+  let message = 'tableContributionPending';
+  if (value?.state === 'paid') message = 'tableContributionPaid';
+  if (value?.state === 'stopped') message = 'tableContributionStopped';
   return (
     <>
       {flow.failed ? (
@@ -31,14 +34,9 @@ export default function ContributionNotice() {
       {value ? (
         <>
           <Feedback
-            message={t(
-              value.state === 'paid'
-                ? 'tableContributionPaid'
-                : value.state === 'stopped'
-                  ? 'tableContributionStopped'
-                  : 'tableContributionPending',
-              { amount: formatTablePaymentMinor(value.amountMinor, value.currency, i18n.language) },
-            )}
+            message={t(message, {
+              amount: formatTablePaymentMinor(value.amountMinor, value.currency, i18n.language),
+            })}
           />
           {terminal ? (
             <Button

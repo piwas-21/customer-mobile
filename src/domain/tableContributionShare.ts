@@ -13,15 +13,7 @@ export function tableContributionShare(plan: Plan, ordinal: number) {
     reviewed.total !== total ||
     slots.reduce((sum, slot) => sum + BigInt(slot.amountMinor), 0n) !== total ||
     slots.some(
-      (slot, i) =>
-        BigInt(slot.amountMinor) !==
-        (plan.isCustom
-          ? BigInt(plan.customAmountsMinor?.[i] ?? 0)
-          : step > 1n
-            ? i === slots.length - 1
-              ? total - base * (count - 1n)
-              : base
-            : total / count + (BigInt(i) < total % count ? 1n : 0n)),
+      (slot, i) => BigInt(slot.amountMinor) !== expectedShare(plan, i, step, total, count, base),
     )
   )
     throw new ApiFailure(200, 'contract');
@@ -32,6 +24,19 @@ export function tableContributionShare(plan: Plan, ordinal: number) {
   if (!selected) throw new ApiFailure(409, 'refused');
   return new TableAllocationIndex(sliceScope(plan.scope, offset, BigInt(selected.amountMinor)));
 }
+function expectedShare(
+  plan: Plan,
+  index: number,
+  step: bigint,
+  total: bigint,
+  count: bigint,
+  base: bigint,
+) {
+  if (plan.isCustom) return BigInt(plan.customAmountsMinor?.[index] ?? 0);
+  if (step > 1n) return index === plan.slots.length - 1 ? total - base * (count - 1n) : base;
+  return total / count + (BigInt(index) < total % count ? 1n : 0n);
+}
+const minimum = (a: bigint, b: bigint) => (a < b ? a : b);
 // Slice frozen money in its reviewed order. At most two partial units are materialized.
 function sliceScope(input: readonly TableAllocation[], offset: bigint, amount: bigint) {
   const result: TableAllocation[] = [];
@@ -57,13 +62,13 @@ function sliceScope(input: readonly TableAllocation[], offset: bigint, amount: b
         amountMinor: Number(BigInt(units) * value),
       });
     if (remainder) {
-      const part = left < minor - remainder ? left : minor - remainder;
+      const part = minimum(left, minor - remainder);
       append(1, part);
       left -= part;
       unit++;
       count--;
     }
-    const units = Number(left / minor < BigInt(count) ? left / minor : BigInt(count));
+    const units = Number(minimum(left / minor, BigInt(count)));
     if (units) {
       append(units, minor);
       left -= BigInt(units) * minor;

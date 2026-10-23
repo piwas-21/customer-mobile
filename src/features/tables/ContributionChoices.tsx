@@ -33,12 +33,8 @@ export default function ContributionChoices({
   const [ordinal, setOrdinal] = useState<number>();
   const account = snapshot.account;
   const plan = account.activeEqualSharePlan;
-  const modes: Mode[] = [
-    'Full',
-    'Amount',
-    'Items',
-    ...(plan ? [plan.isCustom ? ('CustomAmount' as const) : ('Equal' as const)] : []),
-  ];
+  const modes: Mode[] = ['Full', 'Amount', 'Items'];
+  if (plan) modes.push(plan.isCustom ? 'CustomAmount' : 'Equal');
   let choice: TableContributionChoice | undefined;
   if (mode === 'Full') choice = { mode };
   if (mode === 'Amount' && contributionInputMinor(amount))

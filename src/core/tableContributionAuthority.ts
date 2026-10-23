@@ -70,8 +70,7 @@ export class TableContributionAuthority extends CustomerOperationScope {
     );
     const bounds = account.account.limits.online;
     if (
-      !bounds ||
-      bounds.currency !== record.review.currency ||
+      bounds?.currency !== record.review.currency ||
       record.review.amountMinor < bounds.minimumAmountMinor ||
       record.review.amountMinor > bounds.maximumAmountMinor
     )
