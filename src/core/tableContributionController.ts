@@ -150,9 +150,11 @@ export class TableContributionController extends TableOperationController<
   private async present(resolved: Resolution): Promise<TableContributionView | null> {
     if (!resolved) return null;
     let canOpen = false;
-    if (resolved.decision?.outcome === 'ready') {
+    if (resolved.decision?.outcome === 'ready' || resolved.decision?.outcome === 'reserved') {
       try {
-        await this.scope.page(resolved.record, resolved.decision, this.origins);
+        if (resolved.decision.outcome === 'ready')
+          await this.scope.page(resolved.record, resolved.decision, this.origins);
+        else await this.scope.currentPreparation(resolved.record);
         canOpen = true;
       } catch {
         this.assertCurrent();

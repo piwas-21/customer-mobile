@@ -63,13 +63,14 @@ export default function useContributionState() {
         }
         controller.assertCurrent();
         cache.setQueryData(key, saved);
-        void cache.invalidateQueries({
-          queryKey: key.slice(0, 3),
-          predicate: (q) =>
-            ['basket', 'table-visit', 'unresolved-purchase', 'receipts'].includes(
-              String(q.queryKey[3]),
-            ),
-        });
+        if (recover)
+          void cache.invalidateQueries({
+            queryKey: key.slice(0, 3),
+            predicate: (q) =>
+              ['basket', 'table-visit', 'unresolved-purchase', 'receipts'].includes(
+                String(q.queryKey[3]),
+              ),
+          });
       } catch {
         /* Never publish after background, account or tenant withdrawal. */
       }

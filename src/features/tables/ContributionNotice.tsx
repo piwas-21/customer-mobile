@@ -53,7 +53,7 @@ export default function ContributionNotice() {
                 disabled={busy}
                 onPress={() => void flow.check().catch(() => undefined)}
               />
-              {value.canOpen || value.state === 'reserved' ? (
+              {value.canOpen ? (
                 <Button
                   label={t('hostedPayment.open')}
                   disabled={busy}

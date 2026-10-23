@@ -53,6 +53,11 @@ export class TableContributionAuthority extends CustomerOperationScope {
       !decision.expiresAt
     )
       throw new ApiFailure(409, 'refused');
+    await this.currentPreparation(record);
+    return hostedPaymentPage(decision.checkoutUrl, decision.expiresAt, origins);
+  }
+  async currentPreparation(record: TablePaymentRecord) {
+    if (record.cancellationRequested) throw new ApiFailure(409, 'refused');
     const live = await this.live(this.assertCurrent, record.sessionId);
     const preparation = this.originalPreparation(record, live.visit);
     const account = await readTablePaymentAccount(
@@ -80,7 +85,7 @@ export class TableContributionAuthority extends CustomerOperationScope {
     );
     if (JSON.stringify(visit) !== JSON.stringify(live.visit)) throw new ApiFailure(409, 'refused');
     scopedTablePaymentPreparation(this.context, record.principal, preparation);
-    return hostedPaymentPage(decision.checkoutUrl, decision.expiresAt, origins);
+    return preparation;
   }
   protected originalPreparation(record: TablePaymentRecord, visit: TableVisitRecord) {
     if (this.configuration.currency !== record.review.currency)

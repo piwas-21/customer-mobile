@@ -140,8 +140,7 @@ export class TableContributionScope extends TableContributionAuthority {
     return { record, decision };
   }
   async start(record: TablePaymentRecord, locale: string) {
-    const live = await this.live(this.assertCurrent, record.sessionId);
-    const preparation = this.originalPreparation(record, live.visit);
+    const preparation = await this.currentPreparation(record);
     const decision = await resolveTableCheckout(
       this.client,
       this.context,
