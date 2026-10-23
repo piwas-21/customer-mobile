@@ -1,3 +1,4 @@
+import { tableContributionShare } from './tableContributionShare';
 import { z } from 'zod';
 import {
   tablePaymentAccountSchema,
@@ -69,7 +70,7 @@ export function tableContributionSelection(
     )
       throw new ApiFailure(409, 'refused');
     amount = BigInt(slot.amountMinor);
-    shareScope = new TableAllocationIndex(plan.scope);
+    shareScope = tableContributionShare(plan, choice.ordinal);
     if (choice.mode === 'Equal') {
       fields.equalSharePlanId = choice.planId;
       fields.equalShareOrdinal = choice.ordinal;
