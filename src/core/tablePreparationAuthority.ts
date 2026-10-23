@@ -52,3 +52,23 @@ export function scopedTablePreparation<T extends Candidate>(
     throw new ApiFailure(409, 'refused');
   return prepared;
 }
+
+export function tableReviewPreparation(
+  context: TenantContext,
+  input: { principal: Principal; sessionId: string; visit: TableVisitRecord },
+  selected: { intent: { tenantId: string }; currency: string },
+  currency: string | null,
+) {
+  if (selected.intent.tenantId !== context.tenant.id || selected.currency !== currency)
+    throw new ApiFailure(200, 'contract');
+  return {
+    schemaVersion: 1,
+    environment: context.environment,
+    tenantId: context.tenant.id,
+    principal: input.principal,
+    sessionId: input.sessionId,
+    visit: input.visit,
+    intent: selected.intent,
+    currency,
+  };
+}

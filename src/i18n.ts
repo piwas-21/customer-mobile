@@ -1,3 +1,4 @@
+import { tablePlansEnglish } from './translations/tablePlans.en';
 import { tableContributionsEnglish } from './translations/tableContributions.en';
 import { tableRoundsEnglish } from './translations/tableRounds.en';
 import { tablesEnglish } from './translations/tables.en';
@@ -16,6 +17,7 @@ import { initReactI18next } from 'react-i18next';
 import { getLocales } from 'expo-localization';
 const i18n = createInstance();
 const en = {
+  ...tablePlansEnglish,
   ...tableRoundsEnglish,
   ...tableContributionsEnglish,
   ...loyaltyEnglish,

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatTablePaymentMinor } from '../../domain/tablePaymentMoney';
-import BaseModal from '../../ui/BaseModal';
+import TableOperationStopModal from './TableOperationStopModal';
 import Button from '../../ui/Button';
 import Feedback from '../../ui/Feedback';
 import { useTableContribution } from './ContributionProvider';
@@ -69,18 +69,17 @@ export default function ContributionNotice() {
         </>
       ) : null}
       {current ? (
-        <BaseModal title={t('tableContributionStop')} onClose={() => setStopping(undefined)}>
-          <Feedback message={t('tableContributionStopHint')} />
-          <Button
-            label={t('tableContributionStopConfirm')}
-            disabled={busy}
-            onPress={() => {
-              setStopping(undefined);
-              void flow.stop(current.id).catch(() => undefined);
-            }}
-          />
-          <Button label={t('back')} secondary onPress={() => setStopping(undefined)} />
-        </BaseModal>
+        <TableOperationStopModal
+          title={t('tableContributionStop')}
+          hint={t('tableContributionStopHint')}
+          confirmLabel={t('tableContributionStopConfirm')}
+          busy={busy}
+          onClose={() => setStopping(undefined)}
+          onConfirm={() => {
+            setStopping(undefined);
+            void flow.stop(current.id).catch(() => undefined);
+          }}
+        />
       ) : null}
     </>
   );

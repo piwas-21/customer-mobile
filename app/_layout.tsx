@@ -1,3 +1,4 @@
+import PlanProvider from '../src/features/tables/PlanProvider';
 import ContributionProvider from '../src/features/tables/ContributionProvider';
 import RoundProvider from '../src/features/tables/RoundProvider';
 import '../src/i18n';
@@ -33,17 +34,19 @@ export default function RootLayout() {
                 <PaymentProvider>
                   <RoundProvider>
                     <ContributionProvider>
-                      <BasketProvider>
-                        <Stack
-                          screenOptions={{
-                            headerStyle: { backgroundColor: theme.background },
-                            headerTintColor: theme.text,
-                          }}
-                        >
-                          <Stack.Screen name="index" options={{ headerShown: false }} />
-                          <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
-                        </Stack>
-                      </BasketProvider>
+                      <PlanProvider>
+                        <BasketProvider>
+                          <Stack
+                            screenOptions={{
+                              headerStyle: { backgroundColor: theme.background },
+                              headerTintColor: theme.text,
+                            }}
+                          >
+                            <Stack.Screen name="index" options={{ headerShown: false }} />
+                            <Stack.Screen name="(restaurant)" options={{ headerShown: false }} />
+                          </Stack>
+                        </BasketProvider>
+                      </PlanProvider>
                     </ContributionProvider>
                   </RoundProvider>
                 </PaymentProvider>

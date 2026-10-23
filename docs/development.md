@@ -396,10 +396,10 @@ hold and require explicit original checking/stopping. Account, basket, orders an
 minimal recovery notices. Read-only preparation stays volatile and is withdrawn on dismissal.
 
 Table payment returns have a separate public attempt route and exact HTTPS intent scope. They
-navigate to the table and never reuse order identity or carry settlement/token authority. No new
-split-plan creation, runtime activation, live provider payment, signing or deployment is performed.
-Full locales/RTL, installed browser/storage lifecycle, accepted backend/transport publication,
-new split plans and provider/device acceptance remain required.
+navigate to the table and never reuse order identity or carry settlement/token authority.
+Contribution checkout consumes an existing plan; the separate split-plan flow below creates one.
+Full locales/RTL, installed browser/storage lifecycle and provider/device acceptance remain required.
+Source does not activate tenants, dispatch live payments, sign artifacts or deploy services.
 
 ## Native split-plan source contracts
 
@@ -408,9 +408,9 @@ bind tenant, public operation, visit, revision, exact frozen allocation and orde
 Equal and custom contribution selection share the same exact BigInt distribution check with new
 plan review. CHF/EUR equal shares retain the five-minor increment and final remainder; supported
 other currencies use stable one-minor remainder positions. Custom amounts retain original order.
-A preparation never authorizes payment or creates a plan. These contracts do not connect plan
-creation, custody, transport or UI. Original-proof server integration, durable local recovery and
-backend-ordered publication precede the connected journey; source does not activate any tenant.
+A preparation never authorizes payment or creates a plan. Separate custody, transport and controller
+layers below connect the reviewed intent to one original server operation. Backend acceptance must
+precede dependent client publication; deployed and installed acceptance remain separate.
 
 Schema1 split-plan resolution mirrors the accepted backend `CustomerTablePlanResolutionDto`: only
 operation, service-session, outcome and optional plan identity are returned. The purpose-bound
@@ -431,7 +431,10 @@ the hold, and a late Applied outcome preserves cancellation intent.
 The fresh preparation shares owner, visit and session checks with contribution custody, including
 participant expiry after asynchronous secure reads. Minimal original recovery remains readable after
 local leaving or capability withdrawal. Logout purges credentials while retaining original plan
-proof and the Customer reminder. Transport, renewal, connected plan creation and deployed/provider/
-installed acceptance remain separate gates. No tenant is activated by this source slice.
+proof and the Customer reminder. The connected transport and controller use this acknowledged
+custody for original requests and recovery. Deployed/provider/installed acceptance remain separate
+gates; source does not activate any tenant.
 
 Native split-plan transport binds the original plan intent/proof, exact route and acknowledged custody before any network dispatch. Fresh preparation/submission require the original participant/session and current expiry. Original recover/stop omit participant credentials and retain one Customer token renewal after local leaving or directory withdrawal. Initial writes are sent once; only original recovery can renew/retry. A response arriving after preparation expiry cannot become a new review. This source slice does not activate payments or prove installed/provider acceptance.
+
+Native split-plan controllers review exact current available allocation, ordered equal/custom guest amounts and explicit owned unprotected supersession. Confirmation rereads account/participant/configuration, consumes volatile review, acknowledges original custody, then submits once. Lost responses expose only original recover/stop; plan creation never opens hosted checkout or claims settlement. Shared reviewed-table lifecycle preserves contribution behavior. The connected table screen offers equal or ordered custom guest amounts, checks exact totals and provider bounds, and requires explicit owned-plan replacement. Every reviewed guest amount appears before confirmation. Pending notices retain original checking and confirmed stopping after rollout withdrawal; account/tenant/background changes withdraw paused reviews. Preparation never invalidates the parent bill or persists financial authority in query caches. English fallback is present; full locales/RTL, signing, deployed provider behavior and installed acceptance remain required.

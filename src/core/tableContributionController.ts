@@ -1,8 +1,7 @@
-import { TableOperationController } from './tableOperationController';
+import { ReviewedTableController } from './reviewedTableController';
 import type { TablePaymentRecord } from './tablePaymentRecord';
-import { SingleOperation } from './singleOperation';
+import { ReviewedTableOperation } from './reviewedTableOperation';
 import { canonicalUuidSchema } from './identifiers';
-import { ApiFailure } from './apiFailure';
 import {
   tableContributionChoiceSchema,
   type TableContributionChoice,
@@ -22,14 +21,24 @@ export type TableContributionReviewView = Readonly<{
   currency: string;
 }>;
 type Resolution = Awaited<ReturnType<TableContributionScope['check']>>;
-export class TableContributionController extends TableOperationController<
+export class TableContributionController extends ReviewedTableController<
+  TableContributionChoice,
   TableContributionCandidate,
   TablePaymentRecord,
   TableContributionView,
-  TableContributionScope
+  TableContributionScope,
+  TableContributionReviewView
 > {
-  private readonly preparations = new SingleOperation<TableContributionReviewView>();
+  protected readonly prepared: ReviewedTableOperation<
+    TableContributionChoice,
+    TableContributionCandidate,
+    TablePaymentRecord,
+    TableContributionView,
+    TableContributionReviewView
+  >;
   private readonly origins: readonly string[];
+  protected readonly captureChoice = (input: TableContributionChoice) =>
+    tableContributionChoiceSchema.parse(input);
   constructor(
     context: TenantContext,
     client: CustomerTransport,
@@ -53,55 +62,26 @@ export class TableContributionController extends TableOperationController<
       scope.repository.tablePayments.acknowledge(scope.context, record, scope.assertCurrent),
     );
     this.origins = Object.freeze([...origins]);
-  }
-  prepare(input: TableContributionChoice, locale: string) {
-    this.scope.assertStart();
-    const choice = tableContributionChoiceSchema.parse(input);
-    if (this.mutations.busy) throw new ApiFailure(409, 'refused');
-    return this.preparations.run(JSON.stringify(choice), async () => {
-      const guard = this.review.guard(
-        () => this.scope.assertStart(),
-        () => this.mutations.busy,
-      );
-      if (await this.scope.load(guard)) throw new ApiFailure(409, 'refused');
-      const candidate = await this.scope.prepare(choice, this.createId, locale, guard);
-      if (await this.scope.load(guard)) throw new ApiFailure(409, 'refused');
-      guard();
-      this.review.current = candidate;
-      return {
+    this.prepared = new ReviewedTableOperation(this.review, this.mutations, {
+      assertStart: () => scope.assertStart(),
+      load: (guard) => scope.load(guard),
+      prepare: (choice, locale, guard) => scope.prepare(choice, this.createId, locale, guard),
+      project: (candidate) => ({
         operationId: candidate.prepared.proof.operationId,
         mode: candidate.prepared.mode,
         amountMinor: candidate.prepared.amountMinor,
         currency: candidate.prepared.currency,
-      };
-    });
-  }
-  confirm(operationId: string, locale: string) {
-    this.scope.assertStart();
-    const id = canonicalUuidSchema.parse(operationId);
-    return this.mutations.run('confirm/' + id, async () => {
-      const candidate = this.review.current;
-      if (candidate?.prepared.proof.operationId !== id) throw new ApiFailure(409, 'refused');
-      const guard = () => {
-        this.scope.assertStart();
-        if (this.review.current !== candidate) throw new ApiFailure(409, 'refused');
-      };
-      try {
-        if (await this.scope.load(guard)) throw new ApiFailure(409, 'refused');
-        await this.scope.validate(candidate, locale, guard);
-        guard();
-        this.invalidateReview();
-        const record = await this.scope.repository.tablePayments.install(
-          this.scope.context,
+      }),
+      validate: (candidate, locale, guard) => scope.validate(candidate, locale, guard),
+      install: (candidate) =>
+        scope.repository.tablePayments.install(
+          scope.context,
           candidate.preparation,
           candidate.prepared,
           this.assertCurrent,
-        );
-        return this.browse(await this.scope.submit(record, candidate, locale), locale);
-      } catch (error) {
-        this.invalidateReview();
-        throw error;
-      }
+        ),
+      submit: async (record, candidate, locale) =>
+        this.browse(await scope.submit(record, candidate, locale), locale),
     });
   }
   recover(locale: string) {

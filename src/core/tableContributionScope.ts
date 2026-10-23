@@ -1,9 +1,4 @@
-import {
-  TableContributionAuthority,
-  readScope,
-  scopedCurrency,
-} from './tableContributionAuthority';
-import { readTablePaymentAccount } from '../api/tablePaymentAccount';
+import { TableContributionAuthority } from './tableContributionAuthority';
 import {
   prepareTableContribution,
   resolveTableContribution,
@@ -25,29 +20,9 @@ export class TableContributionScope extends TableContributionAuthority {
     guard: () => void,
   ) {
     const choice = tableContributionChoiceSchema.parse(value);
-    const bootstrap = await this.fresh(guard);
-    const visit = await this.repository.tableVisits.read(this.context, this.owner.principal, guard);
-    if (!visit) throw new ApiFailure(409, 'refused');
-    const sessionId = await this.repository.tableVisits.paymentSession(
-      this.context,
-      visit,
-      createId,
-      guard,
-    );
-    const account = await readTablePaymentAccount(
-      this.client,
-      this.context,
-      bootstrap,
-      { visit, sessionId, currency: scopedCurrency(bootstrap.currency) },
-      guard,
-      locale,
-    );
+    const input = await this.reviewAccount(locale, createId, guard);
     const review = tableContributionReview(this.context, {
-      principal: this.owner.principal,
-      sessionId,
-      visit,
-      account,
-      bootstrap,
+      ...input,
       operationId: createId(),
       choice,
     });
@@ -62,25 +37,19 @@ export class TableContributionScope extends TableContributionAuthority {
     return { choice, preparation: review.preparation, prepared: review.accept(response) };
   }
   async validate(candidate: TableContributionCandidate, locale: string, guard: () => void) {
-    const live = await this.live(guard, candidate.preparation.sessionId);
-    if (JSON.stringify(live.visit) !== JSON.stringify(candidate.preparation.visit))
-      throw new ApiFailure(409, 'refused');
-    const account = await readTablePaymentAccount(
-      this.client,
-      this.context,
-      live.bootstrap,
-      readScope(live, candidate.preparation.currency),
-      guard,
+    const input = await this.reviewAccount(
       locale,
+      () => {
+        throw new ApiFailure(409, 'refused');
+      },
+      guard,
     );
     const review = tableContributionReview(this.context, {
-      ...live,
-      principal: this.owner.principal,
-      account,
+      ...input,
       operationId: candidate.preparation.intent.operationId,
       choice: candidate.choice,
     });
-    if (JSON.stringify(review.preparation.intent) !== JSON.stringify(candidate.preparation.intent))
+    if (JSON.stringify(review.preparation) !== JSON.stringify(candidate.preparation))
       throw new ApiFailure(409, 'refused');
     review.accept(candidate.prepared);
     guard();
