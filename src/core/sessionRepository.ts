@@ -1,3 +1,4 @@
+import { TablePlanRepository } from './tablePlanRepository';
 import { tablePurchasesHeld } from './tablePurchaseHold';
 import { hasCustomerRecovery } from './hasCustomerRecovery';
 import { TablePaymentRepository } from './tablePaymentRepository';
@@ -37,6 +38,7 @@ export class SessionRepository {
   readonly tableVisits: TableVisitRepository;
   readonly tableRounds: TableRoundRepository;
   readonly tablePayments: TablePaymentRepository;
+  readonly tablePlans: TablePlanRepository;
   private readonly writes = new SerialTasks();
   private readonly attention: PaymentAttentionStorage;
   constructor(private readonly store: SecretStore) {
@@ -50,6 +52,7 @@ export class SessionRepository {
     this.tableVisits = new TableVisitRepository(store, this.writes);
     this.tableRounds = new TableRoundRepository(store, this.writes);
     this.tablePayments = new TablePaymentRepository(store, this.writes);
+    this.tablePlans = new TablePlanRepository(store, this.writes);
   }
   hasTablePurchaseHold(context: TenantContext, principal: Principal, guard: () => void) {
     return this.writes.run(() => tablePurchasesHeld(this.store, context, principal, guard));

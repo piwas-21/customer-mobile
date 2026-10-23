@@ -1,3 +1,4 @@
+import { TablePlanStorage } from './tablePlanStorage';
 import { tablePaymentHoldsPurchases } from './tablePurchaseHold';
 import { tablePaymentResolved } from './tablePaymentRecord';
 import { TablePaymentStorage } from './tablePaymentStorage';
@@ -34,6 +35,8 @@ export class PaymentAttentionStorage {
         ?.resolution !== null &&
       (await new TableRoundStorage(this.store).read(context, principal, guard))?.resolution !==
         null &&
+      (await new TablePlanStorage(this.store).read(context, principal, guard))?.resolution !==
+        null &&
       !(await tablePaymentHoldsPurchases(this.store, context, principal, guard))
     )
       return;
@@ -45,7 +48,9 @@ export class PaymentAttentionStorage {
       context,
       principal,
     );
+    const plan = await new TablePlanStorage(this.store).readForCleanup(context, principal);
     if (
+      plan?.resolution === null ||
       (contribution !== null && !tablePaymentResolved(contribution)) ||
       (await new CancellationOperationStorage(this.store).readForCleanup(context, principal))
         ?.resolution === null ||

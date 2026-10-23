@@ -45,7 +45,7 @@ export class TablePaymentRepository extends PrivateOperationRepository<TablePaym
     const expected = scopedTablePayment(context, input.principal, input);
     const result = bindTablePaymentResolution(expected.intent, value, 'recover');
     return this.writes.run(async () => {
-      const current = await this.requireUnchanged(context, expected, guard);
+      const current = await this.unchanged(context, expected, guard);
       if (result.outcome === 'Unseen') {
         if (current.resolution) throw new ApiFailure(409, 'refused');
         return current;
@@ -84,7 +84,7 @@ export class TablePaymentRepository extends PrivateOperationRepository<TablePaym
       expiresAt: decision.expiresAt,
     };
     return this.writes.run(async () => {
-      const current = await this.requireUnchanged(context, expected, guard);
+      const current = await this.unchanged(context, expected, guard);
       if (tablePaymentResolved(current) && current.checkout?.outcome !== checkout.outcome)
         throw new ApiFailure(409, 'refused');
       // Never persist the hosted URL. A fresh original canonical read is required before opening.
@@ -94,23 +94,5 @@ export class TablePaymentRepository extends PrivateOperationRepository<TablePaym
   acknowledge(context: TenantContext, input: TablePaymentRecord, guard: () => void) {
     const expected = scopedTablePayment(context, input.principal, input);
     return this.writes.run(() => this.storage.forgetResolved(context, expected, guard));
-  }
-  private async requireUnchanged(
-    context: TenantContext,
-    expected: TablePaymentRecord,
-    guard: () => void,
-  ) {
-    const current = await this.original(
-      context,
-      expected.principal,
-      expected.proof.operationId,
-      guard,
-    );
-    if (
-      JSON.stringify({ ...current, cancellationRequested: false }) !==
-      JSON.stringify({ ...expected, cancellationRequested: false })
-    )
-      throw new ApiFailure(409, 'refused');
-    return current;
   }
 }

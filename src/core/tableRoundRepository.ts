@@ -42,17 +42,7 @@ export class TableRoundRepository extends PrivateOperationRepository<TableRoundR
     const expected = scopedTableRound(context, input.principal, input);
     const resolution = bindTableRoundResolution(expected.intent, value, 'recover');
     return this.writes.run(async () => {
-      const current = await this.original(
-        context,
-        expected.principal,
-        expected.proof.operationId,
-        guard,
-      );
-      if (
-        JSON.stringify({ ...current, cancellationRequested: false, resolution: null }) !==
-        JSON.stringify({ ...expected, cancellationRequested: false, resolution: null })
-      )
-        throw new ApiFailure(409, 'refused');
+      const current = await this.unchanged(context, expected, guard, true);
       if (resolution.outcome === 'Unseen') {
         if (current.resolution) throw new ApiFailure(409, 'refused');
         return current;

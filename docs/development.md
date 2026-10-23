@@ -417,3 +417,19 @@ operation, service-session, outcome and optional plan identity are returned. The
 original proof and scoped transport enforce tenant/environment/principal authority; the pure
 resolution decoder binds the returned operation and service session. Requiring a new echoed tenant
 field would contradict the accepted server contract and reject valid original recovery responses.
+
+## Original split-plan custody
+
+A separate environment/tenant/principal-scoped SecureStore record retains only the original
+session, intent, protected proof, reviewed total/currency/ordered shares and minimal decision.
+It contains no participant credential, allocation payload, hosted URL or contact. The installation
+queue acknowledges exact private storage before returning dispatchable custody. Lost acknowledgement,
+malformed data and unresolved plans prevent competing basket/order/round/contribution/admission
+claims. Terminal dismissal requires exact original identity and acknowledged removal; Unseen keeps
+the hold, and a late Applied outcome preserves cancellation intent.
+
+The fresh preparation shares owner, visit and session checks with contribution custody, including
+participant expiry after asynchronous secure reads. Minimal original recovery remains readable after
+local leaving or capability withdrawal. Logout purges credentials while retaining original plan
+proof and the Customer reminder. Transport, renewal, connected plan creation and deployed/provider/
+installed acceptance remain separate gates. No tenant is activated by this source slice.

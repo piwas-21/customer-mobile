@@ -9,7 +9,7 @@ type OriginalRecord = {
   proof: { operationId: string };
   cancellationRequested: boolean;
 };
-// Both table operations use the installation's single queue and exact saved identity.
+// Original table operations use the installation's single queue and exact saved identity.
 export abstract class PrivateOperationRepository<T extends OriginalRecord> {
   constructor(
     protected readonly storage: ScopedPrivateRecordStorage<T>,
@@ -33,6 +33,27 @@ export abstract class PrivateOperationRepository<T extends OriginalRecord> {
       if (this.resolved(record) || record.cancellationRequested) return record;
       return this.storage.save(context, { ...record, cancellationRequested: true }, guard);
     });
+  }
+  protected async unchanged(
+    context: TenantContext,
+    expected: T,
+    guard: () => void,
+    allowResolutionChange = false,
+  ) {
+    const current = await this.original(
+      context,
+      expected.principal,
+      expected.proof.operationId,
+      guard,
+    );
+    const snapshot = (record: T) =>
+      JSON.stringify({
+        ...record,
+        cancellationRequested: false,
+        ...(allowResolutionChange ? { resolution: null } : {}),
+      });
+    if (snapshot(current) !== snapshot(expected)) throw new ApiFailure(409, 'refused');
+    return current;
   }
   protected async original(
     context: TenantContext,

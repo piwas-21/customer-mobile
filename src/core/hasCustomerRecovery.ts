@@ -1,3 +1,4 @@
+import { TablePlanStorage } from './tablePlanStorage';
 import { TableRoundStorage } from './tableRoundStorage';
 import { TablePaymentStorage } from './tablePaymentStorage';
 import { ReservationOperationStorage } from './reservationOperationStorage';
@@ -44,7 +45,9 @@ export async function hasCustomerRecovery(
     tableRaw === null ? null : scopedTableVisit(context, principal, JSON.parse(tableRaw));
   const round = await new TableRoundStorage(store).read(context, principal, () => {});
   const contribution = await new TablePaymentStorage(store).read(context, principal, () => {});
+  const plan = await new TablePlanStorage(store).read(context, principal, () => {});
   return (
-    cancellation?.resolution === null || Boolean(reservation || table || round || contribution)
+    cancellation?.resolution === null ||
+    Boolean(reservation || table || round || contribution || plan)
   );
 }

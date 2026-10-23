@@ -2,7 +2,7 @@ import { storedTableAuthority } from './storedTableAuthority';
 import { bindPreparedTablePayment } from '../api/tablePaymentPrepared';
 import { ApiFailure } from './apiFailure';
 import { assertPurchaseClaims } from './purchaseClaim';
-import { TableRoundStorage } from './tableRoundStorage';
+import { assertTablePurchasesResolved } from './tablePurchaseHold';
 import {
   scopedTablePaymentPreparation,
   type TablePaymentPreparation,
@@ -25,7 +25,7 @@ export async function installTablePayment(
   const storage = new TablePaymentStorage(store);
   if (await storage.read(context, principal, guard)) throw new ApiFailure(409, 'refused');
   await assertPurchaseClaims(store, context, principal, guard);
-  await new TableRoundStorage(store).assertResolved(context, principal, guard);
+  await assertTablePurchasesResolved(store, context, principal, guard);
   const session = await storedTableAuthority(store, context, principal, preparation, guard, () =>
     scopedTablePaymentPreparation(context, principal, preparation),
   );
