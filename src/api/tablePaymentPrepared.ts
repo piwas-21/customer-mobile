@@ -54,14 +54,18 @@ export function bindPreparedTablePayment(
 }
 
 function sameSelectedUnits(intent: TablePaymentIntent, prepared: TablePaymentPrepared) {
-  const selected = intent.selectedUnits
-    .map((row) => JSON.stringify([row.orderId, row.orderItemId, row.ordinal]))
-    .sort();
-  const returned = prepared.allocations
-    .map((row) => JSON.stringify([row.orderId, row.orderItemId, row.startOrdinal]))
-    .sort();
+  const selected = intent.selectedUnits.map((row) =>
+    JSON.stringify([row.orderId, row.orderItemId, row.ordinal]),
+  );
+  const returned = new Set(
+    prepared.allocations.map((row) =>
+      JSON.stringify([row.orderId, row.orderItemId, row.startOrdinal]),
+    ),
+  );
   return (
     prepared.allocations.every((row) => row.unitCount === 1) &&
-    JSON.stringify(selected) === JSON.stringify(returned)
+    returned.size === prepared.allocations.length &&
+    selected.length === returned.size &&
+    selected.every((key) => returned.has(key))
   );
 }
