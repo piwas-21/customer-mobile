@@ -1,3 +1,6 @@
+import { tablePaymentHoldsPurchases } from './tablePurchaseHold';
+import { tablePaymentResolved } from './tablePaymentRecord';
+import { TablePaymentStorage } from './tablePaymentStorage';
 import { TableRoundStorage } from './tableRoundStorage';
 import { ReservationOperationStorage } from './reservationOperationStorage';
 import { z } from 'zod';
@@ -29,14 +32,21 @@ export class PaymentAttentionStorage {
         ?.resolution !== null &&
       (await new ReservationOperationStorage(this.store).read(context, principal, guard))
         ?.resolution !== null &&
-      (await new TableRoundStorage(this.store).read(context, principal, guard))?.resolution !== null
+      (await new TableRoundStorage(this.store).read(context, principal, guard))?.resolution !==
+        null &&
+      !(await tablePaymentHoldsPurchases(this.store, context, principal, guard))
     )
       return;
     await this.save(context, userId);
   }
   async retainCancellation(context: TenantContext, userId: string): Promise<void> {
     const principal = { kind: 'customer', id: z.uuid().parse(userId) } as const;
+    const contribution = await new TablePaymentStorage(this.store).readForCleanup(
+      context,
+      principal,
+    );
     if (
+      (contribution !== null && !tablePaymentResolved(contribution)) ||
       (await new CancellationOperationStorage(this.store).readForCleanup(context, principal))
         ?.resolution === null ||
       (await new TableRoundStorage(this.store).readForCleanup(context, principal))?.resolution ===

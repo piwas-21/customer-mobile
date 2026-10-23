@@ -1,4 +1,4 @@
-import { TableRoundStorage } from './tableRoundStorage';
+import { assertTablePurchasesResolved } from './tablePurchaseHold';
 import {
   bindCancellationResolution,
   cancellationPreparationSchema,
@@ -48,7 +48,7 @@ export class CancellationOperationRepository {
         throw new Error('This order action is unavailable');
       const previous = await this.storage.read(context, owner, assertCurrent);
       if (previous?.resolution === null) throw new Error('Resolve the original order action first');
-      await new TableRoundStorage(this.store).assertResolved(context, owner, assertCurrent);
+      await assertTablePurchasesResolved(this.store, context, owner, assertCurrent);
       const orders = new OrderOperationStorage(this.store);
       await orders.ensureBasketUnclaimed(context, owner, assertCurrent);
       if (await orders.read(context, owner, assertCurrent))

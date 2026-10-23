@@ -37,7 +37,8 @@ export type CredentialKind =
   | 'order-cancellation'
   | 'reservation-operation'
   | 'reservation-contact'
-  | 'table-round-operation';
+  | 'table-round-operation'
+  | 'table-payment-operation';
 export function secretKey(
   context: TenantContext,
   kind: CredentialKind,
@@ -69,6 +70,9 @@ export class CredentialVault {
   }
   reservationContactRecord(context: TenantContext, principal: Principal): Promise<string | null> {
     return this.store.get(secretKey(context, 'reservation-contact', principal));
+  }
+  tablePaymentRecord(context: TenantContext, principal: Principal): Promise<string | null> {
+    return this.store.get(secretKey(context, 'table-payment-operation', principal));
   }
   orderReceiptRecords(context: TenantContext, principal: Principal): Promise<string | null> {
     return this.store.get(secretKey(context, 'order-decisions', principal));
@@ -106,7 +110,7 @@ export class CredentialVault {
       'order-contact',
       'reservation-contact',
       'order-decisions',
-      // Keep minimal order/payment/reservation/table-round proofs for original recovery.
+      // Keep minimal order/payment/reservation/table proofs for original recovery.
       // Contact, tokens and ordinary guest sessions are still purged on logout.
     ] as const;
     const removals = await Promise.allSettled(

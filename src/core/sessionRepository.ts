@@ -1,20 +1,16 @@
+import { hasCustomerRecovery } from './hasCustomerRecovery';
+import { TablePaymentRepository } from './tablePaymentRepository';
 import { TableRoundRepository } from './tableRoundRepository';
-import { TableRoundStorage } from './tableRoundStorage';
-import { scopedTableVisit } from './tableVisitRecord';
 import { TableVisitRepository } from './tableVisitRepository';
-import { ReservationOperationStorage } from './reservationOperationStorage';
 import { ReservationOperationRepository } from './reservationOperationRepository';
 import { CancellationOperationRepository } from './cancellationOperationRepository';
 import { CancellationOperationStorage } from './cancellationOperationStorage';
 import { PaymentAttentionStorage } from './paymentAttentionStorage';
-import { scopedPaymentRecord } from './paymentOperationRecord';
-import { scopedOrderDecisions } from './orderDecisions';
-import { assertOrderProofScope, orderOperationProofSchema } from './orderOperationProof';
 import { OrderOperationRepository } from './orderOperationRepository';
 import { PaymentOperationRepository } from './paymentOperationRepository';
 import { BasketOperationRepository } from './basketOperationRepository';
 import { z } from 'zod';
-import { CredentialVault, secretKey, type CustomerSession, type SecretStore } from './credentials';
+import { CredentialVault, type CustomerSession, type SecretStore } from './credentials';
 import { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
 const pointerKey = (context: TenantContext) =>
@@ -34,6 +30,7 @@ export class SessionRepository {
   readonly reservations: ReservationOperationRepository;
   readonly tableVisits: TableVisitRepository;
   readonly tableRounds: TableRoundRepository;
+  readonly tablePayments: TablePaymentRepository;
   private readonly writes = new SerialTasks();
   private readonly attention: PaymentAttentionStorage;
   constructor(private readonly store: SecretStore) {
@@ -46,6 +43,7 @@ export class SessionRepository {
     this.reservations = new ReservationOperationRepository(store, this.writes);
     this.tableVisits = new TableVisitRepository(store, this.writes);
     this.tableRounds = new TableRoundRepository(store, this.writes);
+    this.tablePayments = new TablePaymentRepository(store, this.writes);
   }
   loadPaymentAttention(context: TenantContext): Promise<string | null> {
     return this.writes.run(() => this.attention.load(context));
@@ -66,47 +64,10 @@ export class SessionRepository {
       const id = await this.store.get(pointerKey(context));
       if (id === null) return null;
       const principal = { kind: 'customer', id: z.uuid().parse(id) } as const;
-      if (!(await this.hasRecovery(context, principal))) return null;
+      if (!(await hasCustomerRecovery(this.store, context, principal))) return null;
       // Account-disabled browsing reads a JWT only for its original order or reservation recovery.
       return this.vault.session(context, principal.id);
     });
-  }
-  private async hasRecovery(context: TenantContext, principal: { kind: 'customer'; id: string }) {
-    const raw = await this.store.get(secretKey(context, 'order-operation-proof', principal));
-    if (raw !== null) {
-      const proof = orderOperationProofSchema.parse(JSON.parse(raw));
-      assertOrderProofScope(context, proof);
-      if (proof.principal.kind !== principal.kind || proof.principal.id !== principal.id)
-        throw new Error('Order recovery owner mismatch');
-      return true;
-    }
-    const saved = await this.store.get(secretKey(context, 'order-decisions', principal));
-    const records = scopedOrderDecisions(
-      context,
-      principal,
-      saved === null ? [] : JSON.parse(saved),
-    );
-    if (records.some((record) => record.outcome === 'Applied')) return true;
-    const payment = await this.store.get(secretKey(context, 'payment', principal));
-    if (payment !== null) {
-      scopedPaymentRecord(context, principal, JSON.parse(payment));
-      return true;
-    }
-    const cancellation = await new CancellationOperationStorage(this.store).read(
-      context,
-      principal,
-      () => {},
-    );
-    const reservation = await new ReservationOperationStorage(this.store).read(
-      context,
-      principal,
-      () => {},
-    );
-    const tableRaw = await this.store.get(secretKey(context, 'table-participant', principal));
-    const table =
-      tableRaw === null ? null : scopedTableVisit(context, principal, JSON.parse(tableRaw));
-    const round = await new TableRoundStorage(this.store).read(context, principal, () => {});
-    return cancellation?.resolution === null || Boolean(reservation || table || round);
   }
   activate(
     context: TenantContext,

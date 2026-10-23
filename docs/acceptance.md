@@ -604,4 +604,8 @@ one-cent, large-safe-integer, unsupported-scale and Arabic-digit controls.
 
 Physical Hermes Intl/BigInt, native back, font scaling, screen readers, all locales/RTL, actual API
 deployment and restaurant acceptance remain open. Durable quote/reserve/start/original recovery and
-the full item/amount/equal-share provider/concurrency acceptance gates are not completed by this read.
+the full item/amount/equal-share provider/concurrency acceptance gates remain open. Strict five-mode
+contracts and original private contribution custody are implemented separately: exact selected-unit
+binding, acknowledged proof, shared purchase guards, original cancellation and logout recovery have
+source coverage. This foundation exposes no payment transport or charge action. See development.md
+for the boundary; deployment, connected UI and physical acceptance remain required.

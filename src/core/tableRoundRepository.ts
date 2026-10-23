@@ -1,11 +1,11 @@
+import { PrivateOperationRepository } from './privateOperationRepository';
 import {
   bindPreparedTableRound,
   bindTableRoundResolution,
   type TableRoundResolution,
 } from '../api/tableRoundContract';
 import { ApiFailure } from './apiFailure';
-import { principalSchema, type Principal, type SecretStore } from './credentials';
-import { canonicalUuidSchema } from './identifiers';
+import type { SecretStore } from './credentials';
 import { installTableRound } from './tableRoundInstallation';
 import { scopedRoundPreparation, type TableRoundPreparation } from './tableRoundPreparation';
 import { scopedTableRound, type TableRoundRecord } from './tableRoundRecord';
@@ -13,17 +13,12 @@ import { TableRoundStorage } from './tableRoundStorage';
 import type { SerialTasks } from './serialTasks';
 import type { TenantContext } from './tenantContext';
 
-export class TableRoundRepository {
-  private readonly storage: TableRoundStorage;
+export class TableRoundRepository extends PrivateOperationRepository<TableRoundRecord> {
   constructor(
     private readonly store: SecretStore,
-    private readonly writes: SerialTasks,
+    writes: SerialTasks,
   ) {
-    this.storage = new TableRoundStorage(store);
-  }
-  load(context: TenantContext, principal: Principal, guard: () => void) {
-    const owner = principalSchema.parse(principal);
-    return this.writes.run(() => this.storage.read(context, owner, guard));
+    super(new TableRoundStorage(store), writes, (record) => record.resolution !== null);
   }
   install(
     context: TenantContext,
@@ -37,20 +32,6 @@ export class TableRoundRepository {
     return this.writes.run(() =>
       installTableRound(this.store, context, preparation, prepared, guard),
     );
-  }
-  requestCancellation(
-    context: TenantContext,
-    principal: Principal,
-    operationId: string,
-    guard: () => void,
-  ) {
-    const owner = principalSchema.parse(principal);
-    const id = canonicalUuidSchema.parse(operationId);
-    return this.writes.run(async () => {
-      const record = await this.original(context, owner, id, guard);
-      if (record.resolution || record.cancellationRequested) return record;
-      return this.storage.save(context, { ...record, cancellationRequested: true }, guard);
-    });
   }
   finish(
     context: TenantContext,
@@ -84,15 +65,5 @@ export class TableRoundRepository {
   acknowledge(context: TenantContext, input: TableRoundRecord, guard: () => void) {
     const expected = scopedTableRound(context, input.principal, input);
     return this.writes.run(() => this.storage.forgetResolved(context, expected, guard));
-  }
-  private async original(
-    context: TenantContext,
-    principal: Principal,
-    id: string,
-    guard: () => void,
-  ) {
-    const record = await this.storage.read(context, principal, guard);
-    if (record?.proof.operationId !== id) throw new ApiFailure(409, 'refused');
-    return record;
   }
 }

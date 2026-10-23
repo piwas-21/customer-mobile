@@ -1,4 +1,4 @@
-import { TableRoundStorage } from './tableRoundStorage';
+import { assertTablePurchasesResolved } from './tablePurchaseHold';
 import { tableVisitIdentitySchema, type TableVisitIdentity } from '../api/tableVisitContract';
 import { removeAcknowledgedSecret, saveAcknowledgedSecret } from './acknowledgedSecret';
 import { principalSchema, secretKey, type Principal, type SecretStore } from './credentials';
@@ -32,7 +32,7 @@ export class TableVisitRepository {
       identity,
     });
     return this.writes.run(async () => {
-      await new TableRoundStorage(this.store).assertResolved(context, owner, guard);
+      await assertTablePurchasesResolved(this.store, context, owner, guard);
       if (await this.readInside(context, owner, guard)) throw new ApiFailure(409, 'refused');
       guard();
       if (Date.parse(identity.expiresAt) <= Date.now()) throw new ApiFailure(409, 'refused');
