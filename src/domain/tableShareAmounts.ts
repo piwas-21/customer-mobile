@@ -21,17 +21,16 @@ export function tableShareAmounts(
         if (!Number.isSafeInteger(amount) || amount <= 0) throw new ApiFailure(200, 'contract');
         return BigInt(amount);
       })
-    : Array.from({ length: count }, (_, index) =>
-        step > 1n
-          ? index === count - 1
-            ? total - base * (slots - 1n)
-            : base
-          : total / slots + (BigInt(index) < total % slots ? 1n : 0n),
-      );
+    : Array.from({ length: count }, (_, index) => equalShare(total, slots, step, base, index));
   if (
     amounts.some((amount) => amount <= 0n) ||
     amounts.reduce((sum, amount) => sum + amount, 0n) !== total
   )
     throw new ApiFailure(200, 'contract');
   return amounts;
+}
+
+function equalShare(total: bigint, slots: bigint, step: bigint, base: bigint, index: number) {
+  if (step > 1n) return BigInt(index) === slots - 1n ? total - base * (slots - 1n) : base;
+  return total / slots + (BigInt(index) < total % slots ? 1n : 0n);
 }
