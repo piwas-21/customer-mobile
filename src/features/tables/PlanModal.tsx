@@ -20,24 +20,40 @@ export default function PlanModal({
       hint={t('tablePlanHint')}
       error={t('tablePlanFailed')}
       confirmLabel={t('tablePlanConfirm')}
-      renderReview={(current) => (
-        <>
-          <Feedback
-            message={t('tablePlanTotal', {
-              amount: formatTablePaymentMinor(current.totalMinor, current.currency, i18n.language),
-            })}
-          />
-          {current.sharesMinor.map((amount, i) => (
+      renderReview={(current) => {
+        // Guest ordinals are fixed within the original operation, including duplicate amounts.
+        const shares = current.sharesMinor.map((amountMinor, index) => ({
+          id: `${current.operationId}:${index}`,
+          position: index + 1,
+          amountMinor,
+        }));
+        return (
+          <>
             <Feedback
-              key={i}
-              message={t('tablePlanShare', {
-                position: new Intl.NumberFormat(i18n.language).format(i + 1),
-                amount: formatTablePaymentMinor(amount, current.currency, i18n.language),
+              message={t('tablePlanTotal', {
+                amount: formatTablePaymentMinor(
+                  current.totalMinor,
+                  current.currency,
+                  i18n.language,
+                ),
               })}
             />
-          ))}
-        </>
-      )}
+            {shares.map((share) => (
+              <Feedback
+                key={share.id}
+                message={t('tablePlanShare', {
+                  position: new Intl.NumberFormat(i18n.language).format(share.position),
+                  amount: formatTablePaymentMinor(
+                    share.amountMinor,
+                    current.currency,
+                    i18n.language,
+                  ),
+                })}
+              />
+            ))}
+          </>
+        );
+      }}
       renderChoices={(snapshot, busy, onReview) => (
         <PlanChoices snapshot={snapshot} busy={busy} onReview={onReview} />
       )}
