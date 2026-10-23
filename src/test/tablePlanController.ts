@@ -37,11 +37,12 @@ export async function tablePlanControllerFixture(customer = false) {
     ) {
       if (path.endsWith('/submit')) state.accepted = true;
       if (path.endsWith('/stop') && !state.accepted) state.stopped = true;
+      const unappliedOutcome = state.stopped ? 'stopped' : 'unseen';
       data = {
         schemaVersion: 1,
         operationId: tenantB,
         serviceSessionId: f.preparation.intent.serviceSessionId,
-        outcome: state.accepted ? 'applied' : state.stopped ? 'stopped' : 'unseen',
+        outcome: state.accepted ? 'applied' : unappliedOutcome,
         planId: state.accepted ? paymentReadSession : null,
       };
     } else throw new Error('Unexpected native split route');
